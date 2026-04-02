@@ -3,14 +3,15 @@ import Layout from './components/Layout';
 import HouseCard from './components/HouseCard';
 import MatchCard from './components/MatchCard';
 import ScheduleCard from './components/ScheduleCard';
+import RegistrationForm from './components/RegistrationForm';
 import { useUCSFData } from './hooks/useUCSFData';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Activity, Calendar, Shield, Loader2, AlertCircle, ChevronRight } from 'lucide-react';
+import { Trophy, Activity, Calendar, Shield, Loader2, AlertCircle, ChevronRight, Play, Image as ImageIcon, Video } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const { houses, matches, schedule, settings, categories, loading, error, refresh } = useUCSFData();
+  const { houses, matches, schedule, settings, categories, gallery, loading, error, refresh } = useUCSFData();
   const liveItems = React.useMemo(() => schedule.filter(s => s.status === 'live'), [schedule]);
   const upcomingItems = React.useMemo(() => schedule.filter(s => s.status === 'upcoming').slice(0, 3), [schedule]);
 
@@ -48,6 +49,13 @@ export default function App() {
     );
   }
 
+  const festivalName = settings['festival_name'] || 'UCSF 2026';
+  const festivalSubtitle = settings['festival_subtitle'] || 'Union of Culture & Sports Fest';
+  const festivalDates = settings['festival_dates'] || 'April 2026 · Shalom Hills';
+  const registrationOpen = settings['registration_open'] !== 'false';
+  const announcementText = settings['announcement_text'];
+  const footerText = settings['footer_text'];
+
   const renderContent = () => {
     switch (activeTab) {
       case 'home':
@@ -65,7 +73,7 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   className="hero-eyebrow mx-auto"
                 >
-                  📅 April 2026 · Shalom Hills
+                  📅 {festivalDates}
                 </motion.div>
                 <motion.h1 
                   initial={{ opacity: 0, y: 20 }}
@@ -73,8 +81,8 @@ export default function App() {
                   transition={{ delay: 0.1 }}
                   className="hero-title mb-6"
                 >
-                  UCSF<br />
-                  <span className="text-transparent bg-clip-text bg-gradient-to-br from-maple to-white">2026</span>
+                  {festivalName.split(' ')[0]}<br />
+                  <span className="text-transparent bg-clip-text bg-gradient-to-br from-maple to-white">{festivalName.split(' ')[1] || ''}</span>
                 </motion.h1>
                 <motion.p 
                   initial={{ opacity: 0 }}
@@ -82,7 +90,7 @@ export default function App() {
                   transition={{ delay: 0.2 }}
                   className="hero-sub mb-12"
                 >
-                  Union of Culture & Sports Fest
+                  {festivalSubtitle}
                 </motion.p>
                 
                 <motion.div 
@@ -370,6 +378,86 @@ export default function App() {
           </div>
         );
 
+      case 'register':
+        return (
+          <div className="max-w-4xl mx-auto px-6 py-24">
+            <div className="mb-16">
+              <p className="sec-label">Join the Battle</p>
+              <h2 className="text-6xl md:text-7xl">Register</h2>
+              <p className="text-white/40 mt-4">
+                {registrationOpen 
+                  ? "Sign up for your favorite events. Limited slots available."
+                  : "Registrations are currently closed. Please check back later."}
+              </p>
+            </div>
+            {registrationOpen ? (
+              <div className="card-glass p-8 md:p-12">
+                <RegistrationForm events={schedule} />
+              </div>
+            ) : (
+              <div className="card-glass p-12 text-center">
+                <AlertCircle size={48} className="mx-auto text-muted mb-6" />
+                <p className="font-ui text-sm font-bold text-muted uppercase tracking-widest">Registrations are closed</p>
+              </div>
+            )}
+          </div>
+        );
+
+      case 'gallery':
+        return (
+          <div className="max-w-7xl mx-auto px-6 py-24">
+            <div className="mb-16">
+              <p className="sec-label">Moments</p>
+              <h2 className="text-6xl md:text-7xl">Gallery</h2>
+              <p className="text-white/40 mt-4">Relive the highlights of UCSF 2026.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {gallery.map((item) => (
+                <motion.div 
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="card-glass overflow-hidden group cursor-pointer"
+                  onClick={() => window.open(item.url, '_blank')}
+                >
+                  <div className="aspect-[4/3] relative overflow-hidden">
+                    {item.type === 'image' ? (
+                      <img 
+                        src={item.url} 
+                        alt={item.title} 
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-ebony flex items-center justify-center text-maple">
+                        <Play size={64} className="group-hover:scale-125 transition-transform duration-500" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-8">
+                      <div className="flex items-center gap-3 text-white font-ui text-xs font-bold uppercase tracking-widest">
+                        {item.type === 'image' ? <ImageIcon size={16} /> : <Video size={16} />}
+                        View {item.type}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-2xl font-display tracking-wide uppercase truncate">{item.title}</h3>
+                    <p className="font-ui text-[10px] font-bold text-muted uppercase tracking-widest mt-2">
+                      {new Date(item.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </p>
+                  </div>
+                </motion.div>
+              ))}
+              {gallery.length === 0 && (
+                <div className="col-span-full py-40 text-center card-glass">
+                  <p className="font-ui text-sm font-bold text-muted uppercase tracking-widest">The gallery is currently empty. Check back soon!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+
       default:
         return null;
     }
@@ -379,8 +467,10 @@ export default function App() {
     <Layout 
       activeTab={activeTab} 
       setActiveTab={setActiveTab}
-      title={settings.fest_title || 'UCSF 2026'}
-      subtitle={settings.fest_subtitle || 'Union of Culture & Sports Fest'}
+      title={festivalName}
+      subtitle={festivalSubtitle}
+      announcement={announcementText}
+      footerText={footerText}
     >
       <AnimatePresence mode="wait">
         <motion.div

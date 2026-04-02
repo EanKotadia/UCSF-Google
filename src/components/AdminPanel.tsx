@@ -24,24 +24,29 @@ import {
   Edit2,
   Layers,
   FileText,
-  Upload
+  Upload,
+  Image as ImageIcon,
+  Video,
+  Play,
+  ExternalLink
 } from 'lucide-react';
-import { Match, House, ScheduleItem, Category } from '../types';
+import { Match, House, ScheduleItem, Category, Registration, GalleryItem } from '../types';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
+
+type AdminTab = 'dashboard' | 'matches' | 'schedule' | 'houses' | 'categories' | 'brochure' | 'registrations' | 'gallery' | 'settings';
 
 interface AdminPanelProps {
   matches: Match[];
   houses: House[];
   schedule: ScheduleItem[];
   categories: Category[];
+  gallery: GalleryItem[];
   settings: Record<string, string>;
   refresh: () => void;
 }
 
-type AdminTab = 'dashboard' | 'matches' | 'schedule' | 'houses' | 'categories' | 'brochure' | 'settings';
-
-export default function AdminPanel({ matches, houses, schedule, categories, settings, refresh }: AdminPanelProps) {
+export default function AdminPanel({ matches, houses, schedule, categories, gallery, settings, refresh }: AdminPanelProps) {
   const [session, setSession] = useState<any>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,6 +55,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, sett
   const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [registrationFilter, setRegistrationFilter] = useState<string>('all');
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -215,6 +222,45 @@ export default function AdminPanel({ matches, houses, schedule, categories, sett
     setLoading(false);
   };
 
+  const fetchRegistrations = async () => {
+    if (!supabase) return;
+    const { data } = await supabase.from('registrations').select('*').order('created_at', { ascending: false });
+    if (data) setRegistrations(data);
+  };
+
+  const deleteRegistration = async (id: number) => {
+    if (!supabase || !window.confirm('Delete this registration?')) return;
+    setLoading(true);
+    const { error } = await supabase.from('registrations').delete().eq('id', id);
+    if (error) setError(error.message);
+    else fetchRegistrations();
+    setLoading(false);
+  };
+
+  const addGalleryItem = async (item: Omit<GalleryItem, 'id' | 'created_at'>) => {
+    if (!supabase) return;
+    setLoading(true);
+    const { error } = await supabase.from('gallery').insert([item]);
+    if (error) setError(error.message);
+    else refresh();
+    setLoading(false);
+  };
+
+  const deleteGalleryItem = async (id: number) => {
+    if (!supabase || !window.confirm('Delete this gallery item?')) return;
+    setLoading(true);
+    const { error } = await supabase.from('gallery').delete().eq('id', id);
+    if (error) setError(error.message);
+    else refresh();
+    setLoading(false);
+  };
+
+  React.useEffect(() => {
+    if (session) {
+      fetchRegistrations();
+    }
+  }, [session]);
+
   const filteredMatches = useMemo(() => {
     return matches.filter(m => {
       const matchesSearch = 
@@ -332,6 +378,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, sett
                   { id: 'houses', label: 'Houses', icon: Trophy },
                   { id: 'categories', label: 'Categories', icon: Layers },
                   { id: 'brochure', label: 'Brochure', icon: FileText },
+                  { id: 'gallery', label: 'Gallery', icon: ImageIcon },
+                  { id: 'registrations', label: 'Registrations', icon: Users },
                   { id: 'settings', label: 'Settings', icon: SettingsIcon },
                 ].map((item) => (
                   <button
@@ -1026,34 +1074,395 @@ export default function AdminPanel({ matches, houses, schedule, categories, sett
             </motion.div>
           )}
 
-          {activeTab === 'settings' && (
+          {activeTab === 'registrations' && (
             <motion.div
-              key="settings"
+              key="registrations"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               className="space-y-6"
             >
               <div className="card-glass p-8">
-                <h3 className="text-2xl text-text mb-8 tracking-wide">General Settings</h3>
-                <div className="space-y-8">
-                  {Object.entries(settings).map(([key, val]) => (
-                    <div key={key} className="form-group">
-                      <label className="form-label">
-                        {key.replace(/_/g, ' ')}
-                      </label>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                  <div className="flex items-center gap-4">
+                    <h3 className="text-2xl text-text tracking-wide">Event Registrations</h3>
+                    <button 
+                      onClick={fetchRegistrations}
+                      className="p-2 text-muted hover:text-maple transition-colors"
+                      title="Refresh Registrations"
+                    >
+                      <RefreshCw size={16} className={loading ? "animate-spin" : ""} />
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <label className="form-label whitespace-nowrap mb-0">Filter by Event:</label>
+                    <select
+                      className="form-input w-auto min-w-[200px]"
+                      onChange={(e) => setRegistrationFilter(e.target.value)}
+                      value={registrationFilter}
+                    >
+                      <option value="all">All Events</option>
+                      {schedule.map(event => (
+                        <option key={event.id} value={event.id.toString()}>
+                          {event.title}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-white/5 font-ui text-[10px] font-bold uppercase tracking-[0.2em] text-muted">
+                        <th className="px-8 py-6">Student Name</th>
+                        <th className="px-8 py-6">Event</th>
+                        <th className="px-8 py-6">Class & Section</th>
+                        <th className="px-8 py-6">File</th>
+                        <th className="px-8 py-6">Registered At</th>
+                        <th className="px-8 py-6 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-border">
+                      {registrations
+                        .filter(reg => registrationFilter === 'all' || reg.event_id?.toString() === registrationFilter)
+                        .map(reg => (
+                        <tr key={reg.id} className="group hover:bg-white/[0.02] transition-colors">
+                          <td className="px-8 py-6">
+                            <span className="font-display text-lg tracking-wide uppercase">{reg.student_name}</span>
+                          </td>
+                          <td className="px-8 py-6">
+                            <span className="font-ui text-xs font-bold text-maple uppercase tracking-widest">{reg.event_name}</span>
+                          </td>
+                          <td className="px-8 py-6">
+                            <span className="font-ui text-xs font-bold uppercase tracking-widest text-muted">
+                              {reg.student_class} - {reg.student_section}
+                            </span>
+                          </td>
+                          <td className="px-8 py-6">
+                            {reg.file_url ? (
+                              <div className="flex flex-col gap-2">
+                                <a 
+                                  href={reg.file_url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-maple hover:underline font-ui text-[10px] font-bold uppercase tracking-widest"
+                                >
+                                  <ExternalLink size={14} />
+                                  View Full File
+                                </a>
+                                {reg.file_url.match(/\.(jpg|jpeg|png|gif|webp)$/i) ? (
+                                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-border bg-white/5">
+                                    <img 
+                                      src={reg.file_url} 
+                                      alt="Preview" 
+                                      className="w-full h-full object-cover"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </div>
+                                ) : reg.file_url.match(/\.(mp4|webm|ogg)$/i) ? (
+                                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-border bg-white/5 flex items-center justify-center text-muted">
+                                    <Play size={24} />
+                                  </div>
+                                ) : (
+                                  <div className="w-24 h-24 rounded-lg overflow-hidden border border-border bg-white/5 flex items-center justify-center text-muted">
+                                    <FileText size={24} />
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="font-ui text-[10px] font-bold uppercase tracking-widest text-subtle">No File</span>
+                            )}
+                          </td>
+                          <td className="px-8 py-6">
+                            <span className="font-ui text-[10px] font-bold uppercase tracking-widest text-subtle">
+                              {new Date(reg.created_at).toLocaleString()}
+                            </span>
+                          </td>
+                          <td className="px-8 py-6 text-right">
+                            <button
+                              onClick={() => deleteRegistration(reg.id)}
+                              className="p-2 text-muted hover:text-danger transition-colors"
+                              title="Delete Registration"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {registrations.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="px-8 py-12 text-center text-muted font-ui text-xs font-bold uppercase tracking-widest">
+                            No registrations found
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'gallery' && (
+            <motion.div
+              key="gallery"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-6"
+            >
+              <div className="card-glass p-8">
+                <div className="flex justify-between items-center mb-8">
+                  <h3 className="text-2xl text-text tracking-wide">Media Gallery</h3>
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => {
+                        const title = prompt('Enter title:');
+                        const url = prompt('Enter image URL:');
+                        if (title && url) addGalleryItem({ title, type: 'image', url, thumbnail_url: null });
+                      }}
+                      className="btn-ghost flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"
+                    >
+                      <ImageIcon size={16} />
+                      Add Photo
+                    </button>
+                    <button 
+                      onClick={() => {
+                        const title = prompt('Enter title:');
+                        const url = prompt('Enter video URL (YouTube/Direct):');
+                        if (title && url) addGalleryItem({ title, type: 'video', url, thumbnail_url: null });
+                      }}
+                      className="btn-ghost flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest"
+                    >
+                      <Video size={16} />
+                      Add Video
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {gallery.map(item => (
+                    <div key={item.id} className="card-glass overflow-hidden group">
+                      <div className="aspect-video relative">
+                        {item.type === 'image' ? (
+                          <img 
+                            src={item.url} 
+                            alt={item.title} 
+                            className="w-full h-full object-cover"
+                            referrerPolicy="no-referrer"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-ebony flex items-center justify-center text-maple">
+                            <Play size={48} />
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-bg/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4">
+                          <button 
+                            onClick={() => deleteGalleryItem(item.id)}
+                            className="p-3 bg-danger text-white rounded-full hover:scale-110 transition-transform"
+                          >
+                            <Trash2 size={20} />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <p className="font-display text-lg tracking-wide uppercase truncate">{item.title}</p>
+                        <p className="font-ui text-[10px] font-bold text-muted uppercase tracking-widest mt-1">
+                          {item.type} • {new Date(item.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {gallery.length === 0 && (
+                    <div className="col-span-full py-20 text-center card-glass border-dashed">
+                      <ImageIcon size={48} className="mx-auto text-muted mb-4" />
+                      <p className="font-ui text-xs font-bold text-muted uppercase tracking-widest">No media in gallery yet</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'settings' && (
+            <motion.div
+              key="settings"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-8"
+            >
+              <div className="card-glass p-8">
+                <div className="flex items-center gap-4 mb-8">
+                  <div className="p-3 bg-maple/10 rounded-xl text-maple">
+                    <SettingsIcon size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl text-text tracking-wide">General Configuration</h3>
+                    <p className="text-muted font-ui text-[10px] font-bold uppercase tracking-widest mt-1">Manage festival-wide parameters</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                  {/* Basic Info */}
+                  <div className="space-y-8">
+                    <h4 className="font-ui text-xs font-bold uppercase tracking-[0.2em] text-maple pb-4 border-b border-white/5">Basic Information</h4>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Festival Name</label>
                       <div className="flex gap-4">
                         <input
                           type="text"
-                          defaultValue={val}
+                          defaultValue={settings['festival_name'] || 'UCSF 2026'}
                           className="form-input"
-                          onBlur={(e) => updateSetting(key, e.target.value)}
+                          onBlur={(e) => updateSetting('festival_name', e.target.value)}
                         />
-                        <button className="btn-ghost px-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
-                          <Save size={16} />
-                          Save
+                        <button className="btn-ghost px-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                          <Save size={14} />
                         </button>
                       </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Festival Dates</label>
+                      <div className="flex gap-4">
+                        <input
+                          type="text"
+                          defaultValue={settings['festival_dates'] || 'April 15-20, 2026'}
+                          className="form-input"
+                          onBlur={(e) => updateSetting('festival_dates', e.target.value)}
+                        />
+                        <button className="btn-ghost px-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                          <Save size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Festival Subtitle</label>
+                      <div className="flex gap-4">
+                        <input
+                          type="text"
+                          defaultValue={settings['festival_subtitle'] || 'Union of Culture & Sports Fest'}
+                          className="form-input"
+                          onBlur={(e) => updateSetting('festival_subtitle', e.target.value)}
+                        />
+                        <button className="btn-ghost px-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                          <Save size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Contact Email</label>
+                      <div className="flex gap-4">
+                        <input
+                          type="email"
+                          defaultValue={settings['contact_email'] || 'info@ucsf2026.com'}
+                          className="form-input"
+                          onBlur={(e) => updateSetting('contact_email', e.target.value)}
+                        />
+                        <button className="btn-ghost px-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                          <Save size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Registration & Status */}
+                  <div className="space-y-8">
+                    <h4 className="font-ui text-xs font-bold uppercase tracking-[0.2em] text-maple pb-4 border-b border-white/5">System Status</h4>
+                    
+                    <div className="form-group">
+                      <label className="form-label">Registration Status</label>
+                      <select
+                        className="form-input"
+                        defaultValue={settings['registration_open'] || 'true'}
+                        onChange={(e) => updateSetting('registration_open', e.target.value)}
+                      >
+                        <option value="true">Open (Accepting Entries)</option>
+                        <option value="false">Closed (Disabled)</option>
+                      </select>
+                      <p className="text-[10px] text-muted mt-2 uppercase tracking-widest">Controls the visibility of the registration form</p>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Announcement Banner</label>
+                      <div className="flex gap-4">
+                        <textarea
+                          defaultValue={settings['announcement_text'] || ''}
+                          className="form-input min-h-[100px] py-4"
+                          placeholder="Enter global announcement..."
+                          onBlur={(e) => updateSetting('announcement_text', e.target.value)}
+                        />
+                        <button className="btn-ghost px-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest h-fit">
+                          <Save size={14} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label className="form-label">Footer Copyright Text</label>
+                      <div className="flex gap-4">
+                        <input
+                          type="text"
+                          defaultValue={settings['footer_text'] || ''}
+                          className="form-input"
+                          placeholder="e.g. © 2026 UCSF. All rights reserved."
+                          onBlur={(e) => updateSetting('footer_text', e.target.value)}
+                        />
+                        <button className="btn-ghost px-4 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
+                          <Save size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Social Media */}
+                  <div className="space-y-8 lg:col-span-2">
+                    <h4 className="font-ui text-xs font-bold uppercase tracking-[0.2em] text-maple pb-4 border-b border-white/5">Social & External Links</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                      <div className="form-group">
+                        <label className="form-label">Instagram URL</label>
+                        <input
+                          type="text"
+                          defaultValue={settings['instagram_url'] || ''}
+                          className="form-input"
+                          onBlur={(e) => updateSetting('instagram_url', e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Facebook URL</label>
+                        <input
+                          type="text"
+                          defaultValue={settings['facebook_url'] || ''}
+                          className="form-input"
+                          onBlur={(e) => updateSetting('facebook_url', e.target.value)}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">YouTube Stream URL</label>
+                        <input
+                          type="text"
+                          defaultValue={settings['youtube_url'] || ''}
+                          className="form-input"
+                          onBlur={(e) => updateSetting('youtube_url', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Raw Settings (For power users) */}
+              <div className="card-glass p-8 opacity-50 hover:opacity-100 transition-opacity">
+                <h4 className="font-ui text-[10px] font-bold uppercase tracking-widest text-muted mb-6">Advanced: All Settings Keys</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.entries(settings).map(([key, val]) => (
+                    <div key={key} className="p-4 bg-white/5 rounded-lg border border-white/5 flex justify-between items-center">
+                      <span className="font-mono text-[10px] text-muted truncate mr-4">{key}</span>
+                      <span className="font-ui text-[10px] font-bold text-text truncate max-w-[150px]">{val}</span>
                     </div>
                   ))}
                 </div>

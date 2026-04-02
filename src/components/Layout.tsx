@@ -9,9 +9,11 @@ interface LayoutProps {
   setActiveTab: (tab: string) => void;
   title: string;
   subtitle: string;
+  announcement?: string;
+  footerText?: string;
 }
 
-export default function Layout({ children, activeTab, setActiveTab, title, subtitle }: LayoutProps) {
+export default function Layout({ children, activeTab, setActiveTab, title, subtitle, announcement, footerText }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -19,13 +21,24 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
     { id: 'houses', label: 'Houses', href: '#houses' },
     { id: 'matches', label: 'Matches', href: '#matches' },
     { id: 'schedule', label: 'Schedule', href: '#schedule' },
+    { id: 'register', label: 'Register', href: '#register' },
+    { id: 'gallery', label: 'Gallery', href: '#gallery' },
     { id: 'brochure', label: 'Brochure', href: '#brochure' },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-maple selection:text-bg">
+      {announcement && (
+        <div className="bg-maple text-bg py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest z-[110] relative">
+          <span className="mr-2">📢</span>
+          {announcement}
+        </div>
+      )}
       {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-10 h-[62px] bg-bg/90 backdrop-blur-xl border-b border-border">
+      <nav className={cn(
+        "fixed left-0 right-0 z-[100] flex items-center justify-between px-6 md:px-10 h-[62px] bg-bg/90 backdrop-blur-xl border-b border-border",
+        announcement ? "top-[30px]" : "top-0"
+      )}>
         <button 
           onClick={() => setActiveTab('home')}
           className="nav-logo"
@@ -109,9 +122,14 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
       {/* Footer */}
       <footer className="bg-bg border-t border-border py-12 px-6 md:px-10 text-center">
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
-          <div className="font-display text-3xl tracking-[4px] uppercase">UCSF 2026</div>
+          <div className="font-display text-3xl tracking-[4px] uppercase">
+            {title.split(' ')[0]} <span>{title.split(' ')[1] || ''}</span>
+          </div>
           <p className="font-ui text-[11px] font-bold uppercase tracking-[3px] text-muted">
-            Union of Culture & Sports Fest · Shalom Hills International School
+            {subtitle}
+          </p>
+          <p className="font-ui text-[10px] font-bold uppercase tracking-widest text-muted/50 mt-4">
+            {footerText || `© 2026 ${title}. All rights reserved.`}
           </p>
           
           <div className="w-full h-px bg-border my-4" />

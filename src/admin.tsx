@@ -17,7 +17,7 @@ const AdminPage = () => {
 import { useUCSFData } from './hooks/useUCSFData';
 
 const AdminWrapper = () => {
-  const { houses, matches, schedule, settings, categories, refresh, loading, error } = useUCSFData();
+  const { houses, matches, schedule, settings, categories, gallery, refresh, loading, error } = useUCSFData();
 
   if (loading) {
     return (
@@ -44,6 +44,7 @@ const AdminWrapper = () => {
       houses={houses} 
       schedule={schedule}
       categories={categories}
+      gallery={gallery}
       settings={settings}
       refresh={refresh} 
     />

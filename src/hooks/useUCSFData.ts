@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { House, Match, ScheduleItem, Setting, Category } from '../types';
+import { House, Match, ScheduleItem, Setting, Category, GalleryItem } from '../types';
 
 export function useUCSFData() {
   const [houses, setHouses] = useState<House[]>([]);
@@ -8,6 +8,7 @@ export function useUCSFData() {
   const [schedule, setSchedule] = useState<ScheduleItem[]>([]);
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [categories, setCategories] = useState<Category[]>([]);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -42,6 +43,11 @@ export function useUCSFData() {
     if (data) setCategories(data);
   };
 
+  const fetchGallery = async () => {
+    const { data } = await supabase!.from('gallery').select('*').order('created_at', { ascending: false });
+    if (data) setGallery(data);
+  };
+
   const fetchData = async () => {
     if (!supabase) {
       setError('Supabase credentials missing. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your environment variables in the Secrets panel.');
@@ -56,7 +62,8 @@ export function useUCSFData() {
         fetchMatches(),
         fetchSchedule(),
         fetchSettings(),
-        fetchCategories()
+        fetchCategories(),
+        fetchGallery()
       ]);
     } catch (err: any) {
       console.error('Error fetching UCSF data:', err);
@@ -92,14 +99,19 @@ export function useUCSFData() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, fetchCategories)
       .subscribe();
 
+    const gallerySub = supabase.channel('gallery-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery' }, fetchGallery)
+      .subscribe();
+
     return () => {
       supabase.removeChannel(housesSub);
       supabase.removeChannel(matchesSub);
       supabase.removeChannel(scheduleSub);
       supabase.removeChannel(settingsSub);
       supabase.removeChannel(categoriesSub);
+      supabase.removeChannel(gallerySub);
     };
   }, []);
 
-  return { houses, matches, schedule, settings, categories, loading, error, refresh: fetchData };
+  return { houses, matches, schedule, settings, categories, gallery, loading, error, refresh: fetchData };
 }

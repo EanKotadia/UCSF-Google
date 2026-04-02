@@ -58,3 +58,23 @@ export type Setting = {
   key_name: string;
   val: string;
 };
+
+export type Registration = {
+  id: number;
+  event_id: number | null;
+  event_name: string;
+  student_name: string;
+  student_class: string;
+  student_section: string;
+  file_url: string | null;
+  created_at: string;
+};
+
+export type GalleryItem = {
+  id: number;
+  title: string;
+  type: 'image' | 'video';
+  url: string;
+  thumbnail_url: string | null;
+  created_at: string;
+};
