@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Exo+2:ital,wght@0,300;0,400;0,700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Exo 2", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bebas Neue", sans-serif;
+  --font-ui: "Rajdhani", sans-serif;
+
+  --color-maple: #F5C518;
+  --color-cedar: #E63946;
+  --color-ebony: #4895EF;
+  --color-oak: #2DC653;
+  
+  --color-bg-dark: #0a0a0c;
+  --color-bg-card: #121216;
+  --color-border-muted: rgba(255, 255, 255, 0.1);
+}
+
+@layer base {
+  body {
+    @apply bg-bg-dark text-white antialiased font-sans;
+  }
+
+  h1, h2, h3 {
+    @apply font-display tracking-wider uppercase;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply px-6 py-3 bg-maple text-black font-ui font-bold uppercase tracking-widest rounded-none transition-all hover:bg-white hover:scale-105 active:scale-95;
+  }
+  
+  .btn-ghost {
+    @apply px-6 py-3 border border-white/20 text-white font-ui font-bold uppercase tracking-widest rounded-none transition-all hover:bg-white/10;
+  }
+
+  .sec-label {
+    @apply flex items-center gap-2 font-ui text-xs font-bold uppercase tracking-[0.3em] text-maple mb-4;
+  }
+
+  .card-glass {
+    @apply bg-bg-card border border-border-muted backdrop-blur-sm;
+  }
+}
