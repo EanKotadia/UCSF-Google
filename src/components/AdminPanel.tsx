@@ -31,7 +31,7 @@ import { Match, House, ScheduleItem, Category, Notice } from '../types';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
-type AdminTab = 'matches' | 'schedule' | 'houses' | 'categories' | 'brochure' | 'notices' | 'settings';
+type AdminTab = 'matches' | 'schedule' | 'houses' | 'categories' | 'notices' | 'settings';
 
 interface AdminPanelProps {
   matches: Match[];
@@ -539,7 +539,6 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
             { id: 'schedule', label: 'Schedule', icon: Calendar },
             { id: 'houses', label: 'Houses', icon: Trophy },
             { id: 'categories', label: 'Categories', icon: Layers },
-            { id: 'brochure', label: 'Brochure', icon: FileText },
             { id: 'notices', label: 'Notices', icon: Bell },
             { id: 'settings', label: 'Settings', icon: SettingsIcon },
           ].map((item) => (
@@ -728,147 +727,200 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                     </div>
                   </div>
 
-                  {/* Matches List */}
-                  <div className="grid grid-cols-1 gap-6">
-                    {filteredMatches.length > 0 ? (
-                      filteredMatches.map((match) => (
-                        <motion.div 
-                          key={match.id}
-                          layout
-                          className="bg-[#121214] border border-white/5 rounded-3xl overflow-hidden group hover:border-maple/30 transition-all shadow-xl"
-                        >
-                          <div className="p-8 flex flex-col lg:flex-row items-center gap-10">
-                            {/* Match Meta */}
-                            <div className="w-full lg:w-48 space-y-4">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center text-muted border border-white/5">
-                                  <Activity size={18} />
-                                </div>
-                                <div>
-                                  <select
-                                    value={match.category_id || ''}
-                                    onChange={(e) => updateMatch(match.id, { category_id: e.target.value })}
-                                    className="bg-transparent border-none text-[10px] font-bold uppercase tracking-widest text-maple outline-none cursor-pointer"
-                                  >
-                                    {categories.map(cat => (
-                                      <option key={cat.id} value={cat.id} className="bg-[#121214]">{cat.name}</option>
-                                    ))}
-                                  </select>
-                                  <div className="flex items-center gap-2 mt-1">
-                                    <span className="font-ui text-[9px] font-bold text-muted uppercase tracking-widest">Match #</span>
-                                    <input
-                                      type="number"
-                                      defaultValue={match.match_no}
-                                      className="w-10 bg-transparent border-b border-white/10 text-white text-[10px] text-center outline-none focus:border-maple"
-                                      onBlur={(e) => updateMatch(match.id, { match_no: parseInt(e.target.value) })}
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                              <div className="relative group/venue">
-                                <input
-                                  type="text"
-                                  defaultValue={match.venue || ''}
-                                  placeholder="Set Venue"
-                                  className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-muted outline-none focus:border-maple/50 focus:text-text transition-all"
-                                  onBlur={(e) => updateMatch(match.id, { venue: e.target.value })}
-                                />
-                              </div>
+                  {/* Matches List - Grouped by Category and Grade */}
+                  <div className="space-y-16 pb-20">
+                    {categories.map(cat => {
+                      const catMatches = filteredMatches.filter(m => m.category_id === cat.id);
+                      if (catMatches.length === 0 && categoryFilter !== 'all' && categoryFilter !== cat.id) return null;
+                      if (catMatches.length === 0 && categoryFilter === 'all' && searchQuery === '') return null;
+                      if (catMatches.length === 0 && searchQuery !== '') return null;
+
+                      // Group matches by grade
+                      const matchesByGrade: Record<string, Match[]> = {};
+                      catMatches.forEach(m => {
+                        const grade = 'Unassigned Grade';
+                        if (!matchesByGrade[grade]) matchesByGrade[grade] = [];
+                        matchesByGrade[grade].push(m);
+                      });
+
+                      return (
+                        <div key={cat.id} className="space-y-8">
+                          <div className="flex items-center gap-4 border-b border-white/5 pb-4">
+                            <div className="w-12 h-12 bg-maple/10 rounded-2xl flex items-center justify-center text-maple text-2xl border border-maple/20">
+                              {cat.icon || '🏆'}
                             </div>
-
-                            {/* Teams & Score */}
-                            <div className="flex-1 flex items-center justify-center gap-8">
-                              <div className="flex-1 text-right space-y-3">
-                                <select
-                                  value={match.team1_id || ''}
-                                  onChange={(e) => updateMatch(match.id, { team1_id: e.target.value })}
-                                  className="w-full bg-transparent border-none text-xl font-display uppercase tracking-widest text-right outline-none cursor-pointer hover:text-maple transition-colors"
-                                >
-                                  {houses.map(h => (
-                                    <option key={h.id} value={h.id} className="bg-[#121214]">{h.name}</option>
-                                  ))}
-                                </select>
-                                <p className="font-ui text-[9px] font-bold text-muted uppercase tracking-[0.2em]">Team One</p>
-                              </div>
-
-                              <div className="flex items-center gap-4 px-6 py-4 bg-white/5 rounded-3xl border border-white/5">
-                                <input
-                                  type="number"
-                                  defaultValue={match.score1 ?? 0}
-                                  className="w-16 bg-transparent border-none text-4xl font-display text-center text-white outline-none focus:text-maple transition-colors"
-                                  onBlur={(e) => updateMatch(match.id, { score1: parseInt(e.target.value) })}
-                                />
-                                <div className="w-px h-10 bg-white/10" />
-                                <input
-                                  type="number"
-                                  defaultValue={match.score2 ?? 0}
-                                  className="w-16 bg-transparent border-none text-4xl font-display text-center text-white outline-none focus:text-maple transition-colors"
-                                  onBlur={(e) => updateMatch(match.id, { score2: parseInt(e.target.value) })}
-                                />
-                              </div>
-
-                              <div className="flex-1 text-left space-y-3">
-                                <select
-                                  value={match.team2_id || ''}
-                                  onChange={(e) => updateMatch(match.id, { team2_id: e.target.value })}
-                                  className="w-full bg-transparent border-none text-xl font-display uppercase tracking-widest text-left outline-none cursor-pointer hover:text-maple transition-colors"
-                                >
-                                  {houses.map(h => (
-                                    <option key={h.id} value={h.id} className="bg-[#121214]">{h.name}</option>
-                                  ))}
-                                </select>
-                                <p className="font-ui text-[9px] font-bold text-muted uppercase tracking-[0.2em]">Team Two</p>
-                              </div>
+                            <div>
+                              <h3 className="text-2xl font-display uppercase tracking-widest text-white">{cat.name}</h3>
+                              <p className="font-ui text-[9px] font-bold text-muted uppercase tracking-widest mt-1">
+                                {catMatches.length} Total Matches
+                              </p>
                             </div>
-
-                            {/* Status & Actions */}
-                            <div className="w-full lg:w-64 flex flex-col gap-4">
-                              <div className="flex items-center gap-4">
-                                <div className="flex-1">
-                                  <select
-                                    value={match.status || 'upcoming'}
-                                    onChange={(e) => updateMatch(match.id, { status: e.target.value as any })}
-                                    className={cn(
-                                      "w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-3 font-ui text-[10px] font-bold uppercase tracking-widest outline-none transition-all",
-                                      match.status === 'live' ? "text-danger border-danger/30 bg-danger/5" : 
-                                      match.status === 'completed' ? "text-success border-success/30 bg-success/5" : "text-muted"
-                                    )}
-                                  >
-                                    <option value="upcoming" className="bg-[#121214]">Upcoming</option>
-                                    <option value="live" className="bg-[#121214]">Live Now</option>
-                                    <option value="completed" className="bg-[#121214]">Completed</option>
-                                  </select>
-                                </div>
-                                <button 
-                                  onClick={() => deleteMatch(match.id)}
-                                  className="p-3 bg-danger/5 hover:bg-danger/20 text-danger border border-danger/10 rounded-2xl transition-all"
-                                  title="Delete Match"
-                                >
-                                  <Trash2 size={18} />
-                                </button>
-                              </div>
-
-                              <div className="flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/5 rounded-2xl">
-                                <Trophy size={14} className="text-maple" />
-                                <select
-                                  value={match.winner_id || ''}
-                                  onChange={(e) => updateMatch(match.id, { winner_id: e.target.value || null })}
-                                  className="flex-1 bg-transparent border-none text-[9px] font-bold uppercase tracking-widest text-muted outline-none cursor-pointer"
-                                >
-                                  <option value="" className="bg-[#121214]">Draw / None</option>
-                                  <option value={match.team1_id} className="bg-[#121214]">{match.team1?.name}</option>
-                                  <option value={match.team2_id} className="bg-[#121214]">{match.team2?.name}</option>
-                                </select>
-                              </div>
-                            </div>
+                            <button 
+                              onClick={async () => {
+                                if (!supabase || !(await checkSession())) return;
+                                setLoading(true);
+                                const { error } = await supabase.from('matches').insert([{
+                                  category_id: cat.id,
+                                  match_no: matches.filter(m => m.category_id === cat.id).length + 1,
+                                  team1_id: houses[0]?.id,
+                                  team2_id: houses[1]?.id,
+                                  status: 'upcoming',
+                                  score1: 0,
+                                  score2: 0
+                                }]);
+                                if (error) handleSupabaseError(error, 'Failed to add match');
+                                else {
+                                  refresh();
+                                  setLoading(false);
+                                }
+                              }}
+                              className="ml-auto p-3 bg-white/5 hover:bg-maple/20 text-muted hover:text-maple rounded-xl transition-all border border-white/5"
+                              title={`Add Match to ${cat.name}`}
+                            >
+                              <Plus size={20} />
+                            </button>
                           </div>
-                        </motion.div>
-                      ))
-                    ) : (
-                      <div className="py-40 text-center bg-[#121214] rounded-3xl border border-dashed border-white/10">
-                        <Activity size={48} className="mx-auto text-muted mb-6 opacity-20" />
-                        <h3 className="text-xl font-display uppercase tracking-widest text-muted">No Matches Found</h3>
-                        <p className="text-subtle text-sm mt-2">Try adjusting your search or filters.</p>
+
+                          <div className="space-y-12 pl-4 border-l border-white/5">
+                            {Object.entries(matchesByGrade).map(([grade, gradeMatches]) => (
+                              <div key={grade} className="space-y-6">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-2 h-2 rounded-full bg-maple" />
+                                  <h4 className="text-sm font-display uppercase tracking-widest text-maple/80">{grade}</h4>
+                                  <span className="text-[10px] font-bold text-muted/50 uppercase tracking-widest">({gradeMatches.length})</span>
+                                </div>
+                                <div className="grid grid-cols-1 gap-4">
+                                  {gradeMatches.map((match) => (
+                                    <motion.div 
+                                      key={match.id}
+                                      layout
+                                      className="bg-[#121214] border border-white/5 rounded-3xl overflow-hidden group hover:border-maple/30 transition-all shadow-xl"
+                                    >
+                                      <div className="p-6 flex flex-col lg:flex-row items-center gap-8">
+                                        {/* Match Meta */}
+                                        <div className="w-full lg:w-48 space-y-3">
+                                          <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 bg-white/5 rounded-lg flex items-center justify-center text-muted border border-white/5">
+                                              <Activity size={14} />
+                                            </div>
+                                            <div>
+                                              <div className="font-ui text-[10px] font-bold text-maple uppercase tracking-widest">{cat.name}</div>
+                                              <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="font-ui text-[8px] font-bold text-muted uppercase tracking-widest">M#</span>
+                                                <input
+                                                  type="number"
+                                                  defaultValue={match.match_no}
+                                                  className="w-10 bg-transparent border-b border-white/10 text-white text-[10px] text-center outline-none focus:border-maple"
+                                                  onBlur={(e) => updateMatch(match.id, { match_no: parseInt(e.target.value) })}
+                                                />
+                                              </div>
+                                            </div>
+                                          </div>
+                                          <div className="space-y-2">
+                                            <input
+                                              type="text"
+                                              defaultValue={match.venue || ''}
+                                              placeholder="Venue"
+                                              className="w-full bg-white/5 border border-white/5 rounded-lg px-3 py-2 text-[9px] font-bold uppercase tracking-widest text-muted outline-none focus:border-maple/50 focus:text-text transition-all"
+                                              onBlur={(e) => updateMatch(match.id, { venue: e.target.value })}
+                                            />
+                                          </div>
+                                        </div>
+
+                                        {/* Teams & Score */}
+                                        <div className="flex-1 flex items-center justify-center gap-6">
+                                          <div className="flex-1 text-right">
+                                            <select
+                                              value={match.team1_id || ''}
+                                              onChange={(e) => updateMatch(match.id, { team1_id: e.target.value })}
+                                              className="w-full bg-transparent border-none text-lg font-display uppercase tracking-widest text-right outline-none cursor-pointer hover:text-maple transition-colors"
+                                            >
+                                              {houses.map(h => (
+                                                <option key={h.id} value={h.id} className="bg-[#121214]">{h.name}</option>
+                                              ))}
+                                            </select>
+                                          </div>
+
+                                          <div className="flex items-center gap-3 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
+                                            <input
+                                              type="number"
+                                              defaultValue={match.score1 ?? 0}
+                                              className="w-12 bg-transparent border-none text-3xl font-display text-center text-white outline-none focus:text-maple transition-colors"
+                                              onBlur={(e) => updateMatch(match.id, { score1: parseInt(e.target.value) })}
+                                            />
+                                            <span className="text-subtle font-display text-xl">:</span>
+                                            <input
+                                              type="number"
+                                              defaultValue={match.score2 ?? 0}
+                                              className="w-12 bg-transparent border-none text-3xl font-display text-center text-white outline-none focus:text-maple transition-colors"
+                                              onBlur={(e) => updateMatch(match.id, { score2: parseInt(e.target.value) })}
+                                            />
+                                          </div>
+
+                                          <div className="flex-1 text-left">
+                                            <select
+                                              value={match.team2_id || ''}
+                                              onChange={(e) => updateMatch(match.id, { team2_id: e.target.value })}
+                                              className="w-full bg-transparent border-none text-lg font-display uppercase tracking-widest text-left outline-none cursor-pointer hover:text-maple transition-colors"
+                                            >
+                                              {houses.map(h => (
+                                                <option key={h.id} value={h.id} className="bg-[#121214]">{h.name}</option>
+                                              ))}
+                                            </select>
+                                          </div>
+                                        </div>
+
+                                        {/* Status & Actions */}
+                                        <div className="w-full lg:w-64 flex items-center justify-end gap-4">
+                                          <div className="flex-1 space-y-2">
+                                            <select
+                                              value={match.status}
+                                              onChange={(e) => updateMatch(match.id, { status: e.target.value as any })}
+                                              className={cn(
+                                                "w-full px-4 py-2 rounded-xl font-ui text-[9px] font-bold uppercase tracking-widest outline-none border transition-all",
+                                                match.status === 'live' ? "bg-danger/10 border-danger/30 text-danger" :
+                                                match.status === 'completed' ? "bg-success/10 border-success/30 text-success" :
+                                                "bg-white/5 border-white/10 text-muted"
+                                              )}
+                                            >
+                                              <option value="upcoming" className="bg-[#121214]">Upcoming</option>
+                                              <option value="live" className="bg-[#121214]">Live</option>
+                                              <option value="completed" className="bg-[#121214]">Completed</option>
+                                            </select>
+                                            {match.status === 'completed' && (
+                                              <select
+                                                value={match.winner_id || ''}
+                                                onChange={(e) => updateMatch(match.id, { winner_id: e.target.value || null })}
+                                                className="w-full px-4 py-2 bg-white/5 border border-white/10 rounded-xl font-ui text-[9px] font-bold uppercase tracking-widest text-maple outline-none focus:border-maple/50"
+                                              >
+                                                <option value="" className="bg-[#121214]">Draw / No Winner</option>
+                                                <option value={match.team1_id} className="bg-[#121214]">{match.team1?.name}</option>
+                                                <option value={match.team2_id} className="bg-[#121214]">{match.team2?.name}</option>
+                                              </select>
+                                            )}
+                                          </div>
+                                          <button 
+                                            onClick={() => deleteMatch(match.id)}
+                                            className="p-3 bg-danger/5 hover:bg-danger/20 text-danger border border-danger/10 rounded-xl transition-all opacity-0 group-hover:opacity-100"
+                                          >
+                                            <Trash2 size={16} />
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </motion.div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {filteredMatches.length === 0 && (
+                      <div className="py-32 flex flex-col items-center justify-center bg-[#121214] border border-white/5 border-dashed rounded-[3rem] text-muted gap-4">
+                        <Activity size={64} className="opacity-10" />
+                        <p className="font-ui text-xs font-bold uppercase tracking-widest">No matches found matching your criteria</p>
                       </div>
                     )}
                   </div>
@@ -1214,15 +1266,18 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                         className="bg-[#121214] border border-white/5 rounded-3xl p-8 group hover:border-maple/30 transition-all shadow-xl space-y-6"
                       >
                         <div className="flex items-start justify-between gap-6">
-                          <div className="relative group/icon w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center text-4xl border border-white/5 group-hover:border-maple/50 transition-all">
-                            {cat.icon || <Layers size={28} className="text-muted" />}
+                          <div className="relative group/icon w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center text-4xl border border-white/5 group-hover:border-maple/50 transition-all overflow-hidden">
+                            <span className="relative z-10">{cat.icon || <Layers size={28} className="text-muted" />}</span>
                             <input
                               type="text"
                               defaultValue={cat.icon || ''}
                               placeholder="Emoji"
-                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                               onBlur={(e) => updateCategory(cat.id, { icon: e.target.value })}
                             />
+                            <div className="absolute inset-0 bg-maple/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <span className="text-[8px] font-bold uppercase tracking-widest text-maple mt-12">Edit</span>
+                            </div>
                           </div>
                           <div className="flex-1 space-y-4">
                             <div className="flex items-center justify-between">
@@ -1261,7 +1316,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 pt-4 border-t border-white/5">
+                        <div className="grid grid-cols-1 gap-4 pt-4 border-t border-white/5">
                           <div className="space-y-2">
                             <label className="font-ui text-[9px] font-bold text-muted uppercase tracking-widest">Gender</label>
                             <input
@@ -1272,133 +1327,9 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               onBlur={(e) => updateCategory(cat.id, { gender: e.target.value })}
                             />
                           </div>
-                          <div className="space-y-2">
-                            <label className="font-ui text-[9px] font-bold text-muted uppercase tracking-widest">Eligibility</label>
-                            <input
-                              type="text"
-                              defaultValue={cat.eligible_years || ''}
-                              placeholder="e.g. 9-12"
-                              className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted outline-none focus:border-maple/50 focus:text-text transition-all"
-                              onBlur={(e) => updateCategory(cat.id, { eligible_years: e.target.value })}
-                            />
-                          </div>
                         </div>
                       </motion.div>
                     ))}
-                  </div>
-                </motion.div>
-              )}
-
-              {activeTab === 'brochure' && (
-                <motion.div
-                  key="brochure"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  className="space-y-8 pb-20"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-3xl font-display uppercase tracking-widest text-white">Brochure Management</h2>
-                      <p className="text-muted text-sm mt-1">Upload and manage the official event brochure PDF.</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    <div className="lg:col-span-1 space-y-8">
-                      <div className="bg-[#121214] border border-white/5 rounded-[2rem] p-10 space-y-8 shadow-2xl">
-                        <div className="flex items-center gap-4 pb-6 border-b border-white/5">
-                          <div className="w-12 h-12 bg-maple/10 rounded-2xl flex items-center justify-center text-maple">
-                            <FileText size={24} />
-                          </div>
-                          <h3 className="text-xl font-display uppercase tracking-widest text-white">Configuration</h3>
-                        </div>
-
-                        <div className="space-y-6">
-                          <div className="space-y-2">
-                            <label className="font-ui text-[10px] font-bold text-muted uppercase tracking-widest">Brochure URL</label>
-                            <div className="flex gap-2">
-                              <input
-                                type="text"
-                                defaultValue={settings.brochure_url || ''}
-                                className="flex-1 bg-white/5 border border-white/5 rounded-2xl px-6 py-4 text-sm font-bold text-white outline-none focus:border-maple/50 transition-all"
-                                placeholder="https://..."
-                                onBlur={(e) => updateSetting('brochure_url', e.target.value)}
-                              />
-                              <button className="w-14 h-14 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl flex items-center justify-center text-maple transition-all">
-                                <Save size={20} />
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="pt-6 border-t border-white/5">
-                            <label className="font-ui text-[10px] font-bold text-muted uppercase tracking-widest mb-4 block">Upload New PDF</label>
-                            <div className="relative group">
-                              <input
-                                type="file"
-                                accept=".pdf"
-                                className="absolute inset-0 opacity-0 cursor-pointer z-10"
-                                onChange={async (e) => {
-                                  const file = e.target.files?.[0];
-                                  if (!file || !supabase) return;
-                                  setLoading(true);
-                                  try {
-                                    const fileName = `brochure_${Date.now()}.pdf`;
-                                    const { error: uploadError } = await supabase.storage
-                                      .from('ucsf-media')
-                                      .upload(fileName, file, { cacheControl: '3600', upsert: true });
-                                    if (uploadError) throw uploadError;
-                                    const { data: { publicUrl } } = supabase.storage.from('ucsf-media').getPublicUrl(fileName);
-                                    await updateSetting('brochure_url', publicUrl);
-                                    setSuccess('Brochure uploaded successfully!');
-                                    setTimeout(() => setSuccess(null), 3000);
-                                  } catch (err: any) {
-                                    handleSupabaseError(err, 'Brochure upload failed');
-                                  } finally {
-                                    setLoading(false);
-                                  }
-                                }}
-                              />
-                              <div className="w-full aspect-square bg-white/5 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center gap-4 group-hover:bg-white/10 group-hover:border-maple/30 transition-all">
-                                <div className="w-16 h-16 bg-maple/10 rounded-full flex items-center justify-center text-maple group-hover:scale-110 transition-transform">
-                                  <Upload size={32} />
-                                </div>
-                                <div className="text-center">
-                                  <p className="font-ui text-[10px] font-bold text-white uppercase tracking-widest">Drop PDF Here</p>
-                                  <p className="font-ui text-[8px] font-bold text-muted uppercase tracking-widest mt-1">Max 10MB</p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="lg:col-span-2">
-                      <div className="bg-[#121214] border border-white/5 rounded-[2rem] p-10 h-full shadow-2xl flex flex-col">
-                        <div className="flex items-center gap-4 pb-6 border-b border-white/5 mb-8">
-                          <div className="w-12 h-12 bg-maple/10 rounded-2xl flex items-center justify-center text-maple">
-                            <Eye size={24} />
-                          </div>
-                          <h3 className="text-xl font-display uppercase tracking-widest text-white">Live Preview</h3>
-                        </div>
-
-                        {settings.brochure_url ? (
-                          <div className="flex-1 rounded-[1.5rem] overflow-hidden border border-white/5 bg-ebony">
-                            <iframe
-                              src={settings.brochure_url}
-                              className="w-full h-full border-none"
-                              title="Brochure Preview"
-                            />
-                          </div>
-                        ) : (
-                          <div className="flex-1 flex flex-col items-center justify-center text-muted gap-4">
-                            <FileWarning size={64} className="opacity-20" />
-                            <p className="font-ui text-xs font-bold uppercase tracking-widest">No brochure uploaded yet</p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
                   </div>
                 </motion.div>
               )}

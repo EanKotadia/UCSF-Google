@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Menu, X, Bell, Users } from 'lucide-react';
+import { Menu, X, Bell } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface LayoutProps {
@@ -20,11 +20,10 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
     { id: 'home', label: 'Home', href: '#home' },
     { id: 'houses', label: 'Houses', href: '#houses' },
     { id: 'matches', label: 'Matches', href: '#matches' },
+    { id: 'cultural', label: 'Cultural', href: '#cultural' },
     { id: 'schedule', label: 'Schedule', href: '#schedule' },
     { id: 'notices', label: 'Notices', href: '#notices' },
-    { id: 'selected-students', label: 'Selected Students', href: '#selected-students' },
     { id: 'gallery', label: 'Gallery', href: '#gallery' },
-    { id: 'brochure', label: 'Brochure', href: '#brochure' },
   ];
 
   return (
@@ -41,9 +40,14 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
       )}>
         <button 
           onClick={() => setActiveTab('home')}
-          className="nav-logo"
+          className="nav-logo flex items-center"
         >
-          UCSF <span>2026</span>
+          <img 
+            src="https://shalomhills.com/wp-content/uploads/2021/06/logo.png" 
+            alt="Shalom Hills Logo" 
+            className="h-10 md:h-12 object-contain"
+            referrerPolicy="no-referrer"
+          />
         </button>
 
         {/* Desktop Nav */}
@@ -132,6 +136,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
 
           <div className="flex flex-col md:flex-row justify-between w-full gap-4 font-sans text-[12px] text-subtle">
             <span>© 2026 Shalom Hills International School</span>
+            <a href="/admin" className="hover:text-maple transition-colors">Admin Access</a>
           </div>
         </div>
       </footer>

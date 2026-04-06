@@ -33,9 +33,9 @@ const MatchCard = React.memo(({ match }: MatchCardProps) => {
             <span className="font-ui text-[10px] font-bold text-muted uppercase tracking-[0.2em]">
               {match.category?.name} <span className="mx-2 text-subtle">|</span> M{match.match_no}
             </span>
-            {(match.category?.gender || match.category?.eligible_years) && (
+            {match.category?.gender && (
               <span className="font-ui text-[8px] font-bold text-subtle uppercase tracking-widest mt-0.5">
-                {match.category?.gender} {match.category?.eligible_years && `· ${match.category?.eligible_years}`}
+                {match.category?.gender}
               </span>
             )}
           </div>

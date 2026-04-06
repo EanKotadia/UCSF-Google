@@ -6,15 +6,22 @@ const NEW_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJz
 let supabaseUrl = import.meta.env.VITE_SUPABASE_URL || NEW_SUPABASE_URL;
 let supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || NEW_SUPABASE_ANON_KEY;
 
+// Clean up the URL (remove trailing slashes which cause fetch errors)
+if (supabaseUrl && supabaseUrl.endsWith('/')) {
+  supabaseUrl = supabaseUrl.slice(0, -1);
+}
+
 // Force override if the old URL is detected
-if (supabaseUrl.includes('qkjwwyduzxewydvvmrbv')) {
+if (supabaseUrl && supabaseUrl.includes('qkjwwyduzxewydvvmrbv')) {
   console.warn('Old Supabase URL detected in environment. Overriding with new URL.');
   supabaseUrl = NEW_SUPABASE_URL;
   supabaseAnonKey = NEW_SUPABASE_ANON_KEY;
 }
 
 // Log the URL being used to help debug (will show in browser console)
-console.log('Supabase URL:', supabaseUrl);
+if (supabaseUrl) {
+  console.log('Supabase initialized with URL:', supabaseUrl);
+}
 
 /* 
   SUPABASE STORAGE POLICIES (Run this in Supabase SQL Editor):

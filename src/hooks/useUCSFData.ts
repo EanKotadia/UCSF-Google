@@ -80,7 +80,10 @@ export function useUCSFData() {
       console.log('Data fetch successful');
     } catch (err: any) {
       console.error('Error fetching UCSF data:', err);
-      setError(err.message || 'Failed to fetch data from Supabase. Please check your connection and project status.');
+      const isFetchError = err.message === 'Failed to fetch';
+      setError(isFetchError 
+        ? 'Failed to fetch data from Supabase. This usually means the Supabase URL is incorrect, the project is paused, or there is a network issue. Please check your Secrets panel.'
+        : (err.message || 'An unknown error occurred while fetching data.'));
     } finally {
       setLoading(false);
       setIsRefreshing(false);

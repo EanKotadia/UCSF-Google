@@ -19,6 +19,9 @@ export type Category = {
   gender: string | null;
   eligible_years: string | null;
   type: 'sport' | 'cultural';
+  special_rules?: string | null;
+  is_active?: boolean;
+  registration_url?: string | null;
 };
 
 export type MatchStatus = 'upcoming' | 'live' | 'completed';

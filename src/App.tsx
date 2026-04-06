@@ -4,18 +4,55 @@ import HouseCard from './components/HouseCard';
 import MatchCard from './components/MatchCard';
 import ScheduleCard from './components/ScheduleCard';
 import { useUCSFData } from './hooks/useUCSFData';
+import { Match } from './types';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Activity, Calendar, Shield, Loader2, AlertCircle, ChevronRight, Play, Image as ImageIcon, Video, ExternalLink, Bell, Users, Filter } from 'lucide-react';
+import { Trophy, Activity, Calendar, Shield, Loader2, AlertCircle, ChevronRight, Play, Image as ImageIcon, Video, ExternalLink, Bell } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedYear, setSelectedYear] = useState<string | null>(null);
   const [galleryYear, setGalleryYear] = useState<'all' | 2025 | 2026>('all');
   const [noticePriority, setNoticePriority] = useState<'all' | 'low' | 'medium' | 'high'>('all');
+  const [selectedLeaderboardGrade, setSelectedLeaderboardGrade] = useState<'all' | '7-8th' | '9-10th' | '11th' | '12th'>('all');
   const { houses, matches, schedule, settings, categories, gallery, notices, loading, error, refresh } = useUCSFData();
   const liveItems = React.useMemo(() => schedule.filter(s => s.status === 'live'), [schedule]);
   const upcomingItems = React.useMemo(() => schedule.filter(s => s.status === 'upcoming').slice(0, 3), [schedule]);
+
+  const gradePoints = React.useMemo(() => {
+    const points: Record<string, Record<string, number>> = {};
+    houses.forEach(h => {
+      points[h.id] = { '7-8th': 0, '9-10th': 0, '11th': 0, '12th': 0, 'all': h.points };
+    });
+
+    matches.filter(m => m.status === 'completed' && m.winner_id).forEach(m => {
+      const winnerId = m.winner_id!;
+      const grade = m.eligible_years;
+      if (points[winnerId] && grade) {
+        // Find which category this grade belongs to
+        let category = '';
+        if (grade.includes('7') || grade.includes('8')) category = '7-8th';
+        else if (grade.includes('9') || grade.includes('10')) category = '9-10th';
+        else if (grade.includes('11')) category = '11th';
+        else if (grade.includes('12')) category = '12th';
+
+        if (category) {
+          points[winnerId][category] += 10; // 10 points for a win
+        }
+      }
+    });
+
+    return points;
+  }, [houses, matches]);
+
+  const sortedHousesByGrade = React.useMemo(() => {
+    return [...houses].sort((a, b) => {
+      const pointsA = gradePoints[a.id]?.[selectedLeaderboardGrade] || 0;
+      const pointsB = gradePoints[b.id]?.[selectedLeaderboardGrade] || 0;
+      return pointsB - pointsA;
+    });
+  }, [houses, gradePoints, selectedLeaderboardGrade]);
 
   const handleTabChange = (tab: string) => {
     if (tab !== 'matches') {
@@ -209,32 +246,26 @@ export default function App() {
                 <div className="mb-16">
                   <p className="sec-label">Athletics</p>
                   <h2 className="text-5xl md:text-6xl mb-6">Sports Section</h2>
-                  <p className="text-muted max-w-xl">The arena where strength meets strategy. Five major sports, one goal.</p>
+                  <p className="text-muted max-w-xl">The arena where strength meets strategy. Dynamic categories from the field.</p>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                  {[
-                    { name: 'Cricket', emoji: '🏏', img: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&q=80&w=400' },
-                    { name: 'Football', emoji: '⚽', img: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&q=80&w=400' },
-                    { name: 'Basketball', emoji: '🏀', img: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&q=80&w=400' },
-                    { name: 'Throwball', emoji: '🏐', img: 'https://images.unsplash.com/photo-1592656094267-764a45160876?auto=format&fit=crop&q=80&w=400' },
-                    { name: 'Chess', emoji: '♟️', img: 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?auto=format&fit=crop&q=80&w=400' },
-                  ].map((sport, i) => (
+                  {categories.filter(c => c.type === 'sport').map((sport, i) => (
                     <motion.div 
-                      key={i}
+                      key={sport.id}
                       whileHover={{ y: -10 }}
                       className="card-glass overflow-hidden group"
                     >
                       <div className="aspect-[4/5] relative">
                         <img 
-                          src={sport.img} 
+                          src={`https://picsum.photos/seed/${sport.name}/400/500`} 
                           alt={sport.name} 
                           className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
                           referrerPolicy="no-referrer"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-transparent to-transparent" />
                         <div className="absolute inset-0 flex flex-col justify-end p-6">
-                          <div className="text-4xl mb-2">{sport.emoji}</div>
+                          <div className="text-4xl mb-2">{sport.icon || '🏆'}</div>
                           <h4 className="text-2xl font-display uppercase tracking-wider mb-4">{sport.name}</h4>
                           <button 
                             onClick={() => {
@@ -259,32 +290,26 @@ export default function App() {
                 <div className="mb-16 text-right">
                   <p className="sec-label">Arts & Expression</p>
                   <h2 className="text-5xl md:text-6xl mb-6">Cultural Events</h2>
-                  <p className="text-muted max-w-xl ml-auto">Where creativity takes center stage. A showcase of talent and passion.</p>
+                  <p className="text-muted max-w-xl ml-auto">Where creativity takes center stage. A dynamic showcase of talent.</p>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                  {[
-                    { name: 'Dance', emoji: '💃', img: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&q=80&w=400' },
-                    { name: 'Music', emoji: '🎵', img: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=400' },
-                    { name: 'Theatre', emoji: '🎭', img: 'https://images.unsplash.com/photo-1507676184212-d03ab07a01bf?auto=format&fit=crop&q=80&w=400' },
-                    { name: 'Graffiti Art', emoji: '🎨', img: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?auto=format&fit=crop&q=80&w=400' },
-                    { name: 'Cinematography', emoji: '🎬', img: 'https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&q=80&w=400' },
-                  ].map((event, i) => (
+                  {categories.filter(c => c.type === 'cultural').map((event, i) => (
                     <motion.div 
-                      key={i}
+                      key={event.id}
                       whileHover={{ scale: 1.02 }}
                       className="card-glass p-1 group overflow-hidden"
                     >
                       <div className="aspect-square relative overflow-hidden rounded-lg mb-4">
                         <img 
-                          src={event.img} 
+                          src={`https://picsum.photos/seed/${event.name}/400/400`} 
                           alt={event.name} 
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           referrerPolicy="no-referrer"
                         />
                         <div className="absolute inset-0 bg-maple/20 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity" />
                         <div className="absolute inset-0 flex items-center justify-center text-5xl opacity-0 group-hover:opacity-100 transition-all transform translate-y-4 group-hover:translate-y-0">
-                          {event.emoji}
+                          {event.icon || '🎭'}
                         </div>
                       </div>
                       <div className="p-4 pt-0">
@@ -292,11 +317,11 @@ export default function App() {
                         <button 
                           onClick={() => {
                             setSelectedCategory(event.name);
-                            setActiveTab('matches');
+                            setActiveTab('cultural');
                           }}
                           className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 transition-all font-ui text-[9px] font-bold uppercase tracking-widest text-muted hover:text-text"
                         >
-                          View Matches
+                          View Details
                         </button>
                       </div>
                     </motion.div>
@@ -324,9 +349,26 @@ export default function App() {
             {/* SCOREBOARD */}
             <section id="scoreboard" className="py-32 bg-bg2/50 border-y border-border">
               <div className="max-w-7xl mx-auto px-6">
-                <div className="mb-20">
-                  <p className="sec-label">Live Standings</p>
-                  <h2 className="text-5xl md:text-7xl">The Leaderboard</h2>
+                <div className="mb-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
+                  <div>
+                    <p className="sec-label">Live Standings</p>
+                    <h2 className="text-5xl md:text-7xl">The Leaderboard</h2>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 bg-white/5 p-1 border border-border rounded-lg">
+                    {['all', '7-8th', '9-10th', '11th', '12th'].map((grade) => (
+                      <button
+                        key={grade}
+                        onClick={() => setSelectedLeaderboardGrade(grade as any)}
+                        className={cn(
+                          "px-4 py-2 font-ui text-[10px] font-bold uppercase tracking-widest transition-all rounded-md",
+                          selectedLeaderboardGrade === grade ? "bg-maple text-bg shadow-lg" : "text-muted hover:text-text"
+                        )}
+                      >
+                        {grade === 'all' ? 'Overall' : grade}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 
                 <div className="card-glass overflow-hidden">
@@ -341,14 +383,14 @@ export default function App() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">
-                        {houses.map((house) => (
+                        {sortedHousesByGrade.map((house, idx) => (
                           <tr key={house.id} className="group hover:bg-white/[0.02] transition-colors">
                             <td className="px-8 py-6">
                               <span className={cn(
                                 "font-display text-3xl",
-                                house.rank_pos === 1 ? "text-maple" : "text-muted"
+                                idx === 0 ? "text-maple" : "text-muted"
                               )}>
-                                {house.rank_pos.toString().padStart(2, '0')}
+                                {(idx + 1).toString().padStart(2, '0')}
                               </span>
                             </td>
                             <td className="px-8 py-6">
@@ -362,19 +404,22 @@ export default function App() {
                                       referrerPolicy="no-referrer"
                                     />
                                   ) : (
-                                    <span className="text-xl font-display text-muted">{house.name[0]}</span>
+                                    <Shield className="text-muted" size={24} />
                                   )}
                                 </div>
-                                <span className="font-display text-3xl tracking-wide uppercase">{house.name}</span>
+                                <div>
+                                  <h4 className="text-2xl font-display uppercase tracking-widest">{house.name}</h4>
+                                  <p className="font-ui text-[9px] font-bold text-muted uppercase tracking-widest mt-1">{house.color}</p>
+                                </div>
                               </div>
                             </td>
                             <td className="px-8 py-6 text-center">
-                              <span className="font-display text-4xl text-maple">{house.points}</span>
+                              <div className="font-display text-4xl text-white">
+                                {gradePoints[house.id]?.[selectedLeaderboardGrade] || 0}
+                              </div>
                             </td>
                             <td className="px-8 py-6 text-right">
-                              <span className="font-ui text-[10px] font-bold uppercase tracking-widest text-subtle group-hover:text-muted transition-colors">
-                                {house.motto}
-                              </span>
+                              <p className="font-ui text-[11px] font-bold uppercase tracking-widest text-muted italic">"{house.motto}"</p>
                             </td>
                           </tr>
                         ))}
@@ -423,54 +468,51 @@ export default function App() {
         );
 
       case 'matches':
-        const filteredCategories = selectedCategory 
-          ? categories.filter(c => c.name.toLowerCase() === selectedCategory.toLowerCase())
-          : categories;
+      case 'cultural':
+        const isCultural = activeTab === 'cultural';
+        const filteredCategories = categories.filter(c => {
+          const matchesType = isCultural ? c.type === 'cultural' : c.type === 'sport';
+          return matchesType;
+        });
 
         return (
           <div className="max-w-7xl mx-auto px-6 py-24">
-            <div className="mb-16 flex flex-col md:flex-row justify-between items-start md:items-end gap-8">
-              <div>
-                <p className="sec-label">Matches & Results</p>
-                <h2 className="text-6xl md:text-7xl">Match Schedule</h2>
-                <p className="text-white/40 mt-4">Browse results by sport. Real-time updates enabled.</p>
-              </div>
-              
-              {selectedCategory && (
-                <button 
-                  onClick={() => setSelectedCategory(null)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-border rounded-lg text-maple font-ui text-[10px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all"
-                >
-                  <Filter size={14} />
-                  Clear Filter: {selectedCategory}
-                </button>
-              )}
+            <div className="mb-16">
+              <p className="sec-label">{isCultural ? 'Arts & Expression' : 'Matches & Results'}</p>
+              <h2 className="text-6xl md:text-7xl">{isCultural ? 'Cultural Events' : 'Match Schedule'}</h2>
+              <p className="text-white/40 mt-4">Browse results by {isCultural ? 'event' : 'sport'}. Real-time updates enabled.</p>
             </div>
 
-            <div className="space-y-24">
+            <div className="space-y-32">
               {filteredCategories.map(cat => {
                 const catMatches = matches.filter(m => m.category_id === cat.id);
                 if (catMatches.length === 0) return null;
+
                 return (
-                  <section key={cat.id} className="space-y-12">
-                    <div className="flex items-center gap-4 border-b border-white/5 pb-4">
-                      <h3 className="text-4xl tracking-wider uppercase font-display">{cat.name}</h3>
+                  <div key={cat.id} className="space-y-12">
+                    <div className="flex items-center gap-6 pb-6 border-b border-border">
+                      <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center text-4xl">
+                        {cat.icon || '🏆'}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="font-ui text-[10px] font-bold uppercase tracking-[4px] text-muted">{cat.gender || 'Mixed'}</span>
+                        <h3 className="text-5xl md:text-6xl tracking-wider uppercase font-display">{cat.name}</h3>
+                        {cat.special_rules && (
+                          <p className="text-muted mt-4 max-w-2xl text-sm leading-relaxed border-l-2 border-maple/30 pl-4">
+                            {cat.special_rules}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                       {catMatches.map(match => (
                         <MatchCard key={match.id} match={match} />
                       ))}
                     </div>
-                  </section>
+                  </div>
                 );
               })}
-              
-              {filteredCategories.length === 0 || (selectedCategory && filteredCategories.every(cat => matches.filter(m => m.category_id === cat.id).length === 0)) ? (
-                <div className="py-40 text-center card-glass">
-                  <Activity size={48} className="mx-auto text-muted mb-4" />
-                  <p className="font-ui text-sm font-bold text-muted uppercase tracking-widest">No matches found for {selectedCategory || 'this category'}.</p>
-                </div>
-              ) : null}
             </div>
           </div>
         );
@@ -558,62 +600,6 @@ export default function App() {
                   <p className="font-ui text-sm font-bold text-muted uppercase tracking-widest">No notices found for this category.</p>
                 </motion.div>
               )}
-            </div>
-          </div>
-        );
-
-      case 'selected-students':
-        const spreadsheetUrl = settings['master_spreadsheet_url'];
-        return (
-          <div className="max-w-7xl mx-auto px-6 py-24 h-[calc(100vh-62px)] flex flex-col">
-            <div className="mb-16">
-              <p className="sec-label">Participants</p>
-              <h2 className="text-6xl md:text-7xl">Selected Students</h2>
-              <p className="text-white/40 mt-4">View the master list of students selected for various events.</p>
-            </div>
-            
-            <div className="flex-grow card-glass overflow-hidden relative group">
-              {spreadsheetUrl ? (
-                <iframe 
-                  src={spreadsheetUrl}
-                  className="w-full h-full border-0 bg-white"
-                  title="Master Spreadsheet"
-                />
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-12 text-center">
-                  <Users size={64} className="text-muted mb-6" />
-                  <h3 className="text-2xl font-display uppercase tracking-widest mb-4">Spreadsheet Not Linked</h3>
-                  <p className="text-muted max-w-md">The master spreadsheet has not been linked by the administrator yet. Please check back later.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        );
-
-      case 'brochure':
-        return (
-          <div className="max-w-7xl mx-auto px-6 py-24 h-[calc(100vh-62px)] flex flex-col">
-            <div className="mb-8">
-              <p className="sec-label">Event Guide</p>
-              <h2 className="text-6xl md:text-7xl">Brochure</h2>
-              <p className="text-white/40 mt-4">Download or view the official UCSF 2026 brochure below.</p>
-            </div>
-            <div className="flex-grow card-glass overflow-hidden relative">
-              <iframe 
-                src={settings.brochure_url || "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"} 
-                className="w-full h-full border-none"
-                title="UCSF 2026 Brochure"
-              />
-              <div className="absolute bottom-4 right-4">
-                <a 
-                  href={settings.brochure_url || "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf"} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="btn-primary"
-                >
-                  Open in New Tab
-                </a>
-              </div>
             </div>
           </div>
         );
