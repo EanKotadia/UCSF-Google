@@ -18,10 +18,17 @@ export type Category = {
   sort_order: number;
   gender: string | null;
   eligible_years: string | null;
-  type: 'sport' | 'cultural';
+  category_type: 'sport' | 'cultural';
+  image_url?: string | null;
   special_rules?: string | null;
   is_active?: boolean;
   registration_url?: string | null;
+  team_size?: string;
+  on_field?: string;
+  duration?: string;
+  deadline?: string;
+  judging_criteria?: { criterion: string; weight: string }[];
+  submission_format?: string;
 };
 
 export type MatchStatus = 'upcoming' | 'live' | 'completed';
@@ -38,6 +45,7 @@ export type Match = {
   status: MatchStatus;
   venue: string | null;
   match_time: string | null;
+  eligible_years: string | null;
   // Joined fields
   category?: Category;
   team1?: House;

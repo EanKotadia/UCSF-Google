@@ -3,10 +3,11 @@ import Layout from './components/Layout';
 import HouseCard from './components/HouseCard';
 import MatchCard from './components/MatchCard';
 import ScheduleCard from './components/ScheduleCard';
+import EventsSection from './components/EventsSection';
 import { useUCSFData } from './hooks/useUCSFData';
 import { Match } from './types';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Activity, Calendar, Shield, Loader2, AlertCircle, ChevronRight, Play, Image as ImageIcon, Video, ExternalLink, Bell } from 'lucide-react';
+import { Trophy, Activity, Calendar, Shield, Loader2, AlertCircle, ChevronRight, Play, Image as ImageIcon, Video, ExternalLink, Bell, Info } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -83,14 +84,22 @@ export default function App() {
         </div>
         <h2 className="text-3xl font-display text-white mb-4">Connection Error</h2>
         <p className="text-white/40 max-w-md mb-8 font-medium">
-          We couldn't connect to the UCSF database. Please check your credentials.
+          {error}
         </p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="btn-primary"
-        >
-          Retry Connection
-        </button>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button 
+            onClick={() => window.location.reload()}
+            className="btn-primary"
+          >
+            Retry Connection
+          </button>
+          <button 
+            onClick={() => refresh()}
+            className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-ui text-xs font-bold uppercase tracking-widest text-white transition-all"
+          >
+            Refresh Data
+          </button>
+        </div>
       </div>
     );
   }
@@ -100,9 +109,12 @@ export default function App() {
   const festivalDates = settings['festival_dates'] || 'April 2026 - Shalom Hills';
   const announcementText = settings['announcement_text'];
   const footerText = settings['footer_text'];
+  const schoolLogoUrl = settings['school_logo_url'];
 
   const renderContent = () => {
     switch (activeTab) {
+      case 'events':
+        return <EventsSection categories={categories} matches={matches} setActiveTab={setActiveTab} />;
       case 'home':
         return (
           <div className="space-y-0">
@@ -113,6 +125,18 @@ export default function App() {
               <div className="absolute bottom-[-100px] right-[-80px] w-[400px] h-[400px] bg-maple opacity-[0.15] blur-[100px] rounded-full animate-[orbdrift_12s_ease-in-out_infinite_alternate-reverse]" />
               
               <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="mb-8 flex justify-center"
+                >
+                  <img 
+                    src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} 
+                    alt="School Logo" 
+                    className="h-20 md:h-24 object-contain opacity-90 hover:opacity-100 transition-opacity"
+                    referrerPolicy="no-referrer"
+                  />
+                </motion.div>
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -144,11 +168,13 @@ export default function App() {
                   transition={{ delay: 0.3 }}
                   className="flex flex-wrap justify-center gap-4"
                 >
-                  <button onClick={() => {
-                    const el = document.getElementById('scoreboard');
-                    el?.scrollIntoView({ behavior: 'smooth' });
-                  }} className="btn-primary">Live Standings</button>
-                  <button onClick={() => handleTabChange('matches')} className="btn-ghost">View Matches</button>
+                  <button 
+                    onClick={() => setActiveTab('events')}
+                    className="btn-primary group flex items-center gap-2"
+                  >
+                    Explore Events
+                    <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </button>
                   <button onClick={() => handleTabChange('schedule')} className="btn-ghost">Full Schedule</button>
                 </motion.div>
               </div>
@@ -196,7 +222,7 @@ export default function App() {
                       {[
                         { val: '4', label: 'Houses' },
                         { val: '5', label: 'Sports' },
-                        { val: '5', label: 'Cultural Events' },
+                        { val: '5', label: 'Culture Events' },
                         { val: '1', label: 'Champion' },
                       ].map((stat, i) => (
                         <div key={i} className="card-glass p-8 text-center">
@@ -250,7 +276,7 @@ export default function App() {
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                  {categories.filter(c => c.type === 'sport').map((sport, i) => (
+                  {categories.filter(c => c.category_type === 'sport').map((sport, i) => (
                     <motion.div 
                       key={sport.id}
                       whileHover={{ y: -10 }}
@@ -258,7 +284,7 @@ export default function App() {
                     >
                       <div className="aspect-[4/5] relative">
                         <img 
-                          src={`https://picsum.photos/seed/${sport.name}/400/500`} 
+                          src={sport.image_url || `https://picsum.photos/seed/${sport.name}/400/500`} 
                           alt={sport.name} 
                           className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500"
                           referrerPolicy="no-referrer"
@@ -269,12 +295,12 @@ export default function App() {
                           <h4 className="text-2xl font-display uppercase tracking-wider mb-4">{sport.name}</h4>
                           <button 
                             onClick={() => {
-                              setSelectedCategory(sport.name);
-                              setActiveTab('matches');
+                              setActiveTab('events');
+                              // Optionally scroll to the specific event if we add IDs
                             }}
                             className="w-full py-3 bg-white/10 hover:bg-maple hover:text-bg-dark border border-white/10 hover:border-maple transition-all font-ui text-[10px] font-bold uppercase tracking-widest"
                           >
-                            View Matches
+                            View Details
                           </button>
                         </div>
                       </div>
@@ -289,12 +315,12 @@ export default function App() {
               <div className="max-w-7xl mx-auto px-6">
                 <div className="mb-16 text-right">
                   <p className="sec-label">Arts & Expression</p>
-                  <h2 className="text-5xl md:text-6xl mb-6">Cultural Events</h2>
-                  <p className="text-muted max-w-xl ml-auto">Where creativity takes center stage. A dynamic showcase of talent.</p>
+                  <h2 className="text-5xl md:text-6xl mb-6">Culture Events</h2>
+                  <p className="text-muted max-w-xl ml-auto">Where creativity takes center stage. A dynamic showcase of talent across all categories.</p>
                 </div>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
-                  {categories.filter(c => c.type === 'cultural').map((event, i) => (
+                  {categories.filter(c => c.category_type === 'cultural').map((event, i) => (
                     <motion.div 
                       key={event.id}
                       whileHover={{ scale: 1.02 }}
@@ -302,7 +328,7 @@ export default function App() {
                     >
                       <div className="aspect-square relative overflow-hidden rounded-lg mb-4">
                         <img 
-                          src={`https://picsum.photos/seed/${event.name}/400/400`} 
+                          src={event.image_url || `https://picsum.photos/seed/${event.name}/400/400`} 
                           alt={event.name} 
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                           referrerPolicy="no-referrer"
@@ -316,8 +342,7 @@ export default function App() {
                         <h4 className="text-xl font-display uppercase tracking-widest mb-4">{event.name}</h4>
                         <button 
                           onClick={() => {
-                            setSelectedCategory(event.name);
-                            setActiveTab('cultural');
+                            setActiveTab('events');
                           }}
                           className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 transition-all font-ui text-[9px] font-bold uppercase tracking-widest text-muted hover:text-text"
                         >
@@ -458,61 +483,12 @@ export default function App() {
                         item={item} 
                         index={idx} 
                         category={categories.find(c => c.name === item.category)}
+                        onCategoryClick={() => setActiveTab('events')}
                       />
                     ))}
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        );
-
-      case 'matches':
-      case 'cultural':
-        const isCultural = activeTab === 'cultural';
-        const filteredCategories = categories.filter(c => {
-          const matchesType = isCultural ? c.type === 'cultural' : c.type === 'sport';
-          return matchesType;
-        });
-
-        return (
-          <div className="max-w-7xl mx-auto px-6 py-24">
-            <div className="mb-16">
-              <p className="sec-label">{isCultural ? 'Arts & Expression' : 'Matches & Results'}</p>
-              <h2 className="text-6xl md:text-7xl">{isCultural ? 'Cultural Events' : 'Match Schedule'}</h2>
-              <p className="text-white/40 mt-4">Browse results by {isCultural ? 'event' : 'sport'}. Real-time updates enabled.</p>
-            </div>
-
-            <div className="space-y-32">
-              {filteredCategories.map(cat => {
-                const catMatches = matches.filter(m => m.category_id === cat.id);
-                if (catMatches.length === 0) return null;
-
-                return (
-                  <div key={cat.id} className="space-y-12">
-                    <div className="flex items-center gap-6 pb-6 border-b border-border">
-                      <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center text-4xl">
-                        {cat.icon || '🏆'}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-ui text-[10px] font-bold uppercase tracking-[4px] text-muted">{cat.gender || 'Mixed'}</span>
-                        <h3 className="text-5xl md:text-6xl tracking-wider uppercase font-display">{cat.name}</h3>
-                        {cat.special_rules && (
-                          <p className="text-muted mt-4 max-w-2xl text-sm leading-relaxed border-l-2 border-maple/30 pl-4">
-                            {cat.special_rules}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                      {catMatches.map(match => (
-                        <MatchCard key={match.id} match={match} />
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           </div>
         );
@@ -706,6 +682,7 @@ export default function App() {
       subtitle={festivalSubtitle}
       announcement={announcementText}
       footerText={footerText}
+      schoolLogoUrl={schoolLogoUrl}
     >
       <AnimatePresence mode="wait">
         <motion.div

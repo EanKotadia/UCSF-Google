@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { House, Match, ScheduleItem, Setting, Category, GalleryItem, Notice } from '../types';
+import { HARDCODED_CATEGORIES } from '../constants/hardcodedData';
 
 export function useUCSFData() {
   const [houses, setHouses] = useState<House[]>([]);
@@ -42,7 +43,29 @@ export function useUCSFData() {
 
   const fetchCategories = async () => {
     const { data } = await supabase!.from('categories').select('*').order('sort_order', { ascending: true });
-    if (data) setCategories(data);
+    if (data) {
+      const mergedCategories = data.map((cat: Category) => {
+        const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        const hardcoded = HARDCODED_CATEGORIES[slug] || HARDCODED_CATEGORIES[cat.name.toLowerCase()];
+        if (hardcoded) {
+          return {
+            ...cat,
+            ...hardcoded,
+            // Only use hardcoded if database field is empty
+            category_type: cat.category_type || hardcoded.category_type,
+            team_size: cat.team_size || hardcoded.team_size,
+            on_field: cat.on_field || hardcoded.on_field,
+            duration: cat.duration || hardcoded.duration,
+            deadline: cat.deadline || hardcoded.deadline,
+            special_rules: cat.special_rules || hardcoded.special_rules,
+            judging_criteria: (cat.judging_criteria && cat.judging_criteria.length > 0) ? cat.judging_criteria : hardcoded.judging_criteria,
+            submission_format: cat.submission_format || hardcoded.submission_format,
+          } as Category;
+        }
+        return cat;
+      });
+      setCategories(mergedCategories);
+    }
   };
 
   const fetchGallery = async () => {
@@ -80,9 +103,9 @@ export function useUCSFData() {
       console.log('Data fetch successful');
     } catch (err: any) {
       console.error('Error fetching UCSF data:', err);
-      const isFetchError = err.message === 'Failed to fetch';
+      const isFetchError = err.message === 'Failed to fetch' || err.status === 0;
       setError(isFetchError 
-        ? 'Failed to fetch data from Supabase. This usually means the Supabase URL is incorrect, the project is paused, or there is a network issue. Please check your Secrets panel.'
+        ? 'Failed to fetch data from Supabase. This usually means the Supabase URL is incorrect, the project is paused, or there is a network issue. Please verify your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in the Secrets panel.'
         : (err.message || 'An unknown error occurred while fetching data.'));
     } finally {
       setLoading(false);

@@ -11,16 +11,16 @@ interface LayoutProps {
   subtitle: string;
   announcement?: string;
   footerText?: string;
+  schoolLogoUrl?: string;
 }
 
-export default function Layout({ children, activeTab, setActiveTab, title, subtitle, announcement, footerText }: LayoutProps) {
+export default function Layout({ children, activeTab, setActiveTab, title, subtitle, announcement, footerText, schoolLogoUrl }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
     { id: 'home', label: 'Home', href: '#home' },
+    { id: 'events', label: 'Events', href: '#events' },
     { id: 'houses', label: 'Houses', href: '#houses' },
-    { id: 'matches', label: 'Matches', href: '#matches' },
-    { id: 'cultural', label: 'Cultural', href: '#cultural' },
     { id: 'schedule', label: 'Schedule', href: '#schedule' },
     { id: 'notices', label: 'Notices', href: '#notices' },
     { id: 'gallery', label: 'Gallery', href: '#gallery' },
@@ -43,8 +43,8 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
           className="nav-logo flex items-center"
         >
           <img 
-            src="https://shalomhills.com/wp-content/uploads/2021/06/logo.png" 
-            alt="Shalom Hills Logo" 
+            src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} 
+            alt="School Logo" 
             className="h-10 md:h-12 object-contain"
             referrerPolicy="no-referrer"
           />
@@ -122,6 +122,12 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
       {/* Footer */}
       <footer className="bg-bg border-t border-border py-12 px-6 md:px-10 text-center">
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
+          <img 
+            src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} 
+            alt="School Logo" 
+            className="h-16 md:h-20 object-contain mb-4 opacity-80 hover:opacity-100 transition-opacity"
+            referrerPolicy="no-referrer"
+          />
           <div className="font-display text-3xl tracking-[4px] uppercase">
             {title.split(' ')[0]} <span>{title.split(' ')[1] || ''}</span>
           </div>
@@ -136,7 +142,6 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
 
           <div className="flex flex-col md:flex-row justify-between w-full gap-4 font-sans text-[12px] text-subtle">
             <span>© 2026 Shalom Hills International School</span>
-            <a href="/admin" className="hover:text-maple transition-colors">Admin Access</a>
           </div>
         </div>
       </footer>

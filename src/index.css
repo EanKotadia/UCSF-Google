@@ -6,16 +6,16 @@
   --font-display: "Bebas Neue", sans-serif;
   --font-ui: "Rajdhani", sans-serif;
 
-  --color-bg: #08081a;
-  --color-bg2: #0d0d28;
-  --color-bg3: #121234;
+  --color-bg: #11274A;
+  --color-bg2: #162e54;
+  --color-bg3: #1c3660;
   --color-surface: rgba(255, 255, 255, 0.045);
   --color-border: rgba(255, 255, 255, 0.09);
   --color-text: #f0f0ff;
   --color-muted: rgba(240, 240, 255, 0.52);
   --color-subtle: rgba(240, 240, 255, 0.25);
   
-  --color-maple: #F5C518;
+  --color-maple: #BC8A2C;
   --color-cedar: #E63946;
   --color-ebony: #4895EF;
   --color-oak: #2DC653;

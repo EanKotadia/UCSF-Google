@@ -8,10 +8,10 @@ interface ScheduleCardProps {
   item: ScheduleItem;
   category?: Category;
   index?: number;
-  key?: any;
+  onCategoryClick?: () => void;
 }
 
-const ScheduleCard = React.memo(({ item, category, index = 0 }: ScheduleCardProps) => {
+const ScheduleCard = React.memo(({ item, category, index = 0, onCategoryClick }: ScheduleCardProps) => {
   const isLive = item.status === 'live';
   const isCompleted = item.status === 'completed';
 
@@ -21,8 +21,9 @@ const ScheduleCard = React.memo(({ item, category, index = 0 }: ScheduleCardProp
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
       transition={{ delay: index * 0.05 }}
+      onClick={onCategoryClick}
       className={cn(
-        "grid grid-cols-[80px_1fr] md:grid-cols-[120px_1fr] gap-0 items-start relative group",
+        "grid grid-cols-[80px_1fr] md:grid-cols-[120px_1fr] gap-0 items-start relative group cursor-pointer",
         isLive ? "st-live" : isCompleted ? "st-completed" : "st-upcoming"
       )}
     >
