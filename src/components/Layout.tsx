@@ -23,10 +23,13 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
     { id: 'events', label: 'Events', href: '#events' },
     { id: 'schedule', label: 'Schedule', href: '#schedule' },
     { id: 'leaderboards', label: 'Leaderboards', href: '#leaderboards' },
-    { id: 'spreadsheet', label: 'Spreadsheet', href: '#spreadsheet' },
     { id: 'notices', label: 'Notices', href: '#notices' },
     { id: 'gallery', label: 'Gallery', href: '#gallery' },
   ];
+
+  if (profile?.is_super_admin || profile?.email === 'kotadia.ean@gmail.com') {
+    navItems.push({ id: 'admin', label: 'Admin', href: '#admin' });
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-maple selection:text-bg">

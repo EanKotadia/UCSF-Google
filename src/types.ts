@@ -57,6 +57,7 @@ export type CulturalResult = {
   house_id: string;
   rank: number | null;
   points: number | null;
+  eligible_years: string | null;
   comments?: string | null;
   // Joined fields
   category?: Category;
@@ -72,6 +73,7 @@ export type ScheduleItem = {
   title: string;
   subtitle: string | null;
   category: string | null;
+  type: 'sport' | 'cultural' | 'selected';
   venue: string | null;
   house_ids: string | null; // comma separated
   status: MatchStatus;

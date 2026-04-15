@@ -33,7 +33,7 @@ import {
   CheckCircle,
   History
 } from 'lucide-react';
-import { Match, House, ScheduleItem, Category, Notice, StagedChange, Profile } from '../types';
+import { Match, House, ScheduleItem, Category, Notice, StagedChange, Profile, CulturalResult } from '../types';
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -280,7 +280,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [discardKey, setDiscardKey] = useState(0);
-  const [pendingChanges, setPendingChanges] = useState<Record<string, Record<string, any>>>({
+  const [pendingChanges, setPendingChanges] = useState<Record<string, Record<string | number, any>>>({
     categories: {},
     matches: {},
     schedule: {},
@@ -291,55 +291,130 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
     settings: {}
   });
 
+  const [stagedAdditions, setStagedAdditions] = useState<Record<string, any[]>>({
+    categories: [],
+    matches: [],
+    schedule: [],
+    notices: [],
+    cultural_results: [],
+    gallery: []
+  });
+
+  const [stagedDeletions, setStagedDeletions] = useState<Record<string, (string | number)[]>>({
+    categories: [],
+    matches: [],
+    schedule: [],
+    notices: [],
+    cultural_results: [],
+    gallery: []
+  });
+
   // Merged data for live preview
   const displayCategories = useMemo(() => {
-    return categories.map(cat => ({
-      ...cat,
-      ...(pendingChanges.categories?.[cat.id] || {})
-    }));
-  }, [categories, pendingChanges.categories]);
+    const base = categories
+      .filter(c => !stagedDeletions.categories.includes(c.id))
+      .map(cat => ({
+        ...cat,
+        ...(pendingChanges.categories?.[cat.id] || {})
+      }));
+    return [...base, ...stagedAdditions.categories];
+  }, [categories, pendingChanges.categories, stagedAdditions.categories, stagedDeletions.categories]);
 
   const displayMatches = useMemo(() => {
-    return matches.map(m => ({
-      ...m,
-      ...(pendingChanges.matches?.[m.id] || {})
-    }));
-  }, [matches, pendingChanges.matches]);
+    const base = matches
+      .filter(m => !stagedDeletions.matches.includes(m.id))
+      .map(m => ({
+        ...m,
+        ...(pendingChanges.matches?.[m.id] || {})
+      }));
+    return [...base, ...stagedAdditions.matches];
+  }, [matches, pendingChanges.matches, stagedAdditions.matches, stagedDeletions.matches]);
 
   const displaySchedule = useMemo(() => {
-    return schedule.map(s => ({
-      ...s,
-      ...(pendingChanges.schedule?.[s.id] || {})
-    }));
-  }, [schedule, pendingChanges.schedule]);
+    const base = schedule
+      .filter(s => !stagedDeletions.schedule.includes(s.id))
+      .map(s => ({
+        ...s,
+        ...(pendingChanges.schedule?.[s.id] || {})
+      }));
+    return [...base, ...stagedAdditions.schedule];
+  }, [schedule, pendingChanges.schedule, stagedAdditions.schedule, stagedDeletions.schedule]);
 
   const displayNotices = useMemo(() => {
-    return notices.map(n => ({
-      ...n,
-      ...(pendingChanges.notices?.[n.id] || {})
-    }));
-  }, [notices, pendingChanges.notices]);
+    const base = notices
+      .filter(n => !stagedDeletions.notices.includes(n.id))
+      .map(n => ({
+        ...n,
+        ...(pendingChanges.notices?.[n.id] || {})
+      }));
+    return [...base, ...stagedAdditions.notices];
+  }, [notices, pendingChanges.notices, stagedAdditions.notices, stagedDeletions.notices]);
 
   const displayGallery = useMemo(() => {
-    return gallery.map(item => ({
-      ...item,
-      ...(pendingChanges.gallery?.[item.id] || {})
-    }));
-  }, [gallery, pendingChanges.gallery]);
+    const base = gallery
+      .filter(g => !stagedDeletions.gallery.includes(g.id))
+      .map(item => ({
+        ...item,
+        ...(pendingChanges.gallery?.[item.id] || {})
+      }));
+    return [...base, ...stagedAdditions.gallery];
+  }, [gallery, pendingChanges.gallery, stagedAdditions.gallery, stagedDeletions.gallery]);
 
   const displayCulturalResults = useMemo(() => {
-    return culturalResults.map(r => ({
-      ...r,
-      ...(pendingChanges.cultural_results?.[r.id] || {})
-    }));
-  }, [culturalResults, pendingChanges.cultural_results]);
+    const base = culturalResults
+      .filter(r => !stagedDeletions.cultural_results.includes(r.id))
+      .map(r => ({
+        ...r,
+        ...(pendingChanges.cultural_results?.[r.id] || {})
+      }));
+    const all = [...base, ...stagedAdditions.cultural_results];
+
+    // Group by category and grade to calculate ranks from points
+    const grouped: Record<string, Record<string, any[]>> = {};
+    all.forEach(r => {
+      if (!grouped[r.category_id]) grouped[r.category_id] = {};
+      const grade = r.eligible_years || 'General';
+      if (!grouped[r.category_id][grade]) grouped[r.category_id][grade] = [];
+      grouped[r.category_id][grade].push(r);
+    });
+
+    // Assign ranks based on points within each group
+    Object.values(grouped).forEach(categoryGrades => {
+      Object.values(categoryGrades).forEach(gradeResults => {
+        gradeResults.sort((a, b) => (b.points || 0) - (a.points || 0));
+        gradeResults.forEach((r, idx) => {
+          r.rank = idx + 1;
+        });
+      });
+    });
+
+    return all;
+  }, [culturalResults, pendingChanges.cultural_results, stagedAdditions.cultural_results, stagedDeletions.cultural_results]);
   // Nested CategoryCard removed
 
   const [activeTab, setActiveTab] = useState<AdminTab>('results');
+  const [scheduleSubTab, setScheduleSubTab] = useState<'sport' | 'cultural' | 'selected'>('sport');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [localSettings, setLocalSettings] = useState<Record<string, string>>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedResultCategory, setSelectedResultCategory] = useState<string | null>(null);
+  const sportsPdfRef = React.useRef<HTMLInputElement>(null);
+  const culturePdfRef = React.useRef<HTMLInputElement>(null);
+  const selectedPdfRef = React.useRef<HTMLInputElement>(null);
+  const logoPdfRef = React.useRef<HTMLInputElement>(null);
+
+  // Ensure storage bucket exists
+  React.useEffect(() => {
+    const initBucket = async () => {
+      if (!supabase) return;
+      try {
+        await supabase.storage.createBucket('ucsf-media', { public: true });
+      } catch (e) {
+        // Ignore error if bucket already exists
+      }
+    };
+    initBucket();
+  }, []);
 
   // Load pending changes from localStorage on mount
   React.useEffect(() => {
@@ -359,8 +434,11 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
   }, [pendingChanges]);
 
   const hasPendingChanges = useMemo(() => {
-    return Object.values(pendingChanges).some(table => Object.keys(table).length > 0) || hasChanges;
-  }, [pendingChanges, hasChanges]);
+    const hasUpdates = Object.values(pendingChanges).some(table => Object.keys(table).length > 0);
+    const hasAdditions = Object.values(stagedAdditions).some(arr => arr.length > 0);
+    const hasDeletions = Object.values(stagedDeletions).some(arr => arr.length > 0);
+    return hasUpdates || hasAdditions || hasDeletions || hasChanges;
+  }, [pendingChanges, stagedAdditions, stagedDeletions, hasChanges]);
 
   const stageChange = (table: string, id: string | number, updates: any) => {
     setPendingChanges(prev => ({
@@ -401,10 +479,32 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
               if (error) throw error;
             }
 
-            // 2. Other tables
+            // 2. Deletions
+            for (const [table, ids] of Object.entries(stagedDeletions)) {
+              if (ids.length > 0) {
+                const { error } = await supabase.from(table).delete().in('id', ids);
+                if (error) throw error;
+              }
+            }
+
+            // 3. Additions
+            for (const [table, items] of Object.entries(stagedAdditions)) {
+              if (items.length > 0) {
+                // Remove temporary IDs before inserting
+                const itemsToInsert = items.map(({ id, ...rest }) => rest);
+                const { error } = await supabase.from(table).insert(itemsToInsert);
+                if (error) throw error;
+              }
+            }
+
+            // 4. Updates
             for (const [table, changes] of Object.entries(pendingChanges)) {
-              if (table === 'settings') continue;
+              if (table === 'settings' || table === 'houses') continue;
               for (const [id, updates] of Object.entries(changes)) {
+                // Skip if this record was just added (it's already in stagedAdditions with latest values)
+                if (typeof id === 'number' && id > 1000000000000) continue;
+                if (typeof id === 'string' && id.startsWith('new_')) continue;
+
                 const { error } = await supabase.from(table).update(updates).eq('id', id);
                 if (error) throw error;
               }
@@ -427,7 +527,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
               });
             }
 
-            // Handle other tables
+            // Handle other tables (updates)
             for (const [table, changes] of Object.entries(pendingChanges)) {
               if (table === 'settings') continue;
               for (const [id, updates] of Object.entries(changes)) {
@@ -440,6 +540,10 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                 });
               }
             }
+
+            // Handle additions and deletions (simplified for now)
+            // In a real app, staged_changes would need an 'action' column (INSERT, UPDATE, DELETE)
+            // For now, we'll just log them or skip if not supported by schema
 
             if (stagedEntries.length > 0) {
               const { error } = await supabase.from('staged_changes').insert(stagedEntries);
@@ -455,7 +559,24 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
             notices: {},
             cultural_results: {},
             houses: {},
+            gallery: {},
             settings: {}
+          });
+          setStagedAdditions({
+            categories: [],
+            matches: [],
+            schedule: [],
+            notices: [],
+            cultural_results: [],
+            gallery: []
+          });
+          setStagedDeletions({
+            categories: [],
+            matches: [],
+            schedule: [],
+            notices: [],
+            cultural_results: [],
+            gallery: []
           });
           localStorage.removeItem('ucsf_pending_changes');
           setHasChanges(false);
@@ -533,6 +654,22 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
           cultural_results: {},
           houses: {},
           settings: {}
+        });
+        setStagedAdditions({
+          categories: [],
+          matches: [],
+          schedule: [],
+          notices: [],
+          cultural_results: [],
+          gallery: []
+        });
+        setStagedDeletions({
+          categories: [],
+          matches: [],
+          schedule: [],
+          notices: [],
+          cultural_results: [],
+          gallery: []
         });
         localStorage.removeItem('ucsf_pending_changes');
         setLocalSettings(settings);
@@ -619,129 +756,134 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
     return true;
   };
 
-  const updateMatch = async (matchId: number, updates: Partial<Match>) => {
-    stageChange('matches', matchId, updates);
-  };
-
-  const addMatch = async (categoryId?: string) => {
-    if (!supabase || !(await checkSession())) return;
-    setLoading(true);
-    const { error } = await supabase.from('matches').insert([{
-      category_id: categoryId || categories[0]?.id,
-      match_no: matches.length + 1,
-      team1_id: houses[0]?.id,
-      team2_id: houses[1]?.id,
-      status: 'upcoming',
-      score1: 0,
-      score2: 0
-    }]);
-    if (error) handleSupabaseError(error, 'Failed to add match');
-    else {
-      refresh();
-      setLoading(false);
+  const updateMatch = (id: number, updates: Partial<Match>) => {
+    if (id > 1000000000000) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        matches: prev.matches.map(m => m.id === id ? { ...m, ...updates } : m)
+      }));
+    } else {
+      stageChange('matches', id, updates);
     }
   };
 
-  const deleteMatch = async (id: number) => {
-    if (!supabase || !(await checkSession())) return;
-    
-    setConfirmModal({
-      isOpen: true,
-      title: 'Delete Match',
-      message: 'Are you sure you want to delete this match? This action cannot be undone.',
-      onConfirm: async () => {
-        setLoading(true);
-        const { error } = await supabase.from('matches').delete().eq('id', id);
-        if (error) handleSupabaseError(error, 'Failed to delete match');
-        else {
-          refresh();
-          setLoading(false);
-          setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        }
-      }
-    });
+  const addMatch = (categoryId?: string) => {
+    const newId = Date.now();
+    const newMatch: any = {
+      id: newId,
+      category_id: categoryId || selectedResultCategory || categories[0]?.id,
+      match_no: displayMatches.filter(m => m.category_id === (categoryId || selectedResultCategory || categories[0]?.id)).length + 1,
+      team1_id: houses[0]?.id,
+      team2_id: houses[1]?.id,
+      score1: 0,
+      score2: 0,
+      status: 'upcoming',
+      eligible_years: '7-8th'
+    };
+    setStagedAdditions(prev => ({
+      ...prev,
+      matches: [...prev.matches, newMatch]
+    }));
   };
 
-  const updateSchedule = async (itemId: number, updates: Partial<ScheduleItem>) => {
-    stageChange('schedule', itemId, updates);
+  const deleteMatch = (id: number) => {
+    if (id > 1000000000000) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        matches: prev.matches.filter(m => m.id !== id)
+      }));
+    } else {
+      setStagedDeletions(prev => ({
+        ...prev,
+        matches: [...prev.matches, id]
+      }));
+    }
   };
 
-  const addSchedule = async () => {
-    if (!supabase || !(await checkSession())) return;
-    setLoading(true);
-    const { error } = await supabase.from('schedule').insert([{
-      day_label: 'Day 1',
+  const updateSchedule = (id: number, updates: Partial<ScheduleItem>) => {
+    if (id > 1000000000000) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        schedule: prev.schedule.map(s => s.id === id ? { ...s, ...updates } : s)
+      }));
+    } else {
+      stageChange('schedule', id, updates);
+    }
+  };
+
+  const addSchedule = (day?: string) => {
+    const newId = Date.now();
+    const newItem: any = {
+      id: newId,
+      day_label: day || 'Day 1',
       day_date: 'April 10, 2026',
       time_start: '09:00 AM',
       title: 'New Event',
+      type: scheduleSubTab,
       status: 'upcoming',
-      sort_order: schedule.length + 1
-    }]);
-    if (error) handleSupabaseError(error, 'Failed to add schedule item');
-    else {
-      refresh();
-      setLoading(false);
+      sort_order: displaySchedule.length + 1
+    };
+    setStagedAdditions(prev => ({
+      ...prev,
+      schedule: [...prev.schedule, newItem]
+    }));
+  };
+
+  const deleteSchedule = (id: number) => {
+    if (id > 1000000000000) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        schedule: prev.schedule.filter(s => s.id !== id)
+      }));
+    } else {
+      setStagedDeletions(prev => ({
+        ...prev,
+        schedule: [...prev.schedule, id]
+      }));
     }
   };
 
-  const deleteSchedule = async (id: number) => {
-    if (!supabase || !(await checkSession())) return;
-    
-    setConfirmModal({
-      isOpen: true,
-      title: 'Delete Event',
-      message: 'Are you sure you want to delete this event? This action cannot be undone.',
-      onConfirm: async () => {
-        setLoading(true);
-        const { error } = await supabase.from('schedule').delete().eq('id', id);
-        if (error) handleSupabaseError(error, 'Failed to delete schedule item');
-        else {
-          refresh();
-          setLoading(false);
-          setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        }
-      }
-    });
+  const updateCategory = (id: string, updates: Partial<Category>) => {
+    if (id.startsWith('new_cat_')) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        categories: prev.categories.map(c => c.id === id ? { ...c, ...updates } : c)
+      }));
+    } else {
+      stageChange('categories', id, updates);
+    }
   };
 
-  const updateCategory = async (catId: string, updates: Partial<Category>) => {
-    stageChange('categories', catId, updates);
-  };
-
-  const addCategory = async () => {
-    if (!supabase || !(await checkSession())) return;
-    setLoading(true);
-    const { error } = await supabase.from('categories').insert([{
-      name: 'New Sport',
-      icon: '',
+  const addCategory = () => {
+    const newId = `new_cat_${Date.now()}`;
+    const newCat: Category = {
+      id: newId,
+      name: 'New Category',
+      icon: '🏆',
+      sort_order: displayCategories.length + 1,
+      gender: 'Mixed',
+      eligible_years: '7-12th',
       category_type: 'sport',
-      sort_order: categories.length + 1
-    }]);
-    if (error) handleSupabaseError(error, 'Failed to add category');
-    else {
-      refresh();
-      setLoading(false);
-    }
+      is_active: true
+    };
+    setStagedAdditions(prev => ({
+      ...prev,
+      categories: [...prev.categories, newCat]
+    }));
   };
 
-  const deleteCategory = async (id: string) => {
-    if (!supabase || !(await checkSession())) return;
-    
-    setConfirmModal({
-      isOpen: true,
-      title: 'Delete Category',
-      message: 'Are you sure you want to delete this category? This might affect matches linked to it.',
-      onConfirm: async () => {
-        setLoading(true);
-        const { error } = await supabase.from('categories').delete().eq('id', id);
-        if (error) handleSupabaseError(error, 'Failed to delete category');
-        else {
-          refresh();
-          setLoading(false);
-          setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        }
-      }
-    });
+  const deleteCategory = (id: string) => {
+    if (id.startsWith('new_cat_')) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        categories: prev.categories.filter(c => c.id !== id)
+      }));
+    } else {
+      setStagedDeletions(prev => ({
+        ...prev,
+        categories: [...prev.categories, id]
+      }));
+    }
   };
 
   const updateSetting = async (key: string, val: string) => {
@@ -757,56 +899,48 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
     }
   };
 
-  const updateNotice = async (id: number, updates: Partial<Notice>) => {
-    stageChange('notices', id, updates);
-  };
-
-  const handleNoticeSubmit = async () => {
-    if (!supabase || !(await checkSession())) return;
-    
-    if (noticeModal?.notice) {
-      // It's an update, stage it
-      stageChange('notices', noticeModal.notice.id, noticeFormData);
-      setNoticeModal(null);
-      setNoticeFormData({ title: '', content: '', priority: 'low' });
+  const updateNotice = (id: number, updates: Partial<Notice>) => {
+    if (id > 1000000000000) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        notices: prev.notices.map(n => n.id === id ? { ...n, ...updates } : n)
+      }));
     } else {
-      // It's a new notice, we'll insert it immediately as it's hard to stage without ID
-      setLoading(true);
-      try {
-        const { error } = await supabase.from('notices').insert([noticeFormData]);
-        if (error) throw error;
-        setNoticeModal(null);
-        setNoticeFormData({ title: '', content: '', priority: 'low' });
-        refresh();
-      } catch (err: any) {
-        handleSupabaseError(err, 'Failed to save notice');
-      } finally {
-        setLoading(false);
-      }
+      stageChange('notices', id, updates);
     }
   };
 
-  const deleteNotice = async (id: number) => {
-    if (!supabase || !(await checkSession())) return;
-    
-    setConfirmModal({
-      isOpen: true,
-      title: 'Delete Notice',
-      message: 'Are you sure you want to permanently delete this notice?',
-      onConfirm: async () => {
-        setLoading(true);
-        try {
-          const { error } = await supabase.from('notices').delete().eq('id', id);
-          if (error) throw error;
-          refresh();
-        } catch (err: any) {
-          handleSupabaseError(err, 'Failed to delete notice');
-        } finally {
-          setLoading(false);
-          setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        }
-      }
-    });
+  const handleNoticeSubmit = () => {
+    if (noticeModal?.notice) {
+      updateNotice(noticeModal.notice.id, noticeFormData);
+    } else {
+      const newId = Date.now();
+      const newNotice: any = {
+        id: newId,
+        ...noticeFormData,
+        created_at: new Date().toISOString()
+      };
+      setStagedAdditions(prev => ({
+        ...prev,
+        notices: [...prev.notices, newNotice]
+      }));
+    }
+    setNoticeModal(null);
+    setNoticeFormData({ title: '', content: '', priority: 'low' });
+  };
+
+  const deleteNotice = (id: number) => {
+    if (id > 1000000000000) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        notices: prev.notices.filter(n => n.id !== id)
+      }));
+    } else {
+      setStagedDeletions(prev => ({
+        ...prev,
+        notices: [...prev.notices, id]
+      }));
+    }
   };
 
   const getEmbedUrl = (url: string) => {
@@ -960,43 +1094,45 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
     }
   };
 
-  const updateCulturalResult = async (id: number, updates: any) => {
-    stageChange('cultural_results', id, updates);
-  };
-
-  const addCulturalResult = async (catId: string) => {
-    if (!supabase || !(await checkSession())) return;
-    setLoading(true);
-    const { error } = await supabase.from('cultural_results').insert([{
-      category_id: catId,
-      house_id: houses[0]?.id,
-      rank: 1,
-      points: 0
-    }]);
-    if (error) handleSupabaseError(error, 'Failed to add cultural result');
-    else {
-      refresh();
-      setLoading(false);
+  const updateCulturalResult = (id: number, updates: any) => {
+    if (id > 1000000000000) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        cultural_results: prev.cultural_results.map(r => r.id === id ? { ...r, ...updates } : r)
+      }));
+    } else {
+      stageChange('cultural_results', id, updates);
     }
   };
 
-  const deleteCulturalResult = async (id: number) => {
-    if (!supabase || !(await checkSession())) return;
-    setConfirmModal({
-      isOpen: true,
-      title: 'Delete Result',
-      message: 'Are you sure you want to delete this cultural result?',
-      onConfirm: async () => {
-        setLoading(true);
-        const { error } = await supabase.from('cultural_results').delete().eq('id', id);
-        if (error) handleSupabaseError(error, 'Failed to delete result');
-        else {
-          refresh();
-          setLoading(false);
-          setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        }
-      }
-    });
+  const addCulturalResult = (catId: string) => {
+    const newId = Date.now();
+    const newResult: any = {
+      id: newId,
+      category_id: catId,
+      house_id: houses[0]?.id,
+      rank: 1,
+      points: 0,
+      eligible_years: '7-8th'
+    };
+    setStagedAdditions(prev => ({
+      ...prev,
+      cultural_results: [...prev.cultural_results, newResult]
+    }));
+  };
+
+  const deleteCulturalResult = (id: number) => {
+    if (id > 1000000000000) {
+      setStagedAdditions(prev => ({
+        ...prev,
+        cultural_results: prev.cultural_results.filter(r => r.id !== id)
+      }));
+    } else {
+      setStagedDeletions(prev => ({
+        ...prev,
+        cultural_results: [...prev.cultural_results, id]
+      }));
+    }
   };
 
   React.useEffect(() => {
@@ -1508,46 +1644,70 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                           </button>
                         </div>
                         
-                        <div className="space-y-4">
-                          {displayCulturalResults.filter(r => r.category_id === selectedResultCategory).sort((a, b) => a.rank - b.rank).map((result) => (
-                            <div key={result.id} className="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/5 group/res">
-                              <div className="flex items-center gap-4 w-full lg:w-auto">
-                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/5 rounded-xl flex items-center justify-center font-display text-xl sm:text-2xl text-maple shrink-0">
-                                  <input
-                                    type="number"
-                                    value={result.rank || ''}
-                                    placeholder="Rank"
-                                    className="w-full bg-transparent border-none text-center outline-none"
-                                    onChange={(e) => updateCulturalResult(result.id, { rank: parseInt(e.target.value) || 0 })}
-                                  />
+                        <div className="space-y-12">
+                          {(() => {
+                            const resultsByGrade: Record<string, CulturalResult[]> = {};
+                            displayCulturalResults.filter(r => r.category_id === selectedResultCategory).forEach(r => {
+                              const grade = r.eligible_years || 'General';
+                              if (!resultsByGrade[grade]) resultsByGrade[grade] = [];
+                              resultsByGrade[grade].push(r);
+                            });
+
+                            const grades = Object.keys(resultsByGrade).sort();
+
+                            return grades.map((grade) => (
+                              <div key={grade} className="space-y-6">
+                                <div className="flex items-center gap-4 px-2">
+                                  <div className="w-2 h-2 rounded-full bg-maple" />
+                                  <h4 className="text-lg font-display uppercase tracking-widest text-maple/90">{grade}</h4>
                                 </div>
-                                <select
-                                  value={result.house_id}
-                                  onChange={(e) => updateCulturalResult(result.id, { house_id: e.target.value })}
-                                  className="flex-1 bg-transparent border-none text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white outline-none truncate"
-                                >
-                                  {houses.map(h => <option key={h.id} value={h.id} className="bg-bg-dark">{h.name}</option>)}
-                                </select>
-                              </div>
-                              <div className="flex items-center justify-between w-full lg:w-auto gap-4">
-                                <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5 flex-1 lg:flex-none">
-                                  <span className="text-[9px] sm:text-[10px] font-bold text-muted uppercase">Points</span>
-                                  <input
-                                    type="number"
-                                    value={result.points || ''}
-                                    className="w-full lg:w-16 bg-transparent border-none text-sm font-bold text-maple text-center outline-none"
-                                    onChange={(e) => updateCulturalResult(result.id, { points: parseInt(e.target.value) || 0 })}
-                                  />
+                                <div className="grid grid-cols-1 gap-4">
+                                  {resultsByGrade[grade].sort((a, b) => (b.points || 0) - (a.points || 0)).map((result) => (
+                                    <div key={result.id} className="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/5 group/res">
+                                      <div className="flex items-center gap-4 w-full lg:w-auto">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/5 rounded-xl flex items-center justify-center font-display text-xl sm:text-2xl text-maple shrink-0">
+                                          {result.rank}
+                                        </div>
+                                        <div className="flex-1">
+                                          <select
+                                            value={result.house_id}
+                                            onChange={(e) => updateCulturalResult(result.id, { house_id: e.target.value })}
+                                            className="w-full bg-transparent border-none text-[10px] sm:text-xs font-bold uppercase tracking-widest text-white outline-none truncate"
+                                          >
+                                            {houses.map(h => <option key={h.id} value={h.id} className="bg-bg-dark">{h.name}</option>)}
+                                          </select>
+                                          <input 
+                                            type="text"
+                                            value={result.eligible_years || ''}
+                                            placeholder="Grade"
+                                            className="w-full bg-transparent border-none text-[8px] text-muted outline-none"
+                                            onChange={(e) => updateCulturalResult(result.id, { eligible_years: e.target.value })}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center justify-between w-full lg:w-auto gap-4">
+                                        <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5 flex-1 lg:flex-none">
+                                          <span className="text-[9px] sm:text-[10px] font-bold text-muted uppercase">Points</span>
+                                          <input
+                                            type="number"
+                                            value={result.points || ''}
+                                            className="w-full lg:w-16 bg-transparent border-none text-sm font-bold text-maple text-center outline-none"
+                                            onChange={(e) => updateCulturalResult(result.id, { points: parseInt(e.target.value) || 0 })}
+                                          />
+                                        </div>
+                                        <button 
+                                          onClick={() => deleteCulturalResult(result.id)}
+                                          className="p-3 sm:p-2 text-danger/50 hover:text-danger hover:bg-danger/10 rounded-lg transition-all shrink-0"
+                                        >
+                                          <Trash2 size={18} />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  ))}
                                 </div>
-                                <button 
-                                  onClick={() => deleteCulturalResult(result.id)}
-                                  className="p-3 sm:p-2 text-danger/50 hover:text-danger hover:bg-danger/10 rounded-lg transition-all shrink-0"
-                                >
-                                  <Trash2 size={18} />
-                                </button>
                               </div>
-                            </div>
-                          ))}
+                            ));
+                          })()}
                           {displayCulturalResults.filter(r => r.category_id === selectedResultCategory).length === 0 && (
                             <div className="py-12 text-center bg-white/5 rounded-3xl border border-dashed border-white/10">
                               <p className="text-muted font-ui text-[10px] font-bold uppercase tracking-widest">No manual points assigned yet</p>
@@ -1853,14 +2013,32 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-12 pb-20"
                 >
-                  <div className="flex items-center justify-between bg-[#0d1b33] p-10 rounded-[3rem] border border-white/5 shadow-2xl">
-                    <div>
-                      <h2 className="text-4xl font-display uppercase tracking-tighter text-white">Event Schedule</h2>
-                      <p className="text-muted text-sm mt-2 font-ui uppercase tracking-[0.2em] opacity-60">Timeline of sports and cultural events</p>
+                  <div className="flex flex-col lg:flex-row items-center justify-between bg-[#0d1b33] p-8 sm:p-10 rounded-[2.5rem] sm:rounded-[3rem] border border-white/5 shadow-2xl gap-8">
+                    <div className="text-center lg:text-left">
+                      <h2 className="text-3xl sm:text-4xl font-display uppercase tracking-tighter text-white">Event Schedule</h2>
+                      <p className="text-muted text-xs mt-2 font-ui uppercase tracking-[0.2em] opacity-60">Timeline of festival events</p>
                     </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-3 bg-white/5 p-2 rounded-2xl border border-white/5">
+                      {(['sport', 'cultural', 'selected'] as const).map((tab) => (
+                        <button
+                          key={tab}
+                          onClick={() => setScheduleSubTab(tab)}
+                          className={cn(
+                            "px-6 py-3 rounded-xl font-ui text-[10px] font-bold uppercase tracking-widest transition-all",
+                            scheduleSubTab === tab 
+                              ? "bg-maple text-bg shadow-lg shadow-maple/20" 
+                              : "text-muted hover:text-white hover:bg-white/5"
+                          )}
+                        >
+                          {tab === 'sport' ? 'Sports' : tab === 'cultural' ? 'Cultural' : 'Selected'}
+                        </button>
+                      ))}
+                    </div>
+
                     <button 
-                      onClick={addSchedule}
-                      className="bg-maple hover:bg-maple/90 text-bg py-5 px-12 rounded-2xl font-ui text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-maple/20 flex items-center gap-3 group active:scale-95"
+                      onClick={() => addSchedule()}
+                      className="w-full lg:w-auto bg-maple hover:bg-maple/90 text-bg py-5 px-12 rounded-2xl font-ui text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-maple/20 flex items-center justify-center gap-3 group active:scale-95"
                     >
                       <Plus size={20} className="group-hover:rotate-90 transition-transform" />
                       Add Event
@@ -1868,7 +2046,9 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   </div>
 
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-10">
-                    {displaySchedule.map((item) => (
+                    {displaySchedule
+                      .filter(item => item.type === scheduleSubTab || (!item.type && scheduleSubTab === 'sport'))
+                      .map((item) => (
                       <motion.div 
                         key={item.id} 
                         layout
@@ -1877,7 +2057,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                         <div className="flex justify-between items-start mb-10">
                           <div className="flex items-center gap-6">
                             <div className="w-16 h-16 bg-maple/10 rounded-[1.5rem] flex items-center justify-center text-maple border border-maple/20 shadow-inner">
-                              <Calendar size={28} />
+                              {item.type === 'selected' ? <Users size={28} /> : <Calendar size={28} />}
                             </div>
                             <div className="space-y-2">
                               <div className="flex items-center gap-3">
@@ -1912,12 +2092,23 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               </div>
                             </div>
                           </div>
-                          <button 
-                            onClick={() => deleteSchedule(item.id)}
-                            className="w-12 h-12 bg-danger/5 hover:bg-danger text-danger hover:text-white rounded-2xl transition-all border border-danger/10 flex items-center justify-center active:scale-90 opacity-0 group-hover:opacity-100"
-                          >
-                            <Trash2 size={20} />
-                          </button>
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <select
+                              value={item.type || 'sport'}
+                              onChange={(e) => updateSchedule(item.id, { type: e.target.value as any })}
+                              className="bg-white/5 border border-white/5 rounded-lg px-2 py-1 text-[8px] font-bold uppercase tracking-widest text-muted outline-none"
+                            >
+                              <option value="sport">Sport</option>
+                              <option value="cultural">Cultural</option>
+                              <option value="selected">Selected</option>
+                            </select>
+                            <button 
+                              onClick={() => deleteSchedule(item.id)}
+                              className="w-10 h-10 bg-danger/5 hover:bg-danger text-danger hover:text-white rounded-xl transition-all border border-danger/10 flex items-center justify-center active:scale-90"
+                            >
+                              <Trash2 size={18} />
+                            </button>
+                          </div>
                         </div>
 
                         <div className="space-y-6 flex-1">
@@ -2344,7 +2535,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               ) : (
                                 <ImageIcon size={28} className="text-muted/20" />
                               )}
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" onClick={() => document.getElementById('school-logo-upload')?.click()}>
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" onClick={() => logoPdfRef.current?.click()}>
                                 <Upload size={20} className="text-white" />
                               </div>
                             </div>
@@ -2358,7 +2549,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                   onChange={(e) => handleSettingChange('school_logo_url', e.target.value)}
                                 />
                                 <button 
-                                  onClick={() => document.getElementById('school-logo-upload')?.click()}
+                                  onClick={() => logoPdfRef.current?.click()}
                                   className="bg-white/5 hover:bg-white/10 text-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-white/5 transition-all active:scale-90 shadow-lg shrink-0"
                                   title="Upload Logo"
                                 >
@@ -2366,7 +2557,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                 </button>
                                 <input 
                                   type="file"
-                                  id="school-logo-upload"
+                                  ref={logoPdfRef}
                                   className="hidden"
                                   accept="image/*"
                                   onChange={async (e) => {
@@ -2400,6 +2591,131 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                             placeholder="https://docs.google.com/spreadsheets/..."
                             onChange={(e) => handleSettingChange('spreadsheet_url', e.target.value)}
                           />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                          <div className="space-y-2 sm:space-y-3">
+                            <label className="font-ui text-[9px] sm:text-[10px] font-bold text-muted uppercase tracking-[0.3em] ml-1">Sports Schedule URL</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={localSettings['sports_schedule_url'] || ''}
+                                className="flex-1 bg-white/5 border border-white/5 rounded-xl sm:rounded-2xl px-5 sm:px-8 py-4 sm:py-5 text-[12px] sm:text-[13px] font-bold text-white outline-none focus:border-maple/50 transition-all shadow-inner"
+                                placeholder="URL or PDF..."
+                                onChange={(e) => handleSettingChange('sports_schedule_url', e.target.value)}
+                              />
+                              <button 
+                                onClick={() => sportsPdfRef.current?.click()}
+                                className="bg-white/5 hover:bg-white/10 text-white p-4 rounded-2xl border border-white/5 transition-all active:scale-90"
+                                title="Upload PDF"
+                              >
+                                <Upload size={20} />
+                              </button>
+                              <input 
+                                type="file"
+                                ref={sportsPdfRef}
+                                className="hidden"
+                                accept="application/pdf"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file || !supabase) return;
+                                  setLoading(true);
+                                  try {
+                                    const fileName = `sports_schedule_${Date.now()}.pdf`;
+                                    const { error: uploadError } = await supabase.storage.from('ucsf-media').upload(fileName, file);
+                                    if (uploadError) throw uploadError;
+                                    const { data: { publicUrl } } = supabase.storage.from('ucsf-media').getPublicUrl(fileName);
+                                    handleSettingChange('sports_schedule_url', publicUrl);
+                                  } catch (err: any) {
+                                    handleSupabaseError(err, 'PDF upload failed');
+                                  } finally {
+                                    setLoading(false);
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2 sm:space-y-3">
+                            <label className="font-ui text-[9px] sm:text-[10px] font-bold text-muted uppercase tracking-[0.3em] ml-1">Culture Schedule URL</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={localSettings['culture_schedule_url'] || ''}
+                                className="flex-1 bg-white/5 border border-white/5 rounded-xl sm:rounded-2xl px-5 sm:px-8 py-4 sm:py-5 text-[12px] sm:text-[13px] font-bold text-white outline-none focus:border-maple/50 transition-all shadow-inner"
+                                placeholder="URL or PDF..."
+                                onChange={(e) => handleSettingChange('culture_schedule_url', e.target.value)}
+                              />
+                              <button 
+                                onClick={() => culturePdfRef.current?.click()}
+                                className="bg-white/5 hover:bg-white/10 text-white p-4 rounded-2xl border border-white/5 transition-all active:scale-90"
+                                title="Upload PDF"
+                              >
+                                <Upload size={20} />
+                              </button>
+                              <input 
+                                type="file"
+                                ref={culturePdfRef}
+                                className="hidden"
+                                accept="application/pdf"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file || !supabase) return;
+                                  setLoading(true);
+                                  try {
+                                    const fileName = `culture_schedule_${Date.now()}.pdf`;
+                                    const { error: uploadError } = await supabase.storage.from('ucsf-media').upload(fileName, file);
+                                    if (uploadError) throw uploadError;
+                                    const { data: { publicUrl } } = supabase.storage.from('ucsf-media').getPublicUrl(fileName);
+                                    handleSettingChange('culture_schedule_url', publicUrl);
+                                  } catch (err: any) {
+                                    handleSupabaseError(err, 'PDF upload failed');
+                                  } finally {
+                                    setLoading(false);
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div className="space-y-2 sm:space-y-3">
+                            <label className="font-ui text-[9px] sm:text-[10px] font-bold text-muted uppercase tracking-[0.3em] ml-1">Selected Students URL</label>
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                value={localSettings['selected_students_url'] || ''}
+                                className="flex-1 bg-white/5 border border-white/5 rounded-xl sm:rounded-2xl px-5 sm:px-8 py-4 sm:py-5 text-[12px] sm:text-[13px] font-bold text-white outline-none focus:border-maple/50 transition-all shadow-inner"
+                                placeholder="URL or PDF..."
+                                onChange={(e) => handleSettingChange('selected_students_url', e.target.value)}
+                              />
+                              <button 
+                                onClick={() => selectedPdfRef.current?.click()}
+                                className="bg-white/5 hover:bg-white/10 text-white p-4 rounded-2xl border border-white/5 transition-all active:scale-90"
+                                title="Upload PDF"
+                              >
+                                <Upload size={20} />
+                              </button>
+                              <input 
+                                type="file"
+                                ref={selectedPdfRef}
+                                className="hidden"
+                                accept="application/pdf"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file || !supabase) return;
+                                  setLoading(true);
+                                  try {
+                                    const fileName = `selected_students_${Date.now()}.pdf`;
+                                    const { error: uploadError } = await supabase.storage.from('ucsf-media').upload(fileName, file);
+                                    if (uploadError) throw uploadError;
+                                    const { data: { publicUrl } } = supabase.storage.from('ucsf-media').getPublicUrl(fileName);
+                                    handleSettingChange('selected_students_url', publicUrl);
+                                  } catch (err: any) {
+                                    handleSupabaseError(err, 'PDF upload failed');
+                                  } finally {
+                                    setLoading(false);
+                                  }
+                                }}
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

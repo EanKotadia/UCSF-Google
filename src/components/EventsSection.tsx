@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Category, Match } from '../types';
+import { Category, Match, CulturalResult } from '../types';
 import { Trophy, Music, Palette, Film, Theater, Swords, Target, Users, Clock, Calendar, Info, ChevronRight, X, ArrowRight } from 'lucide-react';
 import MatchCard from './MatchCard';
 import { cn } from '../lib/utils';
@@ -8,10 +8,11 @@ import { cn } from '../lib/utils';
 interface EventsSectionProps {
   categories: Category[];
   matches: Match[];
+  culturalResults: CulturalResult[];
   setActiveTab: (tab: string) => void;
 }
 
-export default function EventsSection({ categories, matches, setActiveTab }: EventsSectionProps) {
+export default function EventsSection({ categories, matches, culturalResults, setActiveTab }: EventsSectionProps) {
   const [expandedGroupId, setExpandedGroupId] = useState<string | null>(null);
   
   // Group categories by base name (e.g., "Football Boys" and "Football Girls" -> "Football")
@@ -50,6 +51,9 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
         key={groupName}
         layoutId={`card-${groupName}`}
         onClick={() => setExpandedGroupId(groupName)}
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
         className="bg-white/5 border border-border rounded-[32px] p-8 flex flex-col h-full hover:border-maple/30 transition-all group cursor-pointer"
       >
         <div className="flex items-start justify-between mb-6">
@@ -185,41 +189,97 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
                           </div>
 
                           <div className="w-full md:w-96 shrink-0 space-y-8">
-                            <h4 className="text-xl font-display uppercase tracking-widest flex items-center justify-between">
-                              Matches
-                              <span className="text-[10px] font-bold text-muted">{catMatches.length} Total</span>
-                            </h4>
-                            
-                            <div className="space-y-12">
-                              {catMatches.length > 0 ? (
-                                (() => {
-                                  const matchesByGrade: Record<string, Match[]> = {};
-                                  catMatches.forEach(m => {
-                                    const grade = m.eligible_years || 'General';
-                                    if (!matchesByGrade[grade]) matchesByGrade[grade] = [];
-                                    matchesByGrade[grade].push(m);
-                                  });
+                            {cat.category_type === 'sport' ? (
+                              <>
+                                <h4 className="text-xl font-display uppercase tracking-widest flex items-center justify-between">
+                                  Matches
+                                  <span className="text-[10px] font-bold text-muted">{catMatches.length} Total</span>
+                                </h4>
+                                
+                                <div className="space-y-12">
+                                  {catMatches.length > 0 ? (
+                                    (() => {
+                                      const matchesByGrade: Record<string, Match[]> = {};
+                                      catMatches.forEach(m => {
+                                        const grade = m.eligible_years || 'General';
+                                        if (!matchesByGrade[grade]) matchesByGrade[grade] = [];
+                                        matchesByGrade[grade].push(m);
+                                      });
 
-                                  return Object.entries(matchesByGrade).map(([grade, gradeMatches]) => (
-                                    <div key={grade} className="space-y-6">
-                                      <div className="flex items-center gap-4">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-maple" />
-                                        <h5 className="text-sm font-display uppercase tracking-widest text-maple/90">{grade}</h5>
-                                      </div>
-                                      <div className="grid grid-cols-1 gap-4">
-                                        {gradeMatches.map(match => (
-                                          <MatchCard key={match.id} match={match} compact />
-                                        ))}
-                                      </div>
+                                      return Object.entries(matchesByGrade).map(([grade, gradeMatches]) => (
+                                        <div key={grade} className="space-y-6">
+                                          <div className="flex items-center gap-4">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-maple" />
+                                            <h5 className="text-sm font-display uppercase tracking-widest text-maple/90">{grade}</h5>
+                                          </div>
+                                          <div className="grid grid-cols-1 gap-4">
+                                            {gradeMatches.map(match => (
+                                              <MatchCard key={match.id} match={match} compact />
+                                            ))}
+                                          </div>
+                                        </div>
+                                      ));
+                                    })()
+                                  ) : (
+                                    <div className="bg-white/5 border border-border border-dashed rounded-3xl p-8 text-center">
+                                      <p className="text-muted text-[10px] font-bold uppercase tracking-widest">No matches scheduled</p>
                                     </div>
-                                  ));
-                                })()
-                              ) : (
-                                <div className="bg-white/5 border border-border border-dashed rounded-3xl p-8 text-center">
-                                  <p className="text-muted text-[10px] font-bold uppercase tracking-widest">No matches scheduled</p>
+                                  )}
                                 </div>
-                              )}
-                            </div>
+                              </>
+                            ) : (
+                              <>
+                                <h4 className="text-xl font-display uppercase tracking-widest flex items-center justify-between">
+                                  Rankings
+                                  <span className="text-[10px] font-bold text-muted">Final Results</span>
+                                </h4>
+                                
+                                <div className="space-y-12">
+                                  {(() => {
+                                    const catResults = culturalResults.filter(r => r.category_id === cat.id);
+                                    if (catResults.length === 0) {
+                                      return (
+                                        <div className="bg-white/5 border border-border border-dashed rounded-3xl p-8 text-center">
+                                          <p className="text-muted text-[10px] font-bold uppercase tracking-widest">Results pending</p>
+                                        </div>
+                                      );
+                                    }
+
+                                    const resultsByGrade: Record<string, CulturalResult[]> = {};
+                                    catResults.forEach(r => {
+                                      const grade = r.eligible_years || 'General';
+                                      if (!resultsByGrade[grade]) resultsByGrade[grade] = [];
+                                      resultsByGrade[grade].push(r);
+                                    });
+
+                                    return Object.entries(resultsByGrade).map(([grade, gradeResults]) => (
+                                      <div key={grade} className="space-y-6">
+                                        <div className="flex items-center gap-4 px-2">
+                                          <div className="w-2 h-2 rounded-full bg-maple" />
+                                          <h4 className="text-sm font-display uppercase tracking-widest text-maple/90">{grade}</h4>
+                                        </div>
+                                        <div className="grid grid-cols-1 gap-3">
+                                          {gradeResults.sort((a, b) => (a.rank || 99) - (b.rank || 99)).map((result) => (
+                                            <div key={result.id} className="bg-white/5 border border-white/5 p-4 rounded-2xl flex items-center justify-between group hover:bg-white/10 transition-all">
+                                              <div className="flex items-center gap-4">
+                                                <div className={cn(
+                                                  "w-8 h-8 rounded-lg flex items-center justify-center font-display text-sm",
+                                                  result.rank === 1 ? "bg-maple text-bg" : "bg-white/5 text-muted"
+                                                )}>
+                                                  {result.rank}
+                                                </div>
+                                                <span className="font-display text-sm uppercase tracking-wider">{result.house?.name}</span>
+                                              </div>
+                                              <span className="font-ui text-[10px] font-bold text-maple">{result.points} PTS</span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ));
+                                  })()}
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
