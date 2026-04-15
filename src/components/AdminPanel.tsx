@@ -398,23 +398,6 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
   const [localSettings, setLocalSettings] = useState<Record<string, string>>({});
   const [hasChanges, setHasChanges] = useState(false);
   const [selectedResultCategory, setSelectedResultCategory] = useState<string | null>(null);
-  const sportsPdfRef = React.useRef<HTMLInputElement>(null);
-  const culturePdfRef = React.useRef<HTMLInputElement>(null);
-  const selectedPdfRef = React.useRef<HTMLInputElement>(null);
-  const logoPdfRef = React.useRef<HTMLInputElement>(null);
-
-  // Ensure storage bucket exists
-  React.useEffect(() => {
-    const initBucket = async () => {
-      if (!supabase) return;
-      try {
-        await supabase.storage.createBucket('ucsf-media', { public: true });
-      } catch (e) {
-        // Ignore error if bucket already exists
-      }
-    };
-    initBucket();
-  }, []);
 
   // Load pending changes from localStorage on mount
   React.useEffect(() => {
@@ -2535,7 +2518,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               ) : (
                                 <ImageIcon size={28} className="text-muted/20" />
                               )}
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" onClick={() => logoPdfRef.current?.click()}>
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/logo:opacity-100 flex items-center justify-center transition-opacity cursor-pointer" onClick={() => document.getElementById('school-logo-upload')?.click()}>
                                 <Upload size={20} className="text-white" />
                               </div>
                             </div>
@@ -2549,7 +2532,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                   onChange={(e) => handleSettingChange('school_logo_url', e.target.value)}
                                 />
                                 <button 
-                                  onClick={() => logoPdfRef.current?.click()}
+                                  onClick={() => document.getElementById('school-logo-upload')?.click()}
                                   className="bg-white/5 hover:bg-white/10 text-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-white/5 transition-all active:scale-90 shadow-lg shrink-0"
                                   title="Upload Logo"
                                 >
@@ -2557,7 +2540,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                 </button>
                                 <input 
                                   type="file"
-                                  ref={logoPdfRef}
+                                  id="school-logo-upload"
                                   className="hidden"
                                   accept="image/*"
                                   onChange={async (e) => {
@@ -2604,7 +2587,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                 onChange={(e) => handleSettingChange('sports_schedule_url', e.target.value)}
                               />
                               <button 
-                                onClick={() => sportsPdfRef.current?.click()}
+                                onClick={() => document.getElementById('sports-pdf-upload')?.click()}
                                 className="bg-white/5 hover:bg-white/10 text-white p-4 rounded-2xl border border-white/5 transition-all active:scale-90"
                                 title="Upload PDF"
                               >
@@ -2612,7 +2595,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               </button>
                               <input 
                                 type="file"
-                                ref={sportsPdfRef}
+                                id="sports-pdf-upload"
                                 className="hidden"
                                 accept="application/pdf"
                                 onChange={async (e) => {
@@ -2645,7 +2628,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                 onChange={(e) => handleSettingChange('culture_schedule_url', e.target.value)}
                               />
                               <button 
-                                onClick={() => culturePdfRef.current?.click()}
+                                onClick={() => document.getElementById('culture-pdf-upload')?.click()}
                                 className="bg-white/5 hover:bg-white/10 text-white p-4 rounded-2xl border border-white/5 transition-all active:scale-90"
                                 title="Upload PDF"
                               >
@@ -2653,7 +2636,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               </button>
                               <input 
                                 type="file"
-                                ref={culturePdfRef}
+                                id="culture-pdf-upload"
                                 className="hidden"
                                 accept="application/pdf"
                                 onChange={async (e) => {
@@ -2686,7 +2669,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                 onChange={(e) => handleSettingChange('selected_students_url', e.target.value)}
                               />
                               <button 
-                                onClick={() => selectedPdfRef.current?.click()}
+                                onClick={() => document.getElementById('selected-pdf-upload')?.click()}
                                 className="bg-white/5 hover:bg-white/10 text-white p-4 rounded-2xl border border-white/5 transition-all active:scale-90"
                                 title="Upload PDF"
                               >
@@ -2694,7 +2677,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               </button>
                               <input 
                                 type="file"
-                                ref={selectedPdfRef}
+                                id="selected-pdf-upload"
                                 className="hidden"
                                 accept="application/pdf"
                                 onChange={async (e) => {
