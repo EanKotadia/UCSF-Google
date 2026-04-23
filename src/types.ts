@@ -1,67 +1,48 @@
-export type House = {
+export type Committee = {
   id: string;
   name: string;
-  color: string;
-  mascot: string | null;
-  mascot_name: string | null;
-  logo_url?: string | null;
-  banner_url?: string | null;
-  points: number;
-  rank_pos: number;
-  motto: string | null;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  bg_guide_url: string | null;
+  sort_order: number;
 };
 
-export type Category = {
-  id: string;
+export type MemberCategory = 'Secretariat' | 'OC' | 'EB' | 'Director' | "Charge d'Affaires" | 'Board of Directors';
+
+export type Member = {
+  id: number;
   name: string;
-  icon: string | null;
+  role: string;
+  bio: string | null;
+  image_url: string | null;
+  committee_id: string | null;
+  category: string;
   sort_order: number;
-  gender: string | null;
-  eligible_years: string | null;
-  category_type: 'sport' | 'cultural';
-  special_rules?: string | null;
-  is_active?: boolean;
-  registration_url?: string | null;
-  team_size?: string;
-  duration?: string;
-  image_url?: string | null;
-  judging_criteria?: { criterion: string; weight: string }[];
+  committee?: Committee;
+};
+
+export type Ranking = {
+  id: number;
+  committee_id: string;
+  name: string;
+  school: string;
+  award: string;
+  committee?: Committee;
+};
+
+export type SponsorTier = 'Platinum' | 'Gold' | 'Silver' | 'Bronze' | 'Partner';
+
+export type Sponsor = {
+  id: number;
+  name: string;
+  logo_url: string | null;
+  tier: string;
+  website_url: string | null;
+  sort_order: number;
 };
 
 export type MatchStatus = 'upcoming' | 'live' | 'completed';
-
-export type Match = {
-  id: number;
-  category_id: string;
-  match_no: number;
-  team1_id: string;
-  team2_id: string;
-  score1: number | null;
-  score2: number | null;
-  winner_id: string | null;
-  status: MatchStatus;
-  venue: string | null;
-  match_time: string | null;
-  eligible_years: string | null;
-  man_of_the_match?: string | null;
-  // Joined fields
-  category?: Category;
-  team1?: House;
-  team2?: House;
-  winner?: House;
-};
-
-export type CulturalResult = {
-  id: number;
-  category_id: string;
-  house_id: string;
-  rank: number | null;
-  points: number | null;
-  comments?: string | null;
-  // Joined fields
-  category?: Category;
-  house?: House;
-};
 
 export type ScheduleItem = {
   id: number;
@@ -71,9 +52,7 @@ export type ScheduleItem = {
   time_end: string | null;
   title: string;
   subtitle: string | null;
-  category: string | null;
   venue: string | null;
-  house_ids: string | null; // comma separated
   status: MatchStatus;
   sort_order: number;
 };
@@ -83,24 +62,13 @@ export type Setting = {
   val: string;
 };
 
-export type Registration = {
-  id: number;
-  event_id: number | null;
-  event_name: string;
-  student_name: string;
-  student_class: string;
-  student_section: string;
-  file_url: string | null;
-  created_at: string;
-};
-
 export type GalleryItem = {
   id: number;
   title: string;
   type: 'image' | 'video';
   url: string;
   thumbnail_url: string | null;
-  year?: number; // 2025 or 2026
+  year?: number;
   created_at: string;
 };
 
