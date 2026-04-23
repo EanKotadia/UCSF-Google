@@ -7,9 +7,6 @@ import {
   Sponsor,
   ScheduleItem,
   Setting,
-  GalleryItem,
-  Notice,
-  StagedChange,
   Profile
 } from '../types';
 
@@ -21,9 +18,6 @@ const globalCache: Record<string, any> = {
   sponsors: null,
   schedule: null,
   settings: null,
-  gallery: null,
-  notices: null,
-  stagedChanges: null,
   profile: null,
   lastFetched: 0
 };
@@ -49,9 +43,6 @@ export function useUCSFData() {
   const [sponsors, setSponsors] = useState<Sponsor[]>(globalCache.sponsors || []);
   const [schedule, setSchedule] = useState<ScheduleItem[]>(globalCache.schedule || []);
   const [settings, setSettings] = useState<Record<string, string>>(globalCache.settings || {});
-  const [gallery, setGallery] = useState<GalleryItem[]>(globalCache.gallery || []);
-  const [notices, setNotices] = useState<Notice[]>(globalCache.notices || []);
-  const [stagedChanges, setStagedChanges] = useState<StagedChange[]>(globalCache.stagedChanges || []);
   const [profile, setProfile] = useState<Profile | null>(globalCache.profile || null);
   const [loading, setLoading] = useState(!globalCache.lastFetched);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -106,30 +97,6 @@ export function useUCSFData() {
       });
       setSettings(settingsMap);
       globalCache.settings = settingsMap;
-    }
-  };
-
-  const fetchGallery = async () => {
-    const { data } = await supabase!.from('gallery').select('*').order('year', { ascending: false }).order('created_at', { ascending: false });
-    if (data) {
-      setGallery(data);
-      globalCache.gallery = data;
-    }
-  };
-
-  const fetchNotices = async () => {
-    const { data } = await supabase!.from('notices').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setNotices(data);
-      globalCache.notices = data;
-    }
-  };
-
-  const fetchStagedChanges = async () => {
-    const { data } = await supabase!.from('staged_changes').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setStagedChanges(data);
-      globalCache.stagedChanges = data;
     }
   };
 
@@ -190,10 +157,7 @@ export function useUCSFData() {
         withRetry(fetchRankings),
         withRetry(fetchSponsors),
         withRetry(fetchSchedule),
-        withRetry(fetchSettings),
-        withRetry(fetchGallery),
-        withRetry(fetchNotices),
-        withRetry(fetchStagedChanges)
+        withRetry(fetchSettings)
       ]);
       
       globalCache.lastFetched = Date.now();
@@ -238,18 +202,6 @@ export function useUCSFData() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, fetchSettings)
       .subscribe();
 
-    const gallerySub = supabase.channel('gallery-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'gallery' }, fetchGallery)
-      .subscribe();
-
-    const noticesSub = supabase.channel('notices-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notices' }, fetchNotices)
-      .subscribe();
-
-    const stagedSub = supabase.channel('staged-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'staged_changes' }, fetchStagedChanges)
-      .subscribe();
-
     const profileSub = supabase.channel('profile-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchProfile)
       .subscribe();
@@ -262,9 +214,6 @@ export function useUCSFData() {
         supabase.removeChannel(sponsorsSub);
         supabase.removeChannel(scheduleSub);
         supabase.removeChannel(settingsSub);
-        supabase.removeChannel(gallerySub);
-        supabase.removeChannel(noticesSub);
-        supabase.removeChannel(stagedSub);
         supabase.removeChannel(profileSub);
       }
     };
@@ -279,9 +228,6 @@ export function useUCSFData() {
     sponsors,
     schedule,
     settings,
-    gallery,
-    notices,
-    stagedChanges,
     profile,
     loading,
     isRefreshing,

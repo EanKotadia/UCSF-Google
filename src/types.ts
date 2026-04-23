@@ -8,7 +8,7 @@ export type Committee = {
   sort_order: number;
 };
 
-export type MemberCategory = 'Secretariat' | 'OC' | 'EB' | 'Director' | "Charge d'Affaires" | 'Board of Directors';
+export type MemberCategory = 'Navigator' | "Charge d'Affaires" | 'Director' | 'EB' | 'OC';
 
 export type Member = {
   id: number;
@@ -62,38 +62,9 @@ export type Setting = {
   val: string;
 };
 
-export type GalleryItem = {
-  id: number;
-  title: string;
-  type: 'image' | 'video';
-  url: string;
-  thumbnail_url: string | null;
-  year?: number;
-  created_at: string;
-};
-
-export type Notice = {
-  id: number;
-  title: string;
-  content: string;
-  priority: 'low' | 'medium' | 'high';
-  created_at: string;
-};
-
 export type Profile = {
   id: string;
   email: string;
   is_super_admin: boolean;
-  created_at: string;
-};
-
-export type StagedChange = {
-  id: number;
-  table_name: string;
-  record_id: string;
-  updates: any;
-  created_by: string;
-  created_by_email: string;
-  status: 'pending' | 'approved' | 'discarded';
   created_at: string;
 };
