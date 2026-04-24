@@ -25,6 +25,8 @@ export type Category = {
   team_size?: string;
   duration?: string;
   image_url?: string | null;
+  bg_guide_url?: string | null;
+  oc_members?: string | null;
   judging_criteria?: { criterion: string; weight: string }[];
 };
 
@@ -44,7 +46,6 @@ export type Match = {
   match_time: string | null;
   eligible_years: string | null;
   man_of_the_match?: string | null;
-  // Joined fields
   category?: Category;
   team1?: House;
   team2?: House;
@@ -58,7 +59,6 @@ export type CulturalResult = {
   rank: number | null;
   points: number | null;
   comments?: string | null;
-  // Joined fields
   category?: Category;
   house?: House;
 };
@@ -73,7 +73,7 @@ export type ScheduleItem = {
   subtitle: string | null;
   category: string | null;
   venue: string | null;
-  house_ids: string | null; // comma separated
+  house_ids: string | null;
   status: MatchStatus;
   sort_order: number;
 };
@@ -100,7 +100,7 @@ export type GalleryItem = {
   type: 'image' | 'video';
   url: string;
   thumbnail_url: string | null;
-  year?: number; // 2025 or 2026
+  year?: number;
   created_at: string;
 };
 

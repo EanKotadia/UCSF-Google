@@ -2,13 +2,13 @@ import React, { useState, useMemo } from 'react';
 import Papa from 'papaparse';
 import { supabase } from '../lib/supabase';
 import { 
-  Shield, 
-  LogIn, 
-  LogOut, 
-  RefreshCw, 
-  Save, 
+  Shield,
+  LogIn,
+  LogOut,
+  RefreshCw,
+  Save,
   Trophy, 
-  Activity, 
+  Activity,
   Calendar, 
   Settings as SettingsIcon,
   Search,
@@ -37,9 +37,9 @@ import { Match, House, ScheduleItem, Category, Notice, StagedChange, Profile, Cu
 import { cn } from '../lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
-const CategoryCard = ({ 
-  cat, 
-  deleteCategory, 
+const CategoryCard = ({
+  cat,
+  deleteCategory,
   updateCategory,
   handleSupabaseError,
   culturalResults,
@@ -47,9 +47,9 @@ const CategoryCard = ({
   addCulturalResult,
   updateCulturalResult,
   deleteCulturalResult
-}: { 
-  cat: Category, 
-  deleteCategory: (id: string) => void, 
+}: {
+  cat: Category,
+  deleteCategory: (id: string) => void,
   updateCategory: (id: string, updates: Partial<Category>) => void,
   handleSupabaseError: (err: any, context: string) => void,
   culturalResults: CulturalResult[],
@@ -60,15 +60,15 @@ const CategoryCard = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [showDynasty, setShowDynasty] = useState(false);
-  
+
   const catResults = culturalResults.filter(r => r.category_id === cat.id);
 
   return (
-    <motion.div 
+    <motion.div
       layout
       className="bg-bg2 border border-white/5 rounded-[1.5rem] sm:rounded-[3rem] p-5 sm:p-10 group hover:border-maple/30 transition-all shadow-2xl space-y-6 sm:space-y-8 relative flex flex-col h-full"
     >
-      <button 
+      <button
         onClick={() => deleteCategory(cat.id)}
         className="absolute top-6 right-6 w-10 h-10 bg-danger/10 hover:bg-danger text-danger hover:text-white rounded-xl transition-all border border-danger/20 flex items-center justify-center active:scale-90 z-30"
         title="Delete Category"
@@ -79,9 +79,9 @@ const CategoryCard = ({
     <div className="flex flex-col sm:flex-row items-start justify-between gap-6 sm:gap-8 pr-12">
       <div className="relative group/icon w-16 h-16 sm:w-24 sm:h-24 bg-white/5 rounded-[1.2rem] sm:rounded-[2rem] flex items-center justify-center text-3xl sm:text-5xl border border-white/5 group-hover:border-maple/50 transition-all overflow-hidden shadow-inner shrink-0">
         {cat.image_url ? (
-          <img 
-            src={cat.image_url} 
-            alt={cat.name} 
+          <img
+            src={cat.image_url}
+            alt={cat.name}
             className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
             referrerPolicy="no-referrer"
           />
@@ -148,14 +148,14 @@ const CategoryCard = ({
             onChange={(e) => updateCategory(cat.id, { image_url: e.target.value })}
             id={`cat-img-${cat.id}`}
           />
-          <button 
+          <button
             onClick={() => document.getElementById(`cat-upload-${cat.id}`)?.click()}
             className="bg-white/5 hover:bg-white/10 text-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-white/5 transition-all active:scale-90 shadow-lg"
             title="Upload Image"
           >
             <Upload size={16} />
           </button>
-          <input 
+          <input
             type="file"
             id={`cat-upload-${cat.id}`}
             className="hidden"
@@ -217,7 +217,7 @@ const CategoryCard = ({
       <div className="col-span-2 space-y-4">
         <div className="flex items-center justify-between">
           <label className="font-ui text-[9px] font-bold text-muted uppercase tracking-[0.3em] ml-1">Judging Criteria</label>
-          <button 
+          <button
             onClick={() => {
               const current = cat.judging_criteria || [];
               updateCategory(cat.id, { judging_criteria: [...current, { criterion: 'New Criterion', weight: '10 pts' }] });
@@ -252,7 +252,7 @@ const CategoryCard = ({
                   updateCategory(cat.id, { judging_criteria: newCriteria });
                 }}
               />
-              <button 
+              <button
                 onClick={() => {
                   const newCriteria = (cat.judging_criteria || []).filter((_, i) => i !== idx);
                   updateCategory(cat.id, { judging_criteria: newCriteria });
@@ -273,7 +273,7 @@ const CategoryCard = ({
               <Trophy size={18} className="text-maple" />
               <h4 className="font-display text-lg uppercase tracking-wider text-white">Dynasty Points</h4>
             </div>
-            <button 
+            <button
               onClick={() => addCulturalResult(cat.id)}
               className="bg-maple/10 hover:bg-maple/20 text-maple py-2 px-4 rounded-lg font-ui text-[9px] font-bold uppercase tracking-widest transition-all border border-maple/20 flex items-center gap-2"
             >
@@ -309,7 +309,7 @@ const CategoryCard = ({
                     onChange={(e) => updateCulturalResult(result.id, { points: parseInt(e.target.value) || 0 })}
                   />
                 </div>
-                <button 
+                <button
                   onClick={() => deleteCulturalResult(result.id)}
                   className="p-2 text-danger/50 hover:text-danger rounded-lg transition-all"
                 >
@@ -426,7 +426,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
   const categoriesByVenue = useMemo(() => {
     const map: Record<string, Set<string>> = { 'all': new Set(categories.map(c => c.id)) };
-    
+
     allVenues.forEach(v => map[v] = new Set());
 
     schedule.forEach(s => {
@@ -481,14 +481,14 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
   const publishAllChanges = async () => {
     if (!supabase || !(await checkSession())) return;
-    
+
     // If super admin, publish directly. If not, submit for approval.
     const isSuperAdmin = profile?.is_super_admin;
 
     setConfirmModal({
       isOpen: true,
       title: isSuperAdmin ? 'Publish All Changes' : 'Submit for Approval',
-      message: isSuperAdmin 
+      message: isSuperAdmin
         ? 'This will push all staged changes to the live website. Are you sure?'
         : 'Your changes will be submitted to the Super Admin for approval. Continue?',
       onConfirm: async () => {
@@ -519,7 +519,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
           } else {
             // Submit to staged_changes table
             const stagedEntries: any[] = [];
-            
+
             // Handle settings
             if (hasChanges) {
               stagedEntries.push({
@@ -748,7 +748,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
   const deleteMatch = async (id: number) => {
     if (!supabase || !(await checkSession())) return;
-    
+
     setConfirmModal({
       isOpen: true,
       title: 'Delete Match',
@@ -790,7 +790,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
   const deleteSchedule = async (id: number) => {
     if (!supabase || !(await checkSession())) return;
-    
+
     setConfirmModal({
       isOpen: true,
       title: 'Delete Event',
@@ -830,7 +830,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
   const deleteCategory = async (id: string) => {
     if (!supabase || !(await checkSession())) return;
-    
+
     setConfirmModal({
       isOpen: true,
       title: 'Delete Category',
@@ -867,7 +867,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
   const handleNoticeSubmit = async () => {
     if (!supabase || !(await checkSession())) return;
-    
+
     if (noticeModal?.notice) {
       // It's an update, stage it
       stageChange('notices', noticeModal.notice.id, noticeFormData);
@@ -892,7 +892,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
   const deleteNotice = async (id: number) => {
     if (!supabase || !(await checkSession())) return;
-    
+
     setConfirmModal({
       isOpen: true,
       title: 'Delete Notice',
@@ -933,15 +933,15 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
   const addGalleryItems = async (files: FileList) => {
     if (!supabase || !(await checkSession())) return;
     setLoading(true);
-    
+
     try {
       const uploadPromises = Array.from(files).map(async (file) => {
         const fileName = `gallery_${Date.now()}_${Math.random().toString(36).substring(7)}`;
         const { error: uploadError } = await supabase.storage.from('ucsf-media').upload(fileName, file);
         if (uploadError) throw uploadError;
-        
+
         const { data: { publicUrl } } = supabase.storage.from('ucsf-media').getPublicUrl(fileName);
-        
+
         return {
           title: '', // No name initially as requested
           url: publicUrl,
@@ -953,7 +953,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
       const newItems = await Promise.all(uploadPromises);
       const { error } = await supabase.from('gallery').insert(newItems);
       if (error) throw error;
-      
+
       refresh();
       setSuccess(`Successfully uploaded ${files.length} items to gallery`);
     } catch (err: any) {
@@ -1004,9 +1004,9 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
       const response = await fetch(csvUrl);
       if (!response.ok) throw new Error('Failed to fetch spreadsheet data');
-      
+
       const csvText = await response.text();
-      
+
       Papa.parse(csvText, {
         header: true,
         skipEmptyLines: true,
@@ -1123,7 +1123,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
   const filteredMatches = useMemo(() => {
     return matches.filter(m => {
-      const matchesSearch = 
+      const matchesSearch =
         m.team1?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.team2?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         m.venue?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1139,7 +1139,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
         <div className="absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-ebony opacity-[0.18] blur-[100px] rounded-full animate-[orbdrift_10s_ease-in-out_infinite_alternate]" />
         <div className="absolute bottom-[-100px] right-[-80px] w-[400px] h-[400px] bg-maple opacity-[0.15] blur-[100px] rounded-full animate-[orbdrift_12s_ease-in-out_infinite_alternate-reverse]" />
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="max-w-md w-full relative z-10"
@@ -1147,8 +1147,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
           <div className="card-glass overflow-hidden shadow-2xl">
             <div className="p-10">
               <h2 className="text-4xl text-center text-text mb-2 tracking-wider uppercase">Admin Access</h2>
-              <p className="sec-label justify-center mb-10">Secure Control Interface • UCSF 2026</p>
-              
+              <p className="sec-label justify-center mb-10">Secure Control Interface • Harmonia MUN 2026</p>
+
               <form onSubmit={handleLogin} className="space-y-6">
                 <div className="form-group">
                   <label className="form-label">Email Address</label>
@@ -1173,7 +1173,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   />
                 </div>
                 {error && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="flex items-center gap-2 text-danger text-[10px] font-bold justify-center uppercase tracking-widest bg-danger/10 py-2"
@@ -1204,7 +1204,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
         {/* Sidebar Overlay for Mobile */}
         <AnimatePresence>
           {isSidebarOpen && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -1221,16 +1221,16 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
         )}>
           <div className="p-10 border-b border-white/5 flex items-center justify-between">
             <div className="flex items-center justify-center flex-1">
-              <motion.img 
+              <motion.img
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                src={localSettings['school_logo_url'] || "https://www.shalomhills.com/images/logo.png"} 
-                alt="School Logo" 
+                src={localSettings['school_logo_url'] || "https://www.shalomhills.com/images/logo.png"}
+                alt="School Logo"
                 className="h-14 object-contain drop-shadow-2xl"
                 referrerPolicy="no-referrer"
               />
             </div>
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(false)}
               className="lg:hidden p-2 text-muted hover:text-white"
             >
@@ -1258,8 +1258,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                 }}
                 className={cn(
                   "w-full flex items-center justify-between px-5 py-4 font-sans text-[11px] font-bold uppercase tracking-[0.2em] transition-all group rounded-2xl border border-transparent",
-                  activeTab === item.id 
-                    ? "bg-maple text-bg shadow-xl shadow-maple/20 border-maple/50" 
+                  activeTab === item.id
+                    ? "bg-maple text-bg shadow-xl shadow-maple/20 border-maple/50"
                     : "text-muted hover:text-text hover:bg-white/5 hover:border-white/5"
                 )}
               >
@@ -1284,7 +1284,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
           <div className="p-6 border-t border-white/5 space-y-4">
             {onBack && (
-              <button 
+              <button
                 onClick={onBack}
                 className="w-full py-4 bg-white/5 hover:bg-white/10 text-white font-ui text-[10px] font-bold uppercase tracking-widest transition-all rounded-xl flex items-center justify-center gap-2 border border-white/5"
               >
@@ -1293,7 +1293,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
               </button>
             )}
             {hasPendingChanges && (
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               className="p-5 bg-maple/10 border border-maple/30 rounded-[2rem] backdrop-blur-sm space-y-3"
@@ -1304,14 +1304,14 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   {profile?.is_super_admin ? 'Unpublished Changes' : 'Pending Approval'}
                 </p>
               </div>
-              <button 
+              <button
                 onClick={publishAllChanges}
                 className="w-full py-4 bg-maple text-bg font-ui text-[10px] font-bold uppercase tracking-widest hover:bg-maple/90 transition-all shadow-xl shadow-maple/30 rounded-xl active:scale-95 flex items-center justify-center gap-2"
               >
                 <Save size={14} />
                 {profile?.is_super_admin ? 'Publish Changes' : 'Submit for Approval'}
               </button>
-              <button 
+              <button
                 onClick={discardAllChanges}
                 className="w-full py-3 bg-white/5 text-muted font-ui text-[9px] font-bold uppercase tracking-widest hover:bg-white/10 transition-all rounded-xl active:scale-95"
               >
@@ -1355,7 +1355,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
         {/* Top Header */}
         <header className="h-24 bg-[#0d1b33]/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-6 lg:px-12 flex-shrink-0 z-40">
           <div className="flex items-center gap-4 lg:gap-6">
-            <button 
+            <button
               onClick={() => setIsSidebarOpen(true)}
               className="lg:hidden p-3 bg-white/5 rounded-xl text-muted hover:text-white transition-all"
             >
@@ -1389,7 +1389,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
               <div className="w-2 h-2 rounded-full bg-success shadow-[0_0_15px_rgba(34,197,94,0.6)] animate-pulse" />
               <span className="font-sans text-[10px] font-bold text-muted uppercase tracking-[0.2em]">System Status: Online</span>
             </div>
-            <button 
+            <button
               onClick={refresh}
               className="w-10 h-10 lg:w-12 lg:h-12 bg-white/5 hover:bg-white/10 border border-white/5 rounded-2xl text-muted hover:text-maple transition-all flex items-center justify-center active:scale-95"
               title="Refresh Data"
@@ -1403,7 +1403,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
         <main key={discardKey} className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-10 custom-scrollbar">
           <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8">
             {error && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="p-5 border border-danger/30 bg-danger/5 rounded-2xl flex items-center gap-4 text-danger shadow-lg shadow-danger/5"
@@ -1422,7 +1422,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
             )}
 
             {success && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="p-5 border border-success/30 bg-success/5 rounded-2xl flex items-center gap-4 text-success shadow-lg shadow-success/5"
@@ -1454,7 +1454,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                       <h2 className="text-2xl sm:text-5xl font-display uppercase tracking-tighter text-white">Event Results</h2>
                       <p className="text-muted mt-2 font-sans text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em]">Enter scores and rankings for real-time feedback</p>
                     </div>
-                    
+
                     <div className="flex flex-col gap-4 w-full lg:w-auto">
                       {/* Venue Selector */}
                       <div className="flex items-center flex-nowrap gap-2 bg-white/5 p-1 border border-white/5 rounded-xl sm:rounded-2xl overflow-x-auto no-scrollbar max-w-full w-full pb-2">
@@ -1520,7 +1520,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               <Activity size={20} className="text-maple" />
                               <h3 className="text-xl sm:text-2xl font-display uppercase tracking-tighter text-white">Match Scores</h3>
                             </div>
-                            <button 
+                            <button
                               onClick={() => addMatch(selectedResultCategory)}
                               className="bg-maple/10 hover:bg-maple/20 text-maple py-2 px-4 rounded-lg font-ui text-[9px] font-bold uppercase tracking-[0.2em] transition-all border border-maple/20 flex items-center gap-2 active:scale-95"
                             >
@@ -1530,7 +1530,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             {displayMatches.filter(m => m.category_id === selectedResultCategory).map(match => (
                               <div key={match.id} className="bg-bg2 border border-white/5 rounded-[1.5rem] sm:rounded-[2rem] p-6 sm:p-8 space-y-6 relative group">
-                                <button 
+                                <button
                                   onClick={() => deleteMatch(match.id)}
                                   className="absolute top-4 right-4 w-8 h-8 bg-danger/5 hover:bg-danger text-danger hover:text-white rounded-lg transition-all border border-danger/10 flex items-center justify-center active:scale-90 opacity-0 group-hover:opacity-100 z-10"
                                   title="Delete Match"
@@ -1541,12 +1541,12 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                   <span className="font-ui text-[9px] font-bold text-muted uppercase tracking-widest">Match #{match.match_no}</span>
                                   <span className="font-ui text-[9px] font-bold text-maple uppercase tracking-widest">{match.eligible_years}</span>
                                 </div>
-                                
+
                                 <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4">
                                   <div className="text-center space-y-2">
                                     <p className="font-display text-base sm:text-lg uppercase truncate">{houses.find(h => h.id === match.team1_id)?.name}</p>
-                                    <input 
-                                      type="number" 
+                                    <input
+                                      type="number"
                                       value={match.score1}
                                       onChange={(e) => updateMatch(match.id, { score1: parseInt(e.target.value) })}
                                       className="w-full bg-white/5 border border-white/5 rounded-xl py-3 text-center text-2xl font-display text-white outline-none focus:border-maple/50"
@@ -1555,8 +1555,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                   <div className="text-center text-muted font-display text-xl sm:text-2xl py-2 sm:py-0">VS</div>
                                   <div className="text-center space-y-2">
                                     <p className="font-display text-base sm:text-lg uppercase truncate">{houses.find(h => h.id === match.team2_id)?.name}</p>
-                                    <input 
-                                      type="number" 
+                                    <input
+                                      type="number"
                                       value={match.score2}
                                       onChange={(e) => updateMatch(match.id, { score2: parseInt(e.target.value) })}
                                       className="w-full bg-white/5 border border-white/5 rounded-xl py-3 text-center text-2xl font-display text-white outline-none focus:border-maple/50"
@@ -1611,8 +1611,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   <div className="flex flex-col lg:flex-row items-center justify-between gap-6 bg-[#0d1b33] p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-white/5 shadow-2xl max-w-full overflow-hidden">
                     <div className="w-full lg:flex-1 min-w-0 lg:min-w-[300px] relative group">
                       <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-muted group-focus-within:text-maple transition-colors" size={18} />
-                      <input 
-                        type="text" 
+                      <input
+                        type="text"
                         placeholder="Search matches, teams, venues..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -1668,7 +1668,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                             </button>
                           ))}
                         </div>
-                        <button 
+                        <button
                           onClick={() => addMatch(categoryFilter !== 'all' ? categoryFilter : undefined)}
                           className="bg-maple hover:bg-maple/90 text-bg py-4 px-6 rounded-xl font-ui text-[10px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-maple/20 flex items-center gap-2 shrink-0 active:scale-95"
                         >
@@ -1683,13 +1683,13 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   <div className="space-y-16 pb-20">
                     {displayCategories.map(cat => {
                       const catMatches = displayMatches.filter(m => m.category_id === cat.id);
-                      
+
                       // Only show if category matches filter and search
                       const matchesFilter = categoryFilter === 'all' || categoryFilter === cat.id;
                       const venueFilter = matchVenueFilter === 'all' || catMatches.some(m => m.venue === matchVenueFilter);
-                      const matchesSearch = searchQuery === '' || 
+                      const matchesSearch = searchQuery === '' ||
                         cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        catMatches.some(m => 
+                        catMatches.some(m =>
                           houses.find(h => h.id === m.team1_id)?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           houses.find(h => h.id === m.team2_id)?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           m.venue?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -1721,7 +1721,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                 </p>
                               </div>
                             </div>
-                            <button 
+                            <button
                               onClick={() => addMatch(cat.id)}
                               className="w-full sm:w-auto sm:ml-auto bg-maple/10 hover:bg-maple/20 text-maple py-3 px-6 rounded-xl font-ui text-[10px] font-bold uppercase tracking-[0.2em] transition-all border border-maple/20 flex items-center justify-center gap-2 active:scale-95"
                             >
@@ -1740,7 +1740,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                 </div>
                                 <div className="grid grid-cols-1 gap-4">
                                   {gradeMatches.map((match) => (
-                                    <motion.div 
+                                    <motion.div
                                       key={match.id}
                                       layout
                                       className="bg-bg2 border border-white/5 rounded-3xl overflow-hidden group hover:border-maple/30 transition-all shadow-xl"
@@ -1803,9 +1803,9 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                         <div className="w-full flex-1 flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-8 bg-white/5 p-6 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] border border-white/5">
                                           <div className="w-full sm:flex-1 flex flex-col items-center sm:items-end gap-3">
                                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/10 border-2 border-maple/30 overflow-hidden shrink-0 shadow-lg">
-                                              <img 
-                                                src={houses.find(h => h.id === match.team1_id)?.logo_url || ''} 
-                                                alt="Team 1" 
+                                              <img
+                                                src={houses.find(h => h.id === match.team1_id)?.logo_url || ''}
+                                                alt="Team 1"
                                                 className="w-full h-full object-cover rounded-full"
                                                 referrerPolicy="no-referrer"
                                               />
@@ -1855,9 +1855,9 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
                                           <div className="w-full sm:flex-1 flex flex-col items-center sm:items-start gap-3">
                                             <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-white/10 border-2 border-maple/30 overflow-hidden shrink-0 shadow-lg">
-                                              <img 
-                                                src={houses.find(h => h.id === match.team2_id)?.logo_url || ''} 
-                                                alt="Team 2" 
+                                              <img
+                                                src={houses.find(h => h.id === match.team2_id)?.logo_url || ''}
+                                                alt="Team 2"
                                                 className="w-full h-full object-cover rounded-full"
                                                 referrerPolicy="no-referrer"
                                               />
@@ -1876,7 +1876,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
                                         {/* Actions */}
                                         <div className="flex flex-row lg:flex-col gap-3 w-full lg:w-auto justify-center">
-                                          <button 
+                                          <button
                                             onClick={() => deleteMatch(match.id)}
                                             className="w-10 h-10 sm:w-12 sm:h-12 bg-danger/5 hover:bg-danger text-danger hover:text-white rounded-xl sm:rounded-2xl transition-all border border-danger/10 flex items-center justify-center active:scale-90"
                                             title="Delete Match"
@@ -1947,7 +1947,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                         ))}
                       </div>
 
-                      <button 
+                      <button
                         onClick={addSchedule}
                         className="w-full sm:w-auto bg-maple hover:bg-maple/90 text-bg py-5 px-12 rounded-2xl font-ui text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-maple/20 flex items-center justify-center gap-3 group active:scale-95"
                       >
@@ -1961,8 +1961,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                     {displaySchedule
                       .filter(item => scheduleVenueFilter === 'all' || item.venue === scheduleVenueFilter)
                       .map((item) => (
-                      <motion.div 
-                        key={item.id} 
+                      <motion.div
+                        key={item.id}
                         layout
                         className="bg-[#0d1b33] border border-white/5 rounded-[3rem] p-10 shadow-2xl group hover:border-maple/30 transition-all flex flex-col relative overflow-hidden"
                       >
@@ -2004,7 +2004,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               </div>
                             </div>
                           </div>
-                          <button 
+                          <button
                             onClick={() => deleteSchedule(item.id)}
                             className="w-12 h-12 bg-danger/5 hover:bg-danger text-danger hover:text-white rounded-2xl transition-all border border-danger/10 flex items-center justify-center active:scale-90 opacity-0 group-hover:opacity-100"
                           >
@@ -2090,7 +2090,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                       <h2 className="text-3xl sm:text-4xl font-display uppercase tracking-tighter text-white">Event Categories</h2>
                       <p className="text-muted text-[10px] font-bold uppercase tracking-[0.3em] mt-3 opacity-60">Define sports and cultural event specifications</p>
                     </div>
-                    <button 
+                    <button
                       onClick={addCategory}
                       className="w-full sm:w-auto bg-maple hover:bg-maple/90 text-bg py-4 sm:py-5 px-8 sm:px-12 rounded-2xl font-ui text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-maple/20 flex items-center justify-center gap-3 group active:scale-95"
                     >
@@ -2109,8 +2109,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
                       {displayCategories.filter(c => c.category_type === 'sport' || !c.category_type).map((cat) => (
                         <div key={cat.id} className="h-full">
-                          <CategoryCard 
-                            cat={cat} 
+                          <CategoryCard
+                            cat={cat}
                             deleteCategory={deleteCategory}
                             updateCategory={updateCategory}
                             handleSupabaseError={handleSupabaseError}
@@ -2135,8 +2135,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-10">
                       {displayCategories.filter(c => c.category_type === 'cultural').map((cat) => (
                         <div key={cat.id} className="h-full">
-                          <CategoryCard 
-                            cat={cat} 
+                          <CategoryCard
+                            cat={cat}
                             deleteCategory={deleteCategory}
                             updateCategory={updateCategory}
                             handleSupabaseError={handleSupabaseError}
@@ -2167,15 +2167,15 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                       <p className="text-muted text-[10px] font-bold uppercase tracking-[0.3em] mt-3 opacity-60">Manage photos and videos for the gallery</p>
                     </div>
                     <div className="flex items-center gap-4 w-full sm:w-auto">
-                      <input 
-                        type="file" 
-                        id="gallery-multi-upload" 
-                        multiple 
-                        accept="image/*,video/*" 
-                        className="hidden" 
+                      <input
+                        type="file"
+                        id="gallery-multi-upload"
+                        multiple
+                        accept="image/*,video/*"
+                        className="hidden"
                         onChange={(e) => e.target.files && addGalleryItems(e.target.files)}
                       />
-                      <button 
+                      <button
                         onClick={() => document.getElementById('gallery-multi-upload')?.click()}
                         disabled={loading}
                         className="w-full sm:w-auto bg-maple hover:bg-maple/90 text-bg py-4 sm:py-5 px-8 sm:px-12 rounded-2xl font-ui text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-maple/20 flex items-center justify-center gap-3 group active:scale-95 disabled:opacity-50"
@@ -2188,7 +2188,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-10">
                     {displayGallery.map((item) => (
-                      <motion.div 
+                      <motion.div
                         key={item.id}
                         layout
                         className="bg-[#0d1b33] border border-white/5 rounded-[2rem] sm:rounded-[3rem] overflow-hidden group hover:border-maple/30 transition-all shadow-2xl"
@@ -2244,7 +2244,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                       <h2 className="text-2xl sm:text-4xl font-display uppercase tracking-tighter text-white">House Leaderboards</h2>
                       <p className="text-muted text-[10px] font-bold uppercase tracking-[0.3em] mt-3 opacity-60">Real-time house standings and point distribution</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => supabase?.rpc('recompute_points').then(() => refresh())}
                       className="w-full sm:w-auto bg-maple hover:bg-maple/90 text-bg py-4 sm:py-5 px-8 sm:px-12 rounded-2xl font-ui text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-maple/20 flex items-center justify-center gap-3 group active:scale-95"
                     >
@@ -2295,7 +2295,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                       <h2 className="text-2xl sm:text-4xl font-display uppercase tracking-tighter text-white">Notices & Bulletins</h2>
                       <p className="text-muted text-[10px] font-bold uppercase tracking-[0.3em] mt-3 opacity-60">Broadcast important information to all participants</p>
                     </div>
-                    <button 
+                    <button
                       onClick={() => {
                         setNoticeModal({ isOpen: true });
                         setNoticeFormData({ title: '', content: '', priority: 'low' });
@@ -2309,8 +2309,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-10">
                     {displayNotices.map(notice => (
-                      <motion.div 
-                        key={notice.id} 
+                      <motion.div
+                        key={notice.id}
                         layout
                         className="bg-[#0d1b33] border border-white/5 rounded-[1.5rem] sm:rounded-[3rem] p-5 sm:p-10 shadow-2xl group hover:border-maple/30 transition-all flex flex-col relative overflow-hidden"
                       >
@@ -2332,7 +2332,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                             {notice.priority} priority
                           </div>
                           <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-                            <button 
+                            <button
                               onClick={() => {
                                 setNoticeModal({ isOpen: true, notice });
                                 setNoticeFormData({ title: notice.title, content: notice.content, priority: notice.priority });
@@ -2341,7 +2341,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                             >
                               <Edit2 size={16} />
                             </button>
-                            <button 
+                            <button
                               onClick={() => deleteNotice(notice.id)}
                               className="w-10 h-10 bg-danger/5 hover:bg-danger text-danger hover:text-white rounded-xl flex items-center justify-center transition-all border border-danger/10 active:scale-90"
                             >
@@ -2352,7 +2352,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
                         <h4 className="text-2xl font-display uppercase tracking-tighter text-white mb-5 line-clamp-2 leading-tight">{notice.title}</h4>
                         <p className="text-muted text-[13px] leading-relaxed mb-10 flex-1 line-clamp-4 font-medium opacity-80">{notice.content}</p>
-                        
+
                         <div className="pt-8 border-t border-white/5 flex items-center justify-between">
                           <div className="flex items-center gap-3 text-muted/40">
                             <Calendar size={16} className="text-maple/50" />
@@ -2394,7 +2394,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                       <p className="text-muted text-[10px] font-bold uppercase tracking-[0.3em] mt-3 opacity-60">Configure global application parameters and social links</p>
                     </div>
                     {hasChanges && (
-                      <button 
+                      <button
                         onClick={saveAllSettings}
                         className="w-full sm:w-auto bg-maple hover:bg-maple/90 text-bg py-4 sm:py-5 px-8 sm:px-12 rounded-2xl font-ui text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl shadow-maple/20 flex items-center justify-center gap-3 group active:scale-95"
                       >
@@ -2459,14 +2459,14 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                                   placeholder="Logo URL..."
                                   onChange={(e) => handleSettingChange('school_logo_url', e.target.value)}
                                 />
-                                <button 
+                                <button
                                   onClick={() => document.getElementById('school-logo-upload')?.click()}
                                   className="bg-white/5 hover:bg-white/10 text-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-white/5 transition-all active:scale-90 shadow-lg shrink-0"
                                   title="Upload Logo"
                                 >
                                   <Upload size={20} />
                                 </button>
-                                <input 
+                                <input
                                   type="file"
                                   id="school-logo-upload"
                                   className="hidden"
@@ -2634,7 +2634,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white/5 rounded-xl sm:rounded-2xl flex items-center justify-center text-maple flex-shrink-0">
                             <History size={24} />
                           </div>
-                          
+
                           <div className="flex-1 space-y-2 w-full">
                             <div className="flex items-center gap-3">
                               <span className="px-3 py-1 bg-maple/10 text-maple text-[8px] font-bold uppercase tracking-widest rounded-lg border border-maple/20">
@@ -2654,15 +2654,15 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                               Submitted {new Date(change.created_at).toLocaleString()}
                             </p>
                           </div>
-                          
+
                           <div className="flex flex-row xl:flex-col gap-3 w-full xl:w-auto">
-                            <button 
+                            <button
                               onClick={() => approveChange(change)}
                               className="flex-1 xl:flex-none px-4 sm:px-6 py-3 sm:py-4 bg-success/10 hover:bg-success text-success hover:text-bg font-ui text-[9px] sm:text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border border-success/20 flex items-center justify-center gap-2"
                             >
                               <CheckCircle size={14} /> Approve
                             </button>
-                            <button 
+                            <button
                               onClick={() => discardStagedChange(change.id)}
                               className="flex-1 xl:flex-none px-4 sm:px-6 py-3 sm:py-4 bg-danger/10 hover:bg-danger text-danger hover:text-white font-ui text-[9px] sm:text-[10px] font-bold uppercase tracking-widest rounded-xl transition-all border border-danger/20 flex items-center justify-center gap-2"
                             >
@@ -2703,7 +2703,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   <p className="text-muted text-[9px] font-bold uppercase tracking-[0.2em] mt-1 opacity-40">Broadcast to all participants</p>
                 </div>
               </div>
-              
+
               <div className="space-y-8">
                 <div className="space-y-3">
                   <label className="font-ui text-[10px] font-bold text-muted uppercase tracking-[0.3em] ml-1">Notice Title</label>
@@ -2725,7 +2725,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                         onClick={() => setNoticeFormData({ ...noticeFormData, priority: p as any })}
                         className={cn(
                           "py-4 rounded-2xl font-ui text-[10px] font-bold uppercase tracking-[0.2em] transition-all border shadow-sm active:scale-95",
-                          noticeFormData.priority === p 
+                          noticeFormData.priority === p
                             ? (p === 'high' ? "bg-danger/20 border-danger text-danger" : p === 'medium' ? "bg-maple/20 border-maple text-maple" : "bg-white/10 border-white/20 text-white")
                             : "bg-white/5 border-white/5 text-muted hover:bg-white/10"
                         )}
@@ -2787,7 +2787,7 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   <p className="text-muted text-[9px] font-bold uppercase tracking-[0.2em] mt-1 opacity-40">Action Required</p>
                 </div>
               </div>
-              
+
               <p className="text-muted text-[13px] leading-relaxed font-medium opacity-80">
                 {confirmModal.message}
               </p>
@@ -2806,8 +2806,8 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
                   }}
                   className={cn(
                     "flex-1 py-5 rounded-2xl font-ui text-[11px] font-bold uppercase tracking-[0.2em] transition-all shadow-xl active:scale-95",
-                    confirmModal.title.toLowerCase().includes('delete') 
-                      ? "bg-danger hover:bg-danger/90 text-white shadow-danger/20" 
+                    confirmModal.title.toLowerCase().includes('delete')
+                      ? "bg-danger hover:bg-danger/90 text-white shadow-danger/20"
                       : "bg-maple hover:bg-maple/90 text-bg shadow-maple/20"
                   )}
                 >

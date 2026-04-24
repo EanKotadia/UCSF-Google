@@ -16,7 +16,7 @@ const ScheduleCard = React.memo(({ item, category, index = 0, onCategoryClick }:
   const isCompleted = item.status === 'completed';
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, x: -20 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
@@ -44,7 +44,7 @@ const ScheduleCard = React.memo(({ item, category, index = 0, onCategoryClick }:
         {/* Node Dot */}
         <div className={cn(
           "absolute left-[-6px] top-7 w-3 h-3 rounded-full border-2 border-bg z-10 transition-all duration-500",
-          isLive ? "bg-danger shadow-[0_0_15px_rgba(230,57,70,0.8)] scale-125 animate-pulse" : 
+          isLive ? "bg-danger shadow-[0_0_15px_rgba(230,57,70,0.8)] scale-125 animate-pulse" :
           isCompleted ? "bg-success" : "bg-bg3 ring-1 ring-border"
         )} />
 
@@ -52,8 +52,8 @@ const ScheduleCard = React.memo(({ item, category, index = 0, onCategoryClick }:
         <div className={cn(
           "card-glass p-6 transition-all duration-300 hover:translate-x-1 group-hover:border-white/20",
           "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px]",
-          isLive ? "before:bg-danger bg-danger/5 border-danger/20" : 
-          isCompleted ? "before:bg-success bg-success/5 border-success/10" : 
+          isLive ? "before:bg-danger bg-danger/5 border-danger/20" :
+          isCompleted ? "before:bg-success bg-success/5 border-success/10" :
           "before:bg-border"
         )}>
           <div className="flex flex-wrap items-start justify-between gap-4 mb-3">
@@ -74,7 +74,7 @@ const ScheduleCard = React.memo(({ item, category, index = 0, onCategoryClick }:
                 </p>
               )}
             </div>
-            
+
             <div className={cn(
               "badge",
               isLive ? "badge-live" : isCompleted ? "badge-completed" : "badge-upcoming"
@@ -93,7 +93,7 @@ const ScheduleCard = React.memo(({ item, category, index = 0, onCategoryClick }:
             {item.house_ids && (
               <div className="flex items-center gap-2">
                 {item.house_ids.split(',').map((id) => (
-                  <span 
+                  <span
                     key={id}
                     className="badge badge-upcoming border border-border text-[9px]"
                   >

@@ -1,39 +1,26 @@
 import { createClient } from '@supabase/supabase-js';
 
-const NEW_SUPABASE_URL = 'https://hcyqprhupzxotxpkaymx.supabase.co';
-const NEW_SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhjeXFwcmh1cHp4b3R4cGtheW14Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzI2NzIsImV4cCI6MjA5MDgwODY3Mn0.MPB3yepy__xa5JAl6wJAnzM41A4F2L_cBCA-3lBMUhU';
+const NEW_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const NEW_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-let supabaseUrl = import.meta.env.VITE_SUPABASE_URL || NEW_SUPABASE_URL;
-let supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || NEW_SUPABASE_ANON_KEY;
+export let supabase: any = null;
 
-// Clean up the URL (remove trailing slashes which cause fetch errors)
-if (supabaseUrl && supabaseUrl.endsWith('/')) {
-  supabaseUrl = supabaseUrl.slice(0, -1);
+const storedUrl = localStorage.getItem('SUPABASE_URL');
+const storedKey = localStorage.getItem('SUPABASE_KEY');
+
+const finalUrl = NEW_SUPABASE_URL || storedUrl;
+const finalKey = NEW_SUPABASE_ANON_KEY || storedKey;
+
+if (finalUrl && finalKey) {
+  try {
+    supabase = createClient(finalUrl, finalKey);
+  } catch (e) {
+    console.error('Supabase init error:', e);
+  }
 }
 
-// Force override if the old URL is detected
-if (supabaseUrl && supabaseUrl.includes('qkjwwyduzxewydvvmrbv')) {
-  console.warn('Old Supabase URL detected in environment. Overriding with new URL.');
-  supabaseUrl = NEW_SUPABASE_URL;
-  supabaseAnonKey = NEW_SUPABASE_ANON_KEY;
-}
-
-// Log the URL being used to help debug (will show in browser console)
-if (supabaseUrl) {
-  console.log('Supabase initialized with URL:', supabaseUrl);
-}
-
-// Only initialize if we have the required credentials
-export const supabase = (supabaseUrl && supabaseAnonKey && supabaseUrl !== 'your_supabase_project_url') 
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }) 
-  : null;
-
-if (!supabase) {
-  console.error('Supabase credentials missing or invalid. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your Secrets panel.');
-}
+export const configureSupabase = (url: string, key: string) => {
+  localStorage.setItem('SUPABASE_URL', url);
+  localStorage.setItem('SUPABASE_KEY', key);
+  window.location.reload();
+};

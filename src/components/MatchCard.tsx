@@ -65,8 +65,8 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
         "card-glass rounded-none border-border overflow-hidden group relative",
         onClick && "cursor-pointer hover:border-maple/30",
         "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px]",
-        isLive ? "before:bg-danger bg-danger/5 border-danger/20" : 
-        isCompleted ? "before:bg-success bg-success/5 border-success/10" : 
+        isLive ? "before:bg-danger bg-danger/5 border-danger/20" :
+        isCompleted ? "before:bg-success bg-success/5 border-success/10" :
         "before:bg-border"
       )}
     >
@@ -96,15 +96,15 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
         <div className="flex items-center justify-between gap-6">
           {/* Team 1 */}
           <div className="flex-1 flex flex-col items-center text-center gap-3 group/team">
-            <div 
+            <div
               className="w-16 h-16 rounded-full bg-white/10 border-2 border-maple/30 flex items-center justify-center relative transition-transform group-hover/team:scale-110 overflow-hidden shadow-xl"
             >
               <div className="absolute inset-0 blur-xl opacity-20" style={{ backgroundColor: match.team1?.color }} />
               {match.team1?.logo_url ? (
-                <img 
-                  src={match.team1?.logo_url} 
-                  alt={match.team1?.name} 
-                  className="w-full h-full object-cover rounded-full relative z-10" 
+                <img
+                  src={match.team1?.logo_url}
+                  alt={match.team1?.name}
+                  className="w-full h-full object-cover rounded-full relative z-10"
                   referrerPolicy="no-referrer"
                 />
               ) : (
@@ -135,15 +135,15 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
 
           {/* Team 2 */}
           <div className="flex-1 flex flex-col items-center text-center gap-3 group/team">
-            <div 
+            <div
               className="w-16 h-16 rounded-full bg-white/10 border-2 border-maple/30 flex items-center justify-center relative transition-transform group-hover/team:scale-110 overflow-hidden shadow-xl"
             >
               <div className="absolute inset-0 blur-xl opacity-20" style={{ backgroundColor: match.team2?.color }} />
               {match.team2?.logo_url ? (
-                <img 
-                  src={match.team2?.logo_url} 
-                  alt={match.team2?.name} 
-                  className="w-full h-full object-cover rounded-full relative z-10" 
+                <img
+                  src={match.team2?.logo_url}
+                  alt={match.team2?.name}
+                  className="w-full h-full object-cover rounded-full relative z-10"
                   referrerPolicy="no-referrer"
                 />
               ) : (

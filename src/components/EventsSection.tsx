@@ -13,7 +13,7 @@ interface EventsSectionProps {
 
 export default function EventsSection({ categories, matches, setActiveTab }: EventsSectionProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  
+
   const sports = categories.filter(c => c.category_type === 'sport');
   const cultural = categories.filter(c => c.category_type === 'cultural');
   const other = categories.filter(c => !c.category_type);
@@ -31,7 +31,7 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
 
   const renderEventCard = (cat: Category) => {
     const catMatches = matches.filter(m => m.category_id === cat.id);
-    
+
     return (
       <motion.div
         key={cat.id}
@@ -57,7 +57,7 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
         </div>
 
         <motion.h3 layoutId={`title-${cat.id}`} className="text-3xl font-display uppercase tracking-wider mb-4">{cat.name}</motion.h3>
-        
+
         <div className="grid grid-cols-2 gap-4 mb-8">
           {cat.team_size && (
             <div className="space-y-1">
@@ -74,8 +74,8 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
         </div>
 
         <div className="mt-auto flex items-center justify-between text-maple font-ui text-[10px] font-bold uppercase tracking-widest group-hover:gap-2 transition-all">
-          View Rules & Matches
-          <ArrowRight size={14} />
+          View Details & Background Guide
+           {cat.bg_guide_url && <span className="ml-2 px-2 py-0.5 bg-maple/20 border border-maple/30 rounded text-[8px]">BG GUIDE</span>} <ArrowRight size={14} />
         </div>
       </motion.div>
     );
@@ -93,12 +93,12 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
               onClick={() => setExpandedId(null)}
               className="absolute inset-0 bg-bg-dark/95 backdrop-blur-xl"
             />
-            
+
             <motion.div
               layoutId={`card-${expandedId}`}
               className="relative w-full max-w-5xl max-h-[90vh] bg-bg2 border border-border rounded-[40px] overflow-hidden flex flex-col shadow-2xl"
             >
-              <button 
+              <button
                 onClick={() => setExpandedId(null)}
                 className="absolute top-8 right-8 w-12 h-12 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center text-white transition-all z-10"
               >
@@ -163,12 +163,25 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
                     </div>
                   </div>
 
+                    {expandedCategory.bg_guide_url && (
+                      <div className="mb-8">
+                        <a
+                          href={expandedCategory.bg_guide_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="w-full py-4 bg-maple text-bg font-ui text-xs font-bold uppercase tracking-[0.2em] rounded-2xl flex items-center justify-center gap-3 hover:bg-maple/90 transition-all shadow-xl shadow-maple/20"
+                        >
+                          <Film size={18} />
+                          Download Background Guide
+                        </a>
+                      </div>
+                    )}
                   <div className="w-full md:w-80 shrink-0 space-y-8">
                     <h4 className="text-2xl font-display uppercase tracking-widest flex items-center justify-between">
                       Matches
                       <span className="text-xs font-bold text-muted">{expandedMatches.length} Total</span>
                     </h4>
-                    
+
                     <div className="space-y-4">
                       {expandedMatches.length > 0 ? (
                         expandedMatches.map(match => (
@@ -193,7 +206,7 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
         <div className="mb-16">
           <p className="sec-label">Rules & Instructions</p>
           <h2 className="text-6xl md:text-8xl">General Guidelines</h2>
-          <p className="text-muted mt-4 text-lg">Essential information for all UCSF 2026 participants.</p>
+          <p className="text-muted mt-4 text-lg">Essential information for all Harmonia MUN 2026 participants.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white/5 border border-border p-10 rounded-3xl">
@@ -222,9 +235,9 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
       {sports.length > 0 && (
         <section>
           <div className="mb-16">
-            <p className="sec-label">UCSF 2026</p>
-            <h2 className="text-6xl md:text-8xl">Sports Events</h2>
-            <p className="text-muted mt-4 text-lg">Competitive house matches across various disciplines.</p>
+            <p className="sec-label">Conference</p>
+            <h2 className="text-6xl md:text-8xl">Conventional Committees</h2>
+            <p className="text-muted mt-4 text-lg">International bodies debating global policy and security.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {sports.map(renderEventCard)}
@@ -235,9 +248,9 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
       {cultural.length > 0 && (
         <section>
           <div className="mb-16">
-            <p className="sec-label">Arts & Expression</p>
-            <h2 className="text-6xl md:text-8xl">Culture Events</h2>
-            <p className="text-muted mt-4 text-lg">Showcasing talent, creativity, and artistic excellence across all categories.</p>
+            <p className="sec-label">Crisis Center</p>
+            <h2 className="text-6xl md:text-8xl">Specialized Committees</h2>
+            <p className="text-muted mt-4 text-lg">High-intensity simulations of historical and futuristic crisis scenarios.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {cultural.map(renderEventCard)}

@@ -18,7 +18,21 @@ const globalCache: Record<string, any> = {
   lastFetched: 0
 };
 
-const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+const CACHE_EXPIRY = 5 * 60 * 1000;
+const MOCK_CATEGORIES: Category[] = [
+  { id: '1', name: 'UN Security Council', icon: '🛡️', category_type: 'sport', sort_order: 1, gender: 'Mixed', eligible_years: '9-12', bg_guide_url: 'https://example.com/unsc.pdf', special_rules: 'Standard MUN rules apply.', is_active: true, oc_members: "John Doe (Chair), Jane Smith (Vice Chair)" },
+  { id: '2', name: 'DISEC', icon: '🔫', category_type: 'sport', sort_order: 2, gender: 'Mixed', eligible_years: '9-12', bg_guide_url: 'https://example.com/disec.pdf', special_rules: 'Standard MUN rules apply.', is_active: true, oc_members: "John Doe (Chair), Jane Smith (Vice Chair)" },
+  { id: '3', name: 'UNHRC', icon: '⚖️', category_type: 'cultural', sort_order: 3, gender: 'Mixed', eligible_years: '7-12', bg_guide_url: 'https://example.com/unhrc.pdf', special_rules: 'Focus on Human Rights.', is_active: true, oc_members: "John Doe (Chair), Jane Smith (Vice Chair)" }
+];
+
+const MOCK_HOUSES: House[] = [
+  { id: '1', name: 'Maple', color: '#ff4d4d', points: 120, rank_pos: 1, mascot: 'Lion', mascot_name: 'Leo', motto: 'Strength in Unity' },
+  { id: '2', name: 'Cedar', color: '#4dff4d', points: 100, rank_pos: 2, mascot: 'Eagle', mascot_name: 'Aquila', motto: 'Soar Above' }
+];
+
+const MOCK_SCHEDULE: ScheduleItem[] = [
+  { id: 1, title: 'Opening Ceremony', day_label: 'Day 1', day_date: 'Oct 24', time_start: '09:00', status: 'upcoming', sort_order: 1, venue: 'Auditorium', subtitle: 'Welcome to Harmonia MUN 2026', category: null, house_ids: null, time_end: '10:30' }
+];
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
   try {
@@ -32,7 +46,7 @@ async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Pr
   }
 }
 
-export function useUCSFData() {
+export function useHarmoniaMUNData() {
   const [houses, setHouses] = useState<House[]>(globalCache.houses || []);
   const [matches, setMatches] = useState<Match[]>(globalCache.matches || []);
   const [schedule, setSchedule] = useState<ScheduleItem[]>(globalCache.schedule || []);
@@ -50,7 +64,7 @@ export function useUCSFData() {
   const fetchHouses = async () => {
     const { data } = await supabase!.from('houses').select('*').order('rank_pos', { ascending: true });
     if (data) {
-      setHouses(data);
+      setHouses(data && data.length > 0 ? data : MOCK_HOUSES);
       globalCache.houses = data;
     }
   };
@@ -66,7 +80,7 @@ export function useUCSFData() {
   const fetchSchedule = async () => {
     const { data } = await supabase!.from('schedule').select('*').order('sort_order', { ascending: true });
     if (data) {
-      setSchedule(data);
+      setSchedule(data && data.length > 0 ? data : MOCK_SCHEDULE);
       globalCache.schedule = data;
     }
   };
@@ -102,7 +116,7 @@ export function useUCSFData() {
         }
         return cat;
       });
-      setCategories(mergedCategories);
+      setCategories(mergedCategories.length > 0 ? mergedCategories : MOCK_CATEGORIES);
       globalCache.categories = mergedCategories;
     }
   };
@@ -140,10 +154,9 @@ export function useUCSFData() {
   };
 
   const fetchProfile = async () => {
-    // Use getSession first as it's faster and less likely to cause lock issues
     const { data: { session } } = await supabase!.auth.getSession();
     const user = session?.user;
-    
+
     if (!user) {
       setProfile(null);
       globalCache.profile = null;
@@ -155,15 +168,14 @@ export function useUCSFData() {
       if (data) {
         setProfile(data);
         globalCache.profile = data;
-      } else if (error && error.code === 'PGRST116') { // Not found
-        // Create profile if it doesn't exist
+      } else if (error && error.code === 'PGRST116') {
         const isSuperAdmin = user.email === 'kotadia.ean@gmail.com';
         const { data: newProfile } = await supabase!.from('profiles').insert([{
           id: user.id,
           email: user.email,
           is_super_admin: isSuperAdmin
         }]).select().single();
-        
+
         if (newProfile) {
           setProfile(newProfile);
           globalCache.profile = newProfile;
@@ -181,7 +193,6 @@ export function useUCSFData() {
       return;
     }
 
-    // Skip fetch if cache is fresh
     if (isInitial && globalCache.lastFetched && (Date.now() - globalCache.lastFetched < CACHE_EXPIRY)) {
       setLoading(false);
       return;
@@ -191,10 +202,8 @@ export function useUCSFData() {
       if (isInitial && !globalCache.lastFetched) setLoading(true);
       else setIsRefreshing(true);
 
-      // Fetch profile first and separately to avoid auth lock contention
       await withRetry(fetchProfile);
 
-      // Fetch other data in parallel
       await Promise.all([
         withRetry(fetchHouses),
         withRetry(fetchMatches),
@@ -206,12 +215,11 @@ export function useUCSFData() {
         withRetry(fetchCulturalResults),
         withRetry(fetchStagedChanges)
       ]);
-      
+
       globalCache.lastFetched = Date.now();
       setError(null);
     } catch (err: any) {
-      console.error('Error fetching UCSF data:', err);
-      // Don't show lock errors to user, they are usually transient
+      console.error('Error fetching Harmonia MUN data:', err);
       if (!err.message?.includes('lock')) {
         setError(err.message || 'An error occurred while fetching data.');
       }
@@ -223,10 +231,9 @@ export function useUCSFData() {
 
   useEffect(() => {
     if (!supabase) return;
-    
+
     fetchData(true);
 
-    // Real-time subscriptions - more targeted
     const housesSub = supabase.channel('houses-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'houses' }, fetchHouses)
       .subscribe();

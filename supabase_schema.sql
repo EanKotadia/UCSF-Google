@@ -165,12 +165,12 @@ BEGIN
     SELECT COALESCE(COUNT(*) * 10, 0) INTO match_points
     FROM matches
     WHERE winner_id = house_record.id AND status = 'completed';
-    
+
     -- Points from cultural results
     SELECT COALESCE(SUM(points), 0) INTO cultural_points
     FROM cultural_results
     WHERE house_id = house_record.id;
-    
+
     -- Update house points
     UPDATE houses
     SET points = match_points + cultural_points

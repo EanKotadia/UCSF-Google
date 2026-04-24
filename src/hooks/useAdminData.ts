@@ -142,7 +142,7 @@ export function useAdminData() {
   const fetchProfile = async () => {
     const { data: { session } } = await supabase!.auth.getSession();
     const user = session?.user;
-    
+
     if (!user) {
       setProfile(null);
       globalCache.profile = null;
@@ -161,7 +161,7 @@ export function useAdminData() {
           email: user.email,
           is_super_admin: isSuperAdmin
         }]).select().single();
-        
+
         if (newProfile) {
           setProfile(newProfile);
           globalCache.profile = newProfile;
@@ -201,11 +201,11 @@ export function useAdminData() {
         withRetry(fetchCulturalResults),
         withRetry(fetchStagedChanges)
       ]);
-      
+
       globalCache.lastFetched = Date.now();
       setError(null);
     } catch (err: any) {
-      console.error('Error fetching UCSF data:', err);
+      console.error('Error fetching Harmonia MUN data:', err);
       if (!err.message?.includes('lock')) {
         setError(err.message || 'An error occurred while fetching data.');
       }
@@ -217,7 +217,7 @@ export function useAdminData() {
 
   useEffect(() => {
     if (!supabase) return;
-    
+
     fetchData(true);
 
     const housesSub = supabase.channel('houses-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'houses' }, fetchHouses).subscribe();

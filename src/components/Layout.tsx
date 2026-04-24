@@ -20,12 +20,13 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
 
   const navItems = [
     { id: 'home', label: 'Home', href: '#home' },
-    { id: 'events', label: 'Events', href: '#events' },
+    { id: 'events', label: 'Committees', href: '#events' },
     { id: 'schedule', label: 'Schedule', href: '#schedule' },
-    { id: 'leaderboards', label: 'Leaderboards', href: '#leaderboards' },
+    { id: 'leaderboards', label: 'Rankings', href: '#leaderboards' },
     { id: 'spreadsheet', label: 'Spreadsheet', href: '#spreadsheet' },
     { id: 'notices', label: 'Notices', href: '#notices' },
     { id: 'gallery', label: 'Gallery', href: '#gallery' },
+    { id: 'admin', label: 'Admin', href: '/admin' },
   ];
 
   return (
@@ -43,8 +44,8 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
             className="nav-logo flex items-center"
           >
             <img 
-              src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} 
-              alt="School Logo" 
+              src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
+              alt="School Logo"
               className="h-10 md:h-12 object-contain"
               referrerPolicy="no-referrer"
             />
@@ -54,7 +55,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
           <ul className="hidden md:flex items-center gap-8 list-none">
             {navItems.map((item, idx) => (
               <li key={idx}>
-                {item.id === 'admin' ? (
+                {false ? (
                   <a
                     href="/admin"
                     target="_blank"
@@ -106,7 +107,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                 className="md:hidden absolute top-full left-0 right-0 bg-bg border-b border-border p-6 flex flex-col gap-6 z-[101] shadow-2xl"
               >
                 {navItems.map((item, idx) => (
-                  item.id === 'admin' ? (
+                  false ? (
                     <a
                       key={idx}
                       href="/admin"
@@ -159,9 +160,9 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
       {/* Footer */}
       <footer className="bg-bg border-t border-border py-12 px-6 md:px-10 text-center">
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
-          <img 
-            src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} 
-            alt="School Logo" 
+          <img
+            src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
+            alt="School Logo"
             className="h-16 md:h-20 object-contain mb-4 opacity-80 hover:opacity-100 transition-opacity"
             referrerPolicy="no-referrer"
           />
@@ -174,7 +175,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
           <p className="font-ui text-[10px] font-bold uppercase tracking-widest text-muted/50 mt-4">
             {footerText || `© 2026 ${title}. All rights reserved.`}
           </p>
-          
+
           <div className="w-full h-px bg-border my-4" />
 
           <div className="flex flex-col md:flex-row justify-between w-full gap-4 font-sans text-[12px] text-subtle">
