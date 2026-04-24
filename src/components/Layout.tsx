@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Bell } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface LayoutProps {
@@ -19,100 +19,128 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { id: 'home', label: 'Home' },
-    { id: 'about', label: 'About' },
-    { id: 'committees', label: 'Committees' },
-    { id: 'oc', label: 'OC' },
-    { id: 'schedule', label: 'Schedule' },
-    { id: 'rankings', label: 'Rankings' },
+    { id: 'home', label: 'Home', href: '#home' },
+    { id: 'events', label: 'Committees', href: '#events' },
+    { id: 'schedule', label: 'Schedule', href: '#schedule' },
+    { id: 'leaderboards', label: 'Rankings', href: '#leaderboards' },
+    { id: 'spreadsheet', label: 'Spreadsheet', href: '#spreadsheet' },
+    { id: 'notices', label: 'Notices', href: '#notices' },
+    { id: 'gallery', label: 'Gallery', href: '#gallery' },
+    { id: 'admin', label: 'Admin', href: '/admin' },
   ];
 
   return (
-    <div className='min-h-screen flex flex-col bg-[#050b1a] text-white selection:bg-maple selection:text-bg'>
-      <header className='fixed top-0 left-0 right-0 z-[110]'>
+    <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-maple selection:text-bg">
+      <header className="fixed top-0 left-0 right-0 z-[110]">
         {announcement && (
-          <div className='bg-maple text-bg py-2 px-6 text-center font-ui text-[9px] font-bold uppercase tracking-[0.3em] relative'>
+          <div className="bg-maple text-bg py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
             {announcement}
           </div>
         )}
-        <nav className='flex items-center justify-between px-6 md:px-12 h-[72px] bg-[#050b1a]/90 backdrop-blur-xl border-b border-white/5'>
+        {/* Navigation */}
+        <nav className="flex items-center justify-between px-6 md:px-10 h-[62px] bg-bg/90 backdrop-blur-xl border-b border-border">
           <button 
             onClick={() => setActiveTab('home')}
-            className='flex items-center gap-4'
+            className="nav-logo flex items-center"
           >
             <img 
-              src={schoolLogoUrl || 'https://www.shalomhills.com/images/logo.png'}
-              alt='School Logo'
-              className='h-10 md:h-12 object-contain'
-              referrerPolicy='no-referrer'
+              src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
+              alt="School Logo"
+              className="h-10 md:h-12 object-contain"
+              referrerPolicy="no-referrer"
             />
-            <div className='hidden sm:block text-left'>
-               <div className='font-display text-xl tracking-wider leading-none'>{title}</div>
-               <div className='text-[8px] font-bold text-maple uppercase tracking-widest mt-1'>2026 Conference</div>
-            </div>
           </button>
 
-          <ul className='hidden lg:flex items-center gap-10 list-none'>
-            {navItems.map((item) => (
-              <li key={item.id}>
-                <button
-                  onClick={() => setActiveTab(item.id)}
-                  className={cn(
-                    'font-ui text-[11px] font-bold uppercase tracking-[2px] transition-all relative py-2',
-                    activeTab === item.id ? 'text-maple' : 'text-white/40 hover:text-white'
-                  )}
-                >
-                  {item.label}
-                  {activeTab === item.id && (
-                    <motion.div
-                      layoutId='nav-underline'
-                      className='absolute bottom-0 left-0 right-0 h-px bg-maple'
-                    />
-                  )}
-                </button>
+          {/* Desktop Nav */}
+          <ul className="hidden md:flex items-center gap-8 list-none">
+            {navItems.map((item, idx) => (
+              <li key={idx}>
+                {false ? (
+                  <a
+                    href="/admin"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={cn(
+                      "font-ui text-[13px] font-bold uppercase tracking-[1.5px] transition-colors",
+                      activeTab === item.id ? "text-maple" : "text-muted hover:text-text"
+                    )}
+                  >
+                    {item.label}
+                  </a>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      if (item.href.startsWith('#') && item.id === activeTab) {
+                        const el = document.getElementById(item.href.substring(1));
+                        el?.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className={cn(
+                      "font-ui text-[13px] font-bold uppercase tracking-[1.5px] transition-colors",
+                      activeTab === item.id ? "text-maple" : "text-muted hover:text-text"
+                    )}
+                  >
+                    {item.label}
+                  </button>
+                )}
               </li>
             ))}
           </ul>
 
-          <div className='flex items-center gap-6'>
-            {profile?.is_super_admin && (
-               <a
-                href={import.meta.env.VITE_ADMIN_URL || '/admin'}
-                className='hidden md:block px-6 py-2 border border-maple/30 rounded-full font-ui text-[10px] font-bold uppercase tracking-widest text-maple hover:bg-maple hover:text-bg transition-all'
-               >
-                 Admin Portal
-               </a>
-            )}
+          <div className="flex items-center gap-4">
             <button 
-              className='lg:hidden p-2 text-white/60 hover:text-white'
+              className="md:hidden p-2 text-text"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
 
+          {/* Mobile Nav */}
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div 
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className='lg:hidden absolute top-full left-0 right-0 bg-[#050b1a] border-b border-white/5 p-8 flex flex-col gap-8 z-[101] shadow-2xl'
+                className="md:hidden absolute top-full left-0 right-0 bg-bg border-b border-border p-6 flex flex-col gap-6 z-[101] shadow-2xl"
               >
-                {navItems.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => {
-                      setActiveTab(item.id);
-                      setIsMenuOpen(false);
-                    }}
-                    className={cn(
-                      'font-display text-4xl text-left tracking-tight uppercase',
-                      activeTab === item.id ? 'text-maple' : 'text-white/20'
-                    )}
-                  >
-                    {item.label}
-                  </button>
+                {navItems.map((item, idx) => (
+                  false ? (
+                    <a
+                      key={idx}
+                      href="/admin"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(
+                        "font-display text-4xl text-left tracking-wider uppercase",
+                        activeTab === item.id ? "text-maple" : "text-muted"
+                      )}
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setActiveTab(item.id);
+                        setIsMenuOpen(false);
+                        if (item.href.startsWith('#')) {
+                          setTimeout(() => {
+                            const el = document.getElementById(item.href.substring(1));
+                            el?.scrollIntoView({ behavior: 'smooth' });
+                          }, 100);
+                        }
+                      }}
+                      className={cn(
+                        "font-display text-4xl text-left tracking-wider uppercase",
+                        activeTab === item.id ? "text-maple" : "text-muted"
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  )
                 ))}
               </motion.div>
             )}
@@ -120,51 +148,38 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
         </nav>
       </header>
 
-      <main className='flex-grow'>
+      {/* Main Content */}
+      <main className="flex-grow">
+        {/* Spacer for fixed header */}
+        <div className={cn(
+          announcement ? "h-[92px]" : "h-[62px]"
+        )} />
         {children}
       </main>
 
-      <footer className='bg-[#050b1a] border-t border-white/5 py-24 px-6 md:px-12'>
-        <div className='max-w-7xl mx-auto'>
-          <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-16 mb-24'>
-            <div className='col-span-1 md:col-span-2'>
-              <img
-                src={schoolLogoUrl || 'https://www.shalomhills.com/images/logo.png'}
-                className='h-16 mb-8 opacity-80'
-              />
-              <h3 className='text-4xl font-display uppercase tracking-tight mb-4'>{title}</h3>
-              <p className='text-white/40 max-w-sm leading-relaxed'>
-                Shalom Hills International School premier Model United Nations conference.
-                Shaping the diplomats of tomorrow.
-              </p>
-            </div>
-
-            <div>
-              <h4 className='font-ui text-xs font-bold uppercase tracking-[0.3em] text-maple mb-8'>Navigation</h4>
-              <ul className='space-y-4'>
-                {navItems.map(item => (
-                  <li key={item.id}>
-                    <button onClick={() => setActiveTab(item.id)} className='text-white/40 hover:text-maple transition-colors uppercase font-ui text-[10px] font-bold tracking-widest'>{item.label}</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className='font-ui text-xs font-bold uppercase tracking-[0.3em] text-maple mb-8'>Venue</h4>
-              <p className='text-white/40 font-ui text-[10px] font-bold uppercase tracking-widest leading-loose'>
-                Shalom Hills International School<br />
-                Sushant Lok Phase III<br />
-                Gurugram, Haryana<br />
-                India
-              </p>
-            </div>
+      {/* Footer */}
+      <footer className="bg-bg border-t border-border py-12 px-6 md:px-10 text-center">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
+          <img
+            src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
+            alt="School Logo"
+            className="h-16 md:h-20 object-contain mb-4 opacity-80 hover:opacity-100 transition-opacity"
+            referrerPolicy="no-referrer"
+          />
+          <div className="font-display text-3xl tracking-[4px] uppercase">
+            {title.split(' ')[0]} <span>{title.split(' ')[1] || ''}</span>
           </div>
+          <p className="font-ui text-[11px] font-bold uppercase tracking-[3px] text-muted">
+            {subtitle}
+          </p>
+          <p className="font-ui text-[10px] font-bold uppercase tracking-widest text-muted/50 mt-4">
+            {footerText || `© 2026 ${title}. All rights reserved.`}
+          </p>
 
-          <div className='pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8'>
-            <p className='text-[10px] font-bold uppercase tracking-widest text-white/20'>
-              {footerText || '© 2026 Harmonia MUN. All Rights Reserved.'}
-            </p>
+          <div className="w-full h-px bg-border my-4" />
+
+          <div className="flex flex-col md:flex-row justify-between w-full gap-4 font-sans text-[12px] text-subtle">
+            <span>© 2026 Shalom Hills International School | Made by Ean Kotadia, Hardik Batra and Tanush Kansal</span>
           </div>
         </div>
       </footer>
