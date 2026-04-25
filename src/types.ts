@@ -1,69 +1,53 @@
-export type House = {
-  id: string;
-  name: string;
-  color: string;
-  mascot: string | null;
-  mascot_name: string | null;
-  logo_url?: string | null;
-  banner_url?: string | null;
-  points: number;
-  rank_pos: number;
-  motto: string | null;
-};
+export type CommitteeType = 'conventional' | 'specialized';
 
-export type Category = {
+export type Committee = {
   id: string;
   name: string;
-  icon: string | null;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  bg_guide_url: string | null;
   sort_order: number;
-  gender: string | null;
-  eligible_years: string | null;
-  category_type: 'sport' | 'cultural';
-  special_rules?: string | null;
-  is_active?: boolean;
-  registration_url?: string | null;
+  type?: CommitteeType;
+  category_type?: 'sport' | 'cultural'; // Backward compatibility
+  icon?: string | null;
+  gender?: string | null;
+  eligible_years?: string | null;
   team_size?: string;
   duration?: string;
-  image_url?: string | null;
-  bg_guide_url?: string | null;
-  oc_members?: string | null;
+  special_rules?: string | null;
   judging_criteria?: { criterion: string; weight: string }[];
+  created_at?: string;
+};
+
+export type MemberCategory = 'Secretariat' | 'EB' | 'Director' | 'OC';
+
+export type Member = {
+  id: number;
+  name: string;
+  role: string;
+  bio: string | null;
+  image_url: string | null;
+  committee_id: string | null;
+  category: MemberCategory;
+  sort_order: number;
+  created_at?: string;
+  committee?: Committee;
+};
+
+export type Ranking = {
+  id: number;
+  committee_id: string | null;
+  name: string;
+  school: string;
+  award: string;
+  created_at?: string;
+  committee?: Committee;
 };
 
 export type MatchStatus = 'upcoming' | 'live' | 'completed';
 
-export type Match = {
-  id: number;
-  category_id: string;
-  match_no: number;
-  team1_id: string;
-  team2_id: string;
-  score1: number | null;
-  score2: number | null;
-  winner_id: string | null;
-  status: MatchStatus;
-  venue: string | null;
-  match_time: string | null;
-  eligible_years: string | null;
-  man_of_the_match?: string | null;
-  category?: Category;
-  team1?: House;
-  team2?: House;
-  winner?: House;
-};
-
-export type CulturalResult = {
-  id: number;
-  category_id: string;
-  house_id: string;
-  rank: number | null;
-  points: number | null;
-  comments?: string | null;
-  category?: Category;
-  house?: House;
-};
-
-export type ScheduleItem = {
+export type Session = {
   id: number;
   day_label: string;
   day_date: string;
@@ -71,37 +55,16 @@ export type ScheduleItem = {
   time_end: string | null;
   title: string;
   subtitle: string | null;
-  category: string | null;
   venue: string | null;
-  house_ids: string | null;
   status: MatchStatus;
   sort_order: number;
+  house_ids?: string | null; // Backward compatibility
+  created_at?: string;
 };
 
 export type Setting = {
   key_name: string;
   val: string;
-};
-
-export type Registration = {
-  id: number;
-  event_id: number | null;
-  event_name: string;
-  student_name: string;
-  student_class: string;
-  student_section: string;
-  file_url: string | null;
-  created_at: string;
-};
-
-export type GalleryItem = {
-  id: number;
-  title: string;
-  type: 'image' | 'video';
-  url: string;
-  thumbnail_url: string | null;
-  year?: number;
-  created_at: string;
 };
 
 export type Notice = {
@@ -129,3 +92,21 @@ export type StagedChange = {
   status: 'pending' | 'approved' | 'discarded';
   created_at: string;
 };
+
+export type House = {
+  id: string;
+  name: string;
+  points: number;
+  logo_url?: string;
+  color?: string;
+  mascot?: string | null;
+  mascot_name?: string | null;
+  motto?: string | null;
+};
+
+// Aliases
+export type Category = Committee;
+export type Match = any;
+export type CulturalResult = Ranking;
+export type ScheduleItem = Session;
+export type GalleryItem = any;
