@@ -345,6 +345,54 @@ interface AdminPanelProps {
   onBack?: () => void;
 }
 
+
+const HouseRow = ({ house, idx, onSave }: { house: any, idx: number, onSave: (id: string, pts: number) => void }) => {
+  const [pts, setPts] = React.useState(house.points || 0);
+
+  React.useEffect(() => {
+    setPts(house.points || 0);
+  }, [house.points]);
+
+  return (
+    <div className="bg-[#0d1b33] border border-white/5 rounded-[1.5rem] sm:rounded-[2.5rem] p-5 sm:p-8 flex flex-col sm:flex-row items-center gap-6 sm:gap-10 group hover:border-maple/30 transition-all shadow-2xl">
+      <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
+        <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/5 rounded-[1rem] sm:rounded-[1.5rem] flex items-center justify-center font-display text-xl sm:text-4xl text-maple border border-white/5 shadow-inner shrink-0">
+          #{idx + 1}
+        </div>
+        <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-[1rem] sm:rounded-[1.5rem] overflow-hidden border border-white/5 shadow-inner shrink-0">
+          <img src={house.logo_url} alt={house.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+        </div>
+        <div className="flex-1 sm:hidden">
+          <h3 className="text-lg font-display uppercase tracking-widest text-white">{house.name}</h3>
+          <p className="font-ui text-[8px] font-bold text-muted uppercase tracking-[0.4em] mt-1">{house.motto || 'Striving for Excellence'}</p>
+        </div>
+      </div>
+      <div className="hidden sm:block flex-1">
+        <h3 className="text-2xl sm:text-3xl font-display uppercase tracking-widest text-white">{house.name}</h3>
+        <p className="font-ui text-[10px] font-bold text-muted uppercase tracking-[0.4em] mt-2">{house.motto || 'Striving for Excellence'}</p>
+      </div>
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+        <div className="text-center sm:text-right w-full sm:w-auto border-t sm:border-t-0 border-white/5 pt-4 sm:pt-0">
+          <input
+            type="number"
+            value={pts}
+            onChange={(e) => setPts(parseInt(e.target.value) || 0)}
+            className="w-24 sm:w-32 bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-2xl sm:text-4xl font-display text-maple tracking-tighter text-center sm:text-right outline-none focus:border-maple/50 transition-all"
+          />
+          <div className="font-ui text-[8px] sm:text-[10px] font-bold text-muted uppercase tracking-[0.3em] mt-1">Manual Points</div>
+        </div>
+        <button
+          onClick={() => onSave(house.id, pts)}
+          disabled={pts === house.points}
+          className="w-full sm:w-auto bg-maple/10 hover:bg-maple text-maple hover:text-bg px-6 py-3 rounded-xl font-ui text-[10px] font-bold uppercase tracking-widest transition-all border border-maple/20 disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export default function AdminPanel({ matches, houses, schedule, categories, notices, gallery, culturalResults, stagedChanges, profile, settings, refresh, onBack }: AdminPanelProps) {
   const [session, setSession] = useState<any>(null);
   const [email, setEmail] = useState('');
@@ -808,6 +856,18 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
     });
   };
 
+
+  const updateHousePoints = async (houseId: string, points: number) => {
+    try {
+      const { error } = await supabase.from('houses').update({ points }).eq('id', houseId);
+      if (error) throw error;
+      refresh();
+      setSuccess('House points updated successfully!');
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err) {
+      handleSupabaseError(err, 'updating house points');
+    }
+  };
   const updateCategory = async (catId: string, updates: Partial<Category>) => {
     stageChange('categories', catId, updates);
   };
@@ -2255,28 +2315,12 @@ export default function AdminPanel({ matches, houses, schedule, categories, noti
 
                   <div className="grid grid-cols-1 gap-4 sm:gap-6">
                     {houses.sort((a, b) => (b.points || 0) - (a.points || 0)).map((house, idx) => (
-                      <div key={house.id} className="bg-[#0d1b33] border border-white/5 rounded-[1.5rem] sm:rounded-[2.5rem] p-5 sm:p-8 flex flex-col sm:flex-row items-center gap-6 sm:gap-10 group hover:border-maple/30 transition-all shadow-2xl">
-                        <div className="flex items-center gap-4 sm:gap-6 w-full sm:w-auto">
-                          <div className="w-14 h-14 sm:w-20 sm:h-20 bg-white/5 rounded-[1rem] sm:rounded-[1.5rem] flex items-center justify-center font-display text-xl sm:text-4xl text-maple border border-white/5 shadow-inner shrink-0">
-                            #{idx + 1}
-                          </div>
-                          <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-[1rem] sm:rounded-[1.5rem] overflow-hidden border border-white/5 shadow-inner shrink-0">
-                            <img src={house.logo_url} alt={house.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                          </div>
-                          <div className="flex-1 sm:hidden">
-                            <h3 className="text-lg font-display uppercase tracking-widest text-white">{house.name}</h3>
-                            <p className="font-ui text-[8px] font-bold text-muted uppercase tracking-[0.4em] mt-1">{house.motto || 'Striving for Excellence'}</p>
-                          </div>
-                        </div>
-                        <div className="hidden sm:block flex-1">
-                          <h3 className="text-2xl sm:text-3xl font-display uppercase tracking-widest text-white">{house.name}</h3>
-                          <p className="font-ui text-[10px] font-bold text-muted uppercase tracking-[0.4em] mt-2">{house.motto || 'Striving for Excellence'}</p>
-                        </div>
-                        <div className="text-center sm:text-right w-full sm:w-auto border-t sm:border-t-0 border-white/5 pt-4 sm:pt-0">
-                          <div className="text-3xl sm:text-5xl font-display text-maple tracking-tighter">{house.points || 0}</div>
-                          <div className="font-ui text-[8px] sm:text-[10px] font-bold text-muted uppercase tracking-[0.3em] mt-1">Total Points</div>
-                        </div>
-                      </div>
+                      <HouseRow
+                        key={house.id}
+                        house={house}
+                        idx={idx}
+                        onSave={(id, pts) => updateHousePoints(id, pts)}
+                      />
                     ))}
                   </div>
                 </motion.div>
