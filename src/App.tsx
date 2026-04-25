@@ -224,34 +224,10 @@ export default function App() {
                     Explore Events
                     <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
                   </button>
-                  <button onClick={() => handleTabChange('schedule')} className="btn-ghost">Full Schedule</button>
+
                 </motion.div>
               </div>
             </section>
-
-            {/* LIVE BAR */}
-            <div className="sticky top-[62px] z-40 bg-bg3/90 backdrop-blur-md border-b border-border py-3 px-6 overflow-x-auto">
-              <div className="max-w-7xl mx-auto flex items-center gap-6 whitespace-nowrap">
-                <div className="font-ui text-[10px] font-bold text-muted uppercase tracking-[3px] flex-shrink-0">
-                  Live & Up Next
-                </div>
-                {liveItems.length > 0 ? (
-                  liveItems.map(item => (
-                    <div key={item.id} className="flex items-center gap-2 px-4 py-1.5 bg-danger/10 border border-danger/30 text-danger font-ui text-xs font-bold tracking-wider flex-shrink-0">
-                      <div className="w-1.5 h-1.5 rounded-full bg-danger animate-pulse" />
-                      LIVE: {item.title}
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-muted font-ui text-xs font-bold tracking-wider">No live events right now</div>
-                )}
-                {upcomingItems.map(item => (
-                  <div key={item.id} className="flex items-center gap-2 px-4 py-1.5 bg-white/5 border border-border text-muted font-ui text-xs font-bold tracking-wider flex-shrink-0">
-                    {item.time_start} {item.title}
-                  </div>
-                ))}
-              </div>
-            </div>
 
             {/* ABOUT */}
             <section className="py-24 bg-bg-dark">
@@ -304,12 +280,7 @@ export default function App() {
                         </div>
                       ))}
                     </div>
-                    <button
-                      onClick={() => handleTabChange('schedule')}
-                      className="mt-8 font-ui text-xs font-bold uppercase tracking-widest text-maple flex items-center gap-2 hover:gap-4 transition-all"
-                    >
-                      View Full Schedule <ChevronRight size={14} />
-                    </button>
+
                   </div>
                 </div>
               </div>
@@ -415,41 +386,6 @@ export default function App() {
           </div>
         );
 
-      case 'schedule':
-        const days = Array.from(new Set(schedule.map(s => s.day_label)));
-        return (
-          <div id="schedule" className="max-w-7xl mx-auto px-6 py-32 relative z-10">
-            <div className="mb-20">
-              <p className="sec-label">Event Schedule</p>
-              <h2 className="text-6xl md:text-8xl">The Timeline</h2>
-              <p className="text-muted mt-4 text-lg">Full Three-Day Programme — Harmonia MUN 2026</p>
-            </div>
-
-            <div className="space-y-32">
-              {days.map(day => (
-                <div key={day} className="space-y-16">
-                  <div className="flex items-end gap-6 border-b border-border pb-6">
-                    <h3 className="text-5xl text-maple uppercase tracking-wider">{day}</h3>
-                    <span className="font-ui text-sm font-bold uppercase tracking-[0.3em] text-muted mb-2">
-                      {schedule.find(s => s.day_label === day)?.day_date}
-                    </span>
-                  </div>
-                  <div className="timeline">
-                    {schedule.filter(s => s.day_label === day).map((item, idx) => (
-                      <ScheduleCard
-                        key={item.id}
-                        item={item}
-                        index={idx}
-                        category={categories.find(c => c.name === item.category)}
-                        onCategoryClick={() => setActiveTab('events')}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
 
       case 'notices':
         const filteredNotices = notices.filter(n => noticePriority === 'all' || n.priority === noticePriority);
@@ -548,94 +484,6 @@ export default function App() {
           </div>
         );
 
-      case 'gallery':
-        const filteredGallery = gallery.filter(item => galleryYear === 'all' || item.year === galleryYear);
-
-        return (
-          <div className="max-w-7xl mx-auto px-6 py-24">
-            <div className="mb-16 flex flex-col md:flex-row md:items-end justify-between gap-8">
-              <div>
-                <p className="sec-label">Moments</p>
-                <h2 className="text-4xl sm:text-6xl md:text-7xl">Gallery</h2>
-                <p className="text-white/40 mt-4">Relive the highlights of Harmonia MUN 2025 & 2026.</p>
-              </div>
-
-              <div className="flex items-center flex-nowrap gap-2 bg-white/5 p-1 border border-border rounded-lg self-start overflow-x-auto no-scrollbar pb-2 w-full max-w-full">
-                {['all', 2026, 2025].map((year) => (
-                  <button
-                    key={year}
-                    onClick={() => setGalleryYear(year as any)}
-                    className={cn(
-                      "px-6 py-2 font-ui text-[11px] font-bold uppercase tracking-widest transition-all rounded-md whitespace-nowrap shrink-0",
-                      galleryYear === year ? "bg-maple text-bg shadow-lg" : "text-muted hover:text-text"
-                    )}
-                  >
-                    {year === 'all' ? 'All Years' : year}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <AnimatePresence mode="popLayout">
-                {filteredGallery.map((item) => (
-                  <motion.div
-                    key={item.id}
-                    layout
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    className="card-glass overflow-hidden group cursor-pointer"
-                    onClick={() => window.open(item.url, '_blank')}
-                  >
-                    <div className="aspect-[4/3] relative overflow-hidden">
-                      {item.type === 'image' ? (
-                        <img
-                          src={item.url}
-                          alt={item.title}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-ebony flex items-center justify-center text-maple">
-                          <Play size={64} className="group-hover:scale-125 transition-transform duration-500" />
-                        </div>
-                      )}
-
-                      {/* Year Badge */}
-                      <div className="absolute top-4 left-4 z-20 bg-bg/80 backdrop-blur-md border border-border px-3 py-1 font-ui text-[9px] font-bold uppercase tracking-widest text-maple">
-                        {item.year || 2026}
-                      </div>
-
-                      <div className="absolute inset-0 bg-gradient-to-t from-bg/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex items-end p-8">
-                        <div className="flex items-center gap-3 text-white font-ui text-xs font-bold uppercase tracking-widest">
-                          {item.type === 'image' ? <ImageIcon size={16} /> : <Video size={16} />}
-                          View {item.type}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="text-2xl font-display tracking-wide uppercase truncate">{item.title}</h3>
-                      <p className="font-ui text-[10px] font-bold text-muted uppercase tracking-widest mt-2">
-                        {new Date(item.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-
-              {filteredGallery.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="col-span-full py-40 text-center card-glass"
-                >
-                  <p className="font-ui text-sm font-bold text-muted uppercase tracking-widest">No items found for this year. Check back soon!</p>
-                </motion.div>
-              )}
-            </div>
-          </div>
-        );
 
       case 'leaderboards':
         return (
