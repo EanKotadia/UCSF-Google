@@ -1,10 +1,10 @@
 import { test, expect } from '@playwright/test';
 
-test('verify Harmonia MUN 2026 home page', async ({ page }) => {
+test('verify UCSF 2026 home page', async ({ page }) => {
   await page.goto('http://localhost:5173');
 
   // Verify Branding
-  await expect(page.locator('h1')).toContainText('Harmonia');
+  await expect(page.locator('h1')).toContainText('UCSF');
 
   // Take screenshot of Home
   await page.screenshot({ path: 'verification/screenshots/final_home.png', fullPage: true });

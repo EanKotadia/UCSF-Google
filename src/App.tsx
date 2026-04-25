@@ -4,33 +4,22 @@ import { configureSupabase, supabase } from './lib/supabase';
 import React, { useState } from 'react';
 import Layout from './components/Layout';
 import EventsSection from './components/EventsSection';
-import { useHarmoniaMUNData } from './hooks/useHarmoniaMUNData';
+import { useUCSFData } from './hooks/useUCSFData';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Activity, Calendar, Shield, Loader2, AlertCircle, ChevronRight, Play, Image as ImageIcon, Video, ExternalLink, Bell, Info, FileText, Filter, ChevronDown, ChevronUp } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
+import { Trophy, Activity, Calendar, Shield, AlertCircle, ChevronRight, ExternalLink, Bell } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
   if (!supabase) return <SupabaseConfig onConfigured={configureSupabase} />;
 
   const [activeTab, setActiveTab] = useState('home');
-  const [expandedNoticeId, setExpandedNoticeId] = useState<number | null>(null);
-  const { committees, members, rankings, schedule, settings, notices, stagedChanges, profile, houses, loading, error, refresh } = useHarmoniaMUNData();
-
-  const handleTabChange = (tab: string) => {
-    setActiveTab(tab);
-  };
+  const { houses, matches, schedule, settings, categories, notices, gallery, culturalResults, stagedChanges, profile, loading, error, refresh } = useUCSFData();
 
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#050b1a] gap-6">
-        <div className="relative">
-          <div className="w-16 h-16 border-4 border-[#BC8A2C]/20 border-t-[#BC8A2C] rounded-full animate-spin" />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Trophy className="text-[#BC8A2C]" size={24} />
-          </div>
-        </div>
-        <p className="font-ui text-xs font-bold uppercase tracking-[0.4em] text-[#BC8A2C] animate-pulse">Loading Harmonia MUN Data…</p>
+        <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+        <p className="font-ui text-[10px] font-bold uppercase tracking-[0.4em] text-blue-500 animate-pulse">Loading UCSF 2026…</p>
       </div>
     );
   }
@@ -38,23 +27,16 @@ export default function App() {
   if (error) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#050b1a] p-6 text-center">
-        <div className="w-20 h-20 bg-[#BC8A2C]/10 text-[#BC8A2C] rounded-3xl flex items-center justify-center mb-6 border border-[#BC8A2C]/20">
-          <AlertCircle size={40} />
-        </div>
+        <AlertCircle size={48} className="text-red-500 mb-4" />
         <h2 className="text-3xl font-display text-white mb-4">Connection Error</h2>
-        <p className="text-white/40 max-w-md mb-8 font-medium">{error}</p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button onClick={() => window.location.reload()} className="btn-primary">Retry Connection</button>
-          <button onClick={() => refresh()} className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-ui text-xs font-bold uppercase tracking-widest text-white transition-all">Refresh Data</button>
-        </div>
+        <p className="text-white/40 max-w-md mb-8">{error}</p>
+        <button onClick={() => refresh()} className="px-8 py-4 bg-blue-600 rounded-2xl font-bold text-white uppercase tracking-widest">Retry Connection</button>
       </div>
     );
   }
 
-  const festivalName = settings['festival_name'] || 'Harmonia MUN 2026';
-  const festivalSubtitle = settings['festival_subtitle'] || 'Harmonia Model United Nations';
-  const announcementText = settings['announcement_text'];
-  const footerText = settings['footer_text'];
+  const festivalName = settings['festival_name'] || 'UCSF 2026';
+  const festivalSubtitle = settings['festival_subtitle'] || 'Union of Culture & Sports Fest';
   const schoolLogoUrl = settings['school_logo_url'];
 
   const renderContent = () => {
@@ -62,51 +44,102 @@ export default function App() {
       case 'admin':
         return (
           <AdminPanel
-            committees={committees}
-            members={members}
-            rankings={rankings}
+            matches={matches}
+            houses={houses}
             schedule={schedule}
+            categories={categories}
             notices={notices}
+            gallery={gallery}
+            culturalResults={culturalResults}
             stagedChanges={stagedChanges}
             profile={profile}
             settings={settings}
-            houses={houses}
             refresh={refresh}
             onBack={() => setActiveTab('home')}
           />
         );
       case 'events':
-        return <EventsSection categories={committees} matches={[]} setActiveTab={setActiveTab} />;
+        return <EventsSection categories={categories} matches={matches} setActiveTab={setActiveTab} />;
       case 'home':
         return (
           <div className="space-y-0">
              <section className="relative py-32 md:py-48 overflow-hidden border-b border-white/5">
-              <div className="absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-[#BC8A2C]/10 blur-[120px] rounded-full" />
+              <div className="absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full" />
               <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
                 <div className="mb-8 flex justify-center">
-                  <img src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} alt="School Logo" className="h-20 md:h-24 object-contain opacity-90" referrerPolicy="no-referrer" />
+                  <img src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} alt="School Logo" className="h-20 md:h-24 object-contain" />
                 </div>
-                <h1 className="hero-title mb-6">{festivalName}</h1>
-                <p className="hero-sub mb-12">{festivalSubtitle}</p>
-                <button onClick={() => setActiveTab('events')} className="btn-primary group flex items-center gap-2 mx-auto">
-                  Explore Committees <ChevronRight size={18} />
-                </button>
+                <h1 className="text-5xl md:text-8xl font-display uppercase tracking-tight mb-6 leading-none">
+                   {festivalName.split(' ')[0]} <span className="text-blue-500">{festivalName.split(' ')[1] || ''}</span>
+                </h1>
+                <p className="text-white/60 font-medium tracking-[0.2em] uppercase text-xs md:text-sm mb-12">{festivalSubtitle}</p>
+                <div className="flex flex-wrap justify-center gap-4">
+                   <button onClick={() => setActiveTab('events')} className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold uppercase tracking-widest transition-all flex items-center gap-2">
+                      Explore Events <ChevronRight size={18} />
+                   </button>
+                   <button onClick={() => setActiveTab('leaderboards')} className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold uppercase tracking-widest border border-white/10 transition-all">
+                      Live Rankings
+                   </button>
+                </div>
               </div>
+            </section>
+
+            <section className="py-24 bg-[#0a1128]/30">
+               <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12">
+                  <div className="card-glass p-12 space-y-6">
+                     <h2 className="text-4xl font-display uppercase">The Grand Standings</h2>
+                     <div className="space-y-4">
+                        {houses.sort((a,b) => b.points - a.points).map((h, i) => (
+                          <div key={h.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                             <div className="flex items-center gap-4">
+                                <span className="text-blue-500 font-display text-2xl">#{i+1}</span>
+                                <span className="font-bold uppercase tracking-wider">{h.name}</span>
+                             </div>
+                             <span className="font-display text-2xl text-white">{h.points}</span>
+                          </div>
+                        ))}
+                     </div>
+                  </div>
+                  <div className="card-glass p-12 space-y-6">
+                     <h2 className="text-4xl font-display uppercase">Live Feed</h2>
+                     <div className="space-y-4">
+                        {matches.filter(m => m.status === 'live').map(m => (
+                          <div key={m.id} className="p-6 bg-green-500/10 border border-green-500/20 rounded-2xl animate-pulse">
+                             <p className="text-[8px] font-bold text-green-500 uppercase tracking-[0.3em] mb-2">Live Now • {categories.find(c => c.id === m.category_id)?.name}</p>
+                             <div className="flex justify-between items-center">
+                                <span className="font-bold">{houses.find(h => h.id === m.team1_id)?.name}</span>
+                                <span className="font-display text-xl">{m.score1} - {m.score2}</span>
+                                <span className="font-bold">{houses.find(h => h.id === m.team2_id)?.name}</span>
+                             </div>
+                          </div>
+                        ))}
+                        {matches.filter(m => m.status === 'live').length === 0 && (
+                          <p className="text-white/20 text-center py-12 italic">No active matches at the moment</p>
+                        )}
+                     </div>
+                  </div>
+               </div>
             </section>
           </div>
         );
-      case 'notices':
+      case 'leaderboards':
         return (
           <div className="max-w-7xl mx-auto px-6 py-24">
-            <h2 className="text-4xl sm:text-6xl font-display mb-12">Official Notices</h2>
-            <div className="grid grid-cols-1 gap-8">
-              {notices.map((notice) => (
-                <div key={notice.id} className="card-glass p-8" onClick={() => setExpandedNoticeId(expandedNoticeId === notice.id ? null : notice.id)}>
-                   <h3 className="text-2xl font-display mb-4">{notice.title}</h3>
-                   <p className="text-white/60">{notice.content}</p>
-                </div>
-              ))}
-            </div>
+             <h2 className="text-5xl md:text-7xl font-display uppercase mb-12">Championship Standings</h2>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {houses.sort((a,b) => b.points - a.points).map((h, i) => (
+                   <div key={h.id} className="card-glass p-10 flex flex-col items-center text-center gap-6 group hover:border-blue-500/30 transition-all">
+                      <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center text-4xl font-display text-blue-500 border border-blue-500/20">
+                         #{i+1}
+                      </div>
+                      <h3 className="text-3xl font-display uppercase">{h.name}</h3>
+                      <div className="w-full pt-6 border-t border-white/10">
+                         <span className="text-5xl font-display text-white">{h.points}</span>
+                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-2">Total Points</p>
+                      </div>
+                   </div>
+                ))}
+             </div>
           </div>
         );
       default:
@@ -117,13 +150,10 @@ export default function App() {
   return (
     <Layout 
       activeTab={activeTab} 
-      setActiveTab={handleTabChange}
+      setActiveTab={setActiveTab}
       title={festivalName}
       subtitle={festivalSubtitle}
-      announcement={announcementText}
-      footerText={footerText}
       schoolLogoUrl={schoolLogoUrl}
-      profile={profile}
     >
       <AnimatePresence mode="wait">
         <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>

@@ -26,7 +26,7 @@ export default function SupabaseConfig({ onConfigured }: SupabaseConfigProps) {
         </div>
 
         <h2 className="text-3xl font-display text-center text-white mb-2 uppercase tracking-tight">Database Config</h2>
-        <p className="text-white/40 text-center text-sm mb-10">Connect your Harmonia MUN Supabase instance.</p>
+        <p className="text-white/40 text-center text-sm mb-10">Connect your UCSF Supabase instance.</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
