@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { House, Match, ScheduleItem, Setting, Category, GalleryItem, Notice, CulturalResult, StagedChange, Profile } from '../types';
-import { HARDCODED_CATEGORIES } from '../constants/hardcodedData';
 
 // Global cache to persist data across component remounts
 const globalCache: Record<string, any> = {
@@ -18,7 +17,7 @@ const globalCache: Record<string, any> = {
   lastFetched: 0
 };
 
-const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+const CACHE_EXPIRY = 5 * 60 * 1000;
 
 async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
   try {
@@ -47,168 +46,46 @@ export function useAdminData() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHouses = async () => {
-    const { data } = await supabase!.from('houses').select('*').order('rank_pos', { ascending: true });
-    if (data) {
-      setHouses(data);
-      globalCache.houses = data;
-    }
-  };
-
-  const fetchMatches = async () => {
-    const { data } = await supabase!.from('matches').select('*, team1:team1_id(*), team2:team2_id(*), category:category_id(*)').order('id', { ascending: true });
-    if (data) {
-      setMatches(data);
-      globalCache.matches = data;
-    }
-  };
-
-  const fetchSchedule = async () => {
-    const { data } = await supabase!.from('schedule').select('*').order('sort_order', { ascending: true });
-    if (data) {
-      setSchedule(data);
-      globalCache.schedule = data;
-    }
-  };
-
-  const fetchSettings = async () => {
-    const { data } = await supabase!.from('settings').select('*');
-    if (data) {
-      const settingsMap: Record<string, string> = {};
-      data.forEach((s: Setting) => {
-        settingsMap[s.key_name] = s.val;
-      });
-      setSettings(settingsMap);
-      globalCache.settings = settingsMap;
-    }
-  };
-
-  const fetchCategories = async () => {
-    const { data } = await supabase!.from('categories').select('*').order('sort_order', { ascending: true });
-    if (data) {
-      const mergedCategories = data.map((cat: Category) => {
-        const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        const hardcoded = HARDCODED_CATEGORIES[slug] || HARDCODED_CATEGORIES[cat.name.toLowerCase()];
-        if (hardcoded) {
-          return {
-            ...cat,
-            ...hardcoded,
-            category_type: cat.category_type || hardcoded.category_type,
-            team_size: cat.team_size || hardcoded.team_size,
-            duration: cat.duration || hardcoded.duration,
-            special_rules: cat.special_rules || hardcoded.special_rules,
-            judging_criteria: (cat.judging_criteria && cat.judging_criteria.length > 0) ? cat.judging_criteria : hardcoded.judging_criteria,
-          } as Category;
-        }
-        return cat;
-      });
-      setCategories(mergedCategories);
-      globalCache.categories = mergedCategories;
-    }
-  };
-
-  const fetchGallery = async () => {
-    const { data } = await supabase!.from('gallery').select('*').order('year', { ascending: false }).order('created_at', { ascending: false });
-    if (data) {
-      setGallery(data);
-      globalCache.gallery = data;
-    }
-  };
-
-  const fetchNotices = async () => {
-    const { data } = await supabase!.from('notices').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setNotices(data);
-      globalCache.notices = data;
-    }
-  };
-
-  const fetchCulturalResults = async () => {
-    const { data } = await supabase!.from('cultural_results').select('*, house:house_id(*), category:category_id(*)').order('rank', { ascending: true });
-    if (data) {
-      setCulturalResults(data);
-      globalCache.culturalResults = data;
-    }
-  };
-
-  const fetchStagedChanges = async () => {
-    const { data } = await supabase!.from('staged_changes').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setStagedChanges(data);
-      globalCache.stagedChanges = data;
-    }
-  };
-
-  const fetchProfile = async () => {
-    const { data: { session } } = await supabase!.auth.getSession();
-    const user = session?.user;
-
-    if (!user) {
-      setProfile(null);
-      globalCache.profile = null;
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase!.from('profiles').select('*').eq('id', user.id).single();
-      if (data) {
-        setProfile(data);
-        globalCache.profile = data;
-      } else if (error && error.code === 'PGRST116') {
-        const isSuperAdmin = user.email === 'kotadia.ean@gmail.com';
-        const { data: newProfile } = await supabase!.from('profiles').insert([{
-          id: user.id,
-          email: user.email,
-          is_super_admin: isSuperAdmin
-        }]).select().single();
-
-        if (newProfile) {
-          setProfile(newProfile);
-          globalCache.profile = newProfile;
-        }
-      }
-    } catch (err) {
-      console.warn('Profile fetch error:', err);
-    }
-  };
-
   const fetchData = async (isInitial = false) => {
     if (!supabase) {
       setError('Supabase credentials missing.');
       setLoading(false);
       return;
     }
-
-    if (isInitial && globalCache.lastFetched && (Date.now() - globalCache.lastFetched < CACHE_EXPIRY)) {
-      setLoading(false);
-      return;
-    }
-
     try {
       if (isInitial && !globalCache.lastFetched) setLoading(true);
       else setIsRefreshing(true);
 
-      await withRetry(fetchProfile);
-
-      await Promise.all([
-        withRetry(fetchHouses),
-        withRetry(fetchMatches),
-        withRetry(fetchSchedule),
-        withRetry(fetchSettings),
-        withRetry(fetchCategories),
-        withRetry(fetchGallery),
-        withRetry(fetchNotices),
-        withRetry(fetchCulturalResults),
-        withRetry(fetchStagedChanges)
+      const [h, m, s, sett, c, g, n, cr, sc, p] = await Promise.all([
+        supabase.from('houses').select('*'),
+        supabase.from('matches').select('*'),
+        supabase.from('schedule').select('*'),
+        supabase.from('settings').select('*'),
+        supabase.from('categories').select('*'),
+        supabase.from('gallery').select('*'),
+        supabase.from('notices').select('*'),
+        supabase.from('cultural_results').select('*'),
+        supabase.from('staged_changes').select('*'),
+        supabase.auth.getSession()
       ]);
 
-      globalCache.lastFetched = Date.now();
+      if (h.data) setHouses(h.data);
+      if (m.data) setMatches(m.data);
+      if (s.data) setSchedule(s.data);
+      if (sett.data) {
+        const map: any = {};
+        sett.data.forEach((x: any) => map[x.key_name] = x.val);
+        setSettings(map);
+      }
+      if (c.data) setCategories(c.data);
+      if (g.data) setGallery(g.data);
+      if (n.data) setNotices(n.data);
+      if (cr.data) setCulturalResults(cr.data);
+      if (sc.data) setStagedChanges(sc.data);
+
       setError(null);
     } catch (err: any) {
-      console.error('Error fetching Harmonia MUN data:', err);
-      if (!err.message?.includes('lock')) {
-        setError(err.message || 'An error occurred while fetching data.');
-      }
+      setError(err.message);
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -216,38 +93,8 @@ export function useAdminData() {
   };
 
   useEffect(() => {
-    if (!supabase) return;
-
     fetchData(true);
-
-    const housesSub = supabase.channel('houses-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'houses' }, fetchHouses).subscribe();
-    const matchesSub = supabase.channel('matches-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'matches' }, fetchMatches).subscribe();
-    const scheduleSub = supabase.channel('schedule-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'schedule' }, fetchSchedule).subscribe();
-    const settingsSub = supabase.channel('settings-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'settings' }, fetchSettings).subscribe();
-    const categoriesSub = supabase.channel('categories-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, fetchCategories).subscribe();
-    const gallerySub = supabase.channel('gallery-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'gallery' }, fetchGallery).subscribe();
-    const noticesSub = supabase.channel('notices-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'notices' }, fetchNotices).subscribe();
-    const culturalSub = supabase.channel('cultural-results-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'cultural_results' }, fetchCulturalResults).subscribe();
-    const stagedSub = supabase.channel('staged-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'staged_changes' }, fetchStagedChanges).subscribe();
-    const profileSub = supabase.channel('profile-changes').on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, fetchProfile).subscribe();
-
-    return () => {
-      if (supabase) {
-        supabase.removeChannel(housesSub);
-        supabase.removeChannel(matchesSub);
-        supabase.removeChannel(scheduleSub);
-        supabase.removeChannel(settingsSub);
-        supabase.removeChannel(categoriesSub);
-        supabase.removeChannel(gallerySub);
-        supabase.removeChannel(noticesSub);
-        supabase.removeChannel(culturalSub);
-        supabase.removeChannel(stagedSub);
-        supabase.removeChannel(profileSub);
-      }
-    };
   }, []);
 
-  const refresh = React.useCallback(() => fetchData(false), []);
-
-  return { houses, matches, schedule, settings, categories, gallery, notices, culturalResults, stagedChanges, profile, loading, isRefreshing, error, refresh };
+  return { houses, matches, schedule, settings, categories, gallery, notices, culturalResults, stagedChanges, profile, loading, isRefreshing, error, refresh: () => fetchData(false) };
 }

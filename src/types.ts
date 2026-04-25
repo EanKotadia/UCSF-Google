@@ -83,17 +83,6 @@ export type Setting = {
   val: string;
 };
 
-export type Registration = {
-  id: number;
-  event_id: number | null;
-  event_name: string;
-  student_name: string;
-  student_class: string;
-  student_section: string;
-  file_url: string | null;
-  created_at: string;
-};
-
 export type GalleryItem = {
   id: number;
   title: string;

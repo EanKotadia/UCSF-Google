@@ -1,19 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 
-const NEW_SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const NEW_SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const NEW_SUPABASE_URL = "https://lyoiiwldzzvnykbrjfbh.supabase.co";
+const NEW_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5b2lpd2xkenp2bnlrYnJqZmJoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMzc2ODMsImV4cCI6MjA5MjYxMzY4M30.dKqwwz_8DDpT7QLDzmII0tSA67h6IKvUY7Qo9R3O6es";
 
 export let supabase: any = null;
 
-const storedUrl = localStorage.getItem('SUPABASE_URL');
-const storedKey = localStorage.getItem('SUPABASE_KEY');
-
-const finalUrl = NEW_SUPABASE_URL || storedUrl;
-const finalKey = NEW_SUPABASE_ANON_KEY || storedKey;
-
-if (finalUrl && finalKey) {
+if (NEW_SUPABASE_URL && NEW_SUPABASE_ANON_KEY) {
   try {
-    supabase = createClient(finalUrl, finalKey);
+    supabase = createClient(NEW_SUPABASE_URL, NEW_SUPABASE_ANON_KEY);
   } catch (e) {
     console.error('Supabase init error:', e);
   }

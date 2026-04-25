@@ -206,7 +206,7 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
         <div className="mb-16">
           <p className="sec-label">Rules & Instructions</p>
           <h2 className="text-6xl md:text-8xl">General Guidelines</h2>
-          <p className="text-muted mt-4 text-lg">Essential information for all Harmonia MUN 2026 participants.</p>
+          <p className="text-muted mt-4 text-lg">Essential information for all UCSF 2026 participants.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white/5 border border-border p-10 rounded-3xl">
