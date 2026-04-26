@@ -31,7 +31,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
     <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-maple selection:text-bg font-ui">
       <header className="fixed top-0 left-0 right-0 z-[110]">
         {announcement && (
-          <div className="bg-blue-600 text-white py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
+          <div className="bg-maple text-white py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
             {announcement}
           </div>
         )}
@@ -61,7 +61,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                   onClick={() => setActiveTab(item.id)}
                   className={cn(
                     "font-ui text-[11px] font-bold uppercase tracking-[2px] transition-colors",
-                    activeTab === item.id ? "text-blue-500" : "text-white/40 hover:text-white"
+                    activeTab === item.id ? "text-maple" : "text-white/40 hover:text-white"
                   )}
                 >
                   {item.label}
@@ -86,7 +86,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="md:hidden absolute top-full left-0 right-0 bg-[#0a1128] border-b border-white/10 p-8 flex flex-col gap-6 z-[101] shadow-2xl"
+                className="md:hidden absolute top-full left-0 right-0 bg-[#1a0808] border-b border-white/10 p-8 flex flex-col gap-6 z-[101] shadow-2xl"
               >
                 {navItems.map((item, idx) => (
                   <button
@@ -97,7 +97,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                     }}
                     className={cn(
                       "font-display text-4xl text-left tracking-wider uppercase",
-                      activeTab === item.id ? "text-blue-500" : "text-white/40"
+                      activeTab === item.id ? "text-maple" : "text-white/40"
                     )}
                   >
                     {item.label}
@@ -119,7 +119,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
       </main>
 
       {/* Footer */}
-      <footer className="bg-[#050b1a] border-t border-white/5 py-24 px-6 md:px-10 text-center">
+      <footer className="bg-bg border-t border-white/5 py-24 px-6 md:px-10 text-center">
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-12">
           <div className="flex flex-col items-center gap-6">
              <img
@@ -129,7 +129,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                referrerPolicy="no-referrer"
              />
              <div className="font-display text-4xl tracking-[4px] uppercase">
-               {title.split(' ')[0]} <span className="text-blue-500">{title.split(' ')[1] || ''}</span>
+               {title.split(' ')[0]} <span className="text-maple">{title.split(' ')[1] || ''}</span>
              </div>
              <p className="font-ui text-[10px] font-bold uppercase tracking-[4px] text-white/40 max-w-md leading-relaxed">
                {subtitle}

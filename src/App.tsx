@@ -1,41 +1,52 @@
-import AdminPanel from './components/AdminPanel';
-import SupabaseConfig from './components/SupabaseConfig';
-import { configureSupabase, supabase } from './lib/supabase';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import {
+  Trophy,
+  Activity,
+  Calendar,
+  Users,
+  Bell,
+  ChevronRight,
+  ArrowRight,
+  TrendingUp,
+  Clock,
+  MapPin,
+  Heart,
+  LayoutGrid
+} from 'lucide-react';
+import { useUCSFData } from './hooks/useUCSFData';
 import Layout from './components/Layout';
 import EventsSection from './components/EventsSection';
-import { useUCSFData } from './hooks/useUCSFData';
-import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Activity, Calendar, Shield, AlertCircle, ChevronRight, ExternalLink, Bell, ImageIcon, Users, Clock, Info } from 'lucide-react';
+import AdminPanel from './components/AdminPanel';
 import { cn } from './lib/utils';
 
+type Tab = 'home' | 'events' | 'leaderboards' | 'notices' | 'gallery' | 'admin';
+
 export default function App() {
-  if (!supabase) return <SupabaseConfig onConfigured={configureSupabase} />;
+  const [activeTab, setActiveTab] = useState<Tab>('home');
+  const {
+    houses,
+    matches,
+    schedule,
+    categories,
+    notices,
+    gallery,
+    culturalResults,
+    stagedChanges,
+    profile,
+    settings,
+    loading,
+    error,
+    refresh
+  } = useUCSFData();
 
-  const [activeTab, setActiveTab] = useState('home');
-  const { houses, matches, schedule, settings, categories, notices, gallery, culturalResults, stagedChanges, profile, loading, error, refresh } = useUCSFData();
-
-  // Scroll to top on tab change
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, [activeTab]);
-
-  if (loading) {
+  if (loading && !houses.length) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050b1a] gap-6">
-        <div className="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-        <p className="font-ui text-[10px] font-bold uppercase tracking-[0.4em] text-blue-500 animate-pulse">Loading UCSF 2026…</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050b1a] p-6 text-center">
-        <AlertCircle size={48} className="text-red-500 mb-4" />
-        <h2 className="text-3xl font-display text-white mb-4">Connection Error</h2>
-        <p className="text-white/40 max-w-md mb-8">{error}</p>
-        <button onClick={() => refresh()} className="px-8 py-4 bg-blue-600 rounded-2xl font-bold text-white uppercase tracking-widest">Retry Connection</button>
+      <div className="min-h-screen bg-bg flex items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-16 h-16 border-4 border-maple/20 border-t-maple rounded-full animate-spin" />
+          <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.4em] animate-pulse">Initializing UCSF System</p>
+        </div>
       </div>
     );
   }
@@ -65,22 +76,22 @@ export default function App() {
           />
         );
       case 'events':
-        return <EventsSection categories={categories} matches={matches} setActiveTab={setActiveTab} />;
+        return <EventsSection categories={categories} matches={matches} setActiveTab={(t: any) => setActiveTab(t)} />;
       case 'home':
         return (
           <div className="space-y-0">
              <section className="relative py-32 md:py-48 overflow-hidden border-b border-white/5">
-              <div className="absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full" />
+              <div className="absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-maple/10 blur-[120px] rounded-full" />
               <div className="max-w-7xl mx-auto px-6 relative z-10 text-center font-ui">
                 <div className="mb-8 flex justify-center">
                   <img src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} alt="School Logo" className="h-20 md:h-24 object-contain" />
                 </div>
                 <h1 className="text-5xl md:text-8xl font-display uppercase tracking-tight mb-6 leading-none">
-                   {festivalName.split(' ')[0]} <span className="text-blue-500">{festivalName.split(' ')[1] || ''}</span>
+                   {festivalName.split(' ')[0]} <span className="text-maple">{festivalName.split(' ')[1] || ''}</span>
                 </h1>
                 <p className="text-white/60 font-medium tracking-[0.2em] uppercase text-xs md:text-sm mb-12">{festivalSubtitle}</p>
                 <div className="flex flex-wrap justify-center gap-4">
-                   <button onClick={() => setActiveTab('events')} className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold uppercase tracking-widest transition-all flex items-center gap-2">
+                   <button onClick={() => setActiveTab('events')} className="px-8 py-4 bg-maple hover:bg-maple/90 text-white rounded-2xl font-bold uppercase tracking-widest transition-all flex items-center gap-2 shadow-lg shadow-maple/20">
                       Explore Events <ChevronRight size={18} />
                    </button>
                    <button onClick={() => setActiveTab('leaderboards')} className="px-8 py-4 bg-white/5 hover:bg-white/10 text-white rounded-2xl font-bold uppercase tracking-widest border border-white/10 transition-all">
@@ -90,7 +101,7 @@ export default function App() {
               </div>
             </section>
 
-            <section className="py-24 bg-[#0a1128]/30">
+            <section className="py-24 bg-bg2/30">
                <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 font-ui">
                   <div className="bg-white/5 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-12 space-y-6">
                      <h2 className="text-4xl font-display uppercase">The Grand Standings</h2>
@@ -98,7 +109,7 @@ export default function App() {
                         {houses.sort((a,b) => b.points - a.points).map((h, i) => (
                           <div key={h.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
                              <div className="flex items-center gap-4">
-                                <span className="text-blue-500 font-display text-2xl">#{i+1}</span>
+                                <span className="text-maple font-display text-2xl">#{i+1}</span>
                                 <span className="font-bold uppercase tracking-wider">{h.name}</span>
                              </div>
                              <span className="font-display text-2xl text-white">{h.points}</span>
@@ -137,8 +148,8 @@ export default function App() {
              <h2 className="text-5xl md:text-7xl font-display uppercase mb-12">Championship Standings</h2>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {houses.sort((a,b) => b.points - a.points).map((h, i) => (
-                   <div key={h.id} className="bg-white/5 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-10 flex flex-col items-center text-center gap-6 group hover:border-blue-500/30 transition-all">
-                      <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center text-4xl font-display text-blue-500 border border-blue-500/20">
+                   <div key={h.id} className="bg-white/5 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-10 flex flex-col items-center text-center gap-6 group hover:border-maple/30 transition-all">
+                      <div className="w-24 h-24 bg-maple/10 rounded-full flex items-center justify-center text-4xl font-display text-maple border border-maple/20">
                          #{i+1}
                       </div>
                       <h3 className="text-3xl font-display uppercase">{h.name}</h3>
@@ -162,7 +173,7 @@ export default function App() {
                          <h3 className="text-2xl font-bold uppercase">{notice.title}</h3>
                          <span className={cn(
                             "px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest",
-                            notice.priority === 'high' ? "bg-red-500/20 text-red-500" : "bg-blue-500/20 text-blue-500"
+                            notice.priority === 'high' ? "bg-red-500/20 text-red-500" : "bg-maple/20 text-maple"
                          )}>{notice.priority}</span>
                       </div>
                       <p className="text-white/60 leading-relaxed">{notice.content}</p>
@@ -198,7 +209,7 @@ export default function App() {
   return (
     <Layout 
       activeTab={activeTab} 
-      setActiveTab={setActiveTab}
+      setActiveTab={(t: any) => setActiveTab(t)}
       title={festivalName}
       subtitle={festivalSubtitle}
       schoolLogoUrl={schoolLogoUrl}

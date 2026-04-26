@@ -20,18 +20,6 @@ const globalCache: Record<string, any> = {
 
 const CACHE_EXPIRY = 5 * 60 * 1000;
 
-async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
-  try {
-    return await fn();
-  } catch (err: any) {
-    if (retries > 0 && (err.message?.includes('fetch') || err.message?.includes('lock'))) {
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return withRetry(fn, retries - 1, delay * 2);
-    }
-    throw err;
-  }
-}
-
 export function useUCSFData() {
   const [houses, setHouses] = useState<House[]>(globalCache.houses || []);
   const [matches, setMatches] = useState<Match[]>(globalCache.matches || []);
@@ -99,24 +87,8 @@ export function useUCSFData() {
         globalCache.settings = map;
       }
       if (c) {
-        const mergedCategories = c.map((cat: Category) => {
-          const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-          const hardcoded = HARDCODED_CATEGORIES[slug] || HARDCODED_CATEGORIES[cat.name.toLowerCase()];
-          if (hardcoded) {
-            return {
-              ...cat,
-              ...hardcoded,
-              category_type: cat.category_type || hardcoded.category_type,
-              team_size: cat.team_size || hardcoded.team_size,
-              duration: cat.duration || hardcoded.duration,
-              special_rules: cat.special_rules || hardcoded.special_rules,
-              judging_criteria: (cat.judging_criteria && cat.judging_criteria.length > 0) ? cat.judging_criteria : hardcoded.judging_criteria,
-            } as Category;
-          }
-          return cat;
-        });
-        setCategories(mergedCategories);
-        globalCache.categories = mergedCategories;
+        setCategories(c);
+        globalCache.categories = c;
       }
       if (g) { setGallery(g); globalCache.gallery = g; }
       if (n) { setNotices(n); globalCache.notices = n; }
@@ -137,6 +109,23 @@ export function useUCSFData() {
   useEffect(() => {
     if (!supabase) return;
     fetchData(true);
+
+    // Fetch session/profile
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setProfile({ id: session.user.id, email: session.user.email || '', is_super_admin: false, created_at: '' });
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setProfile({ id: session.user.id, email: session.user.email || '', is_super_admin: false, created_at: '' });
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const refresh = React.useCallback(() => fetchData(false), []);

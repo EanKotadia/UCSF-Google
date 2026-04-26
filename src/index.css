@@ -4,10 +4,11 @@
   --font-display: "Clash Display", "Space Grotesk", system-ui;
   --font-ui: "Inter", "Geist", system-ui;
   
-  --color-bg: #050b1a;
-  --color-bg2: #0a1128;
+  --color-bg: #050101;
+  --color-bg2: #1a0808;
   --color-border: rgba(255, 255, 255, 0.05);
-  --color-maple: #3b82f6;
+  --color-maple: #dc2626;
+  --color-maple-muted: rgba(220, 38, 38, 0.2);
   --color-muted: rgba(255, 255, 255, 0.4);
   --color-text: #ffffff;
 }

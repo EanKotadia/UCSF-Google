@@ -95,6 +95,22 @@ export function useAdminData() {
 
   useEffect(() => {
     fetchData(true);
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setProfile({ id: session.user.id, email: session.user.email || '', is_super_admin: false, created_at: '' });
+      }
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setProfile({ id: session.user.id, email: session.user.email || '', is_super_admin: false, created_at: '' });
+      } else {
+        setProfile(null);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return { houses, matches, schedule, settings, categories, gallery, notices, culturalResults, stagedChanges, profile, loading, isRefreshing, error, refresh: () => fetchData(false) };
