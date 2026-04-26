@@ -30,15 +30,15 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-accent/30 font-ui">
+    <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-accent/30 font-sans relative">
       <header className="fixed top-0 left-0 right-0 z-[110]">
         {announcement && (
-          <div className="bg-accent text-text py-1.5 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
+          <div className="bg-accent text-bg py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
             {announcement}
           </div>
         )}
         {/* Navigation */}
-        <nav className="flex items-center justify-between px-6 md:px-12 h-[72px] bg-white/80 backdrop-blur-xl border-b border-border">
+        <nav className="flex items-center justify-between px-6 md:px-12 h-[80px] bg-bg/80 backdrop-blur-xl border-b border-border">
           <button 
             onClick={() => setActiveTab('home')}
             className="flex items-center gap-3 group"
@@ -46,13 +46,13 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
             <img
               src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
               alt="School Logo"
-              className="h-9 object-contain group-hover:scale-105 transition-transform"
+              className="h-10 object-contain group-hover:scale-105 transition-transform"
               referrerPolicy="no-referrer"
             />
-            <div className="h-6 w-px bg-border mx-1" />
+            <div className="h-6 w-px bg-border mx-2" />
             <div className="text-left">
-               <p className="text-[12px] font-bold uppercase tracking-[0.1em] text-primary leading-none mb-0.5">UCSF</p>
-               <p className="text-[8px] text-text-muted font-bold uppercase tracking-widest">2026</p>
+               <p className="nav-logo leading-none">UCSF</p>
+               <p className="text-[8px] text-muted font-bold uppercase tracking-widest mt-1">Fest 2026</p>
             </div>
           </button>
 
@@ -63,15 +63,15 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                 <button
                   onClick={() => setActiveTab(item.id)}
                   className={cn(
-                    "font-ui text-[11px] font-bold uppercase tracking-[1.5px] transition-all relative py-2",
-                    activeTab === item.id ? "text-primary" : "text-text-muted hover:text-text"
+                    "font-ui text-[12px] font-bold uppercase tracking-[2px] transition-all relative py-2",
+                    activeTab === item.id ? "text-accent" : "text-muted hover:text-text"
                   )}
                 >
                   {item.label}
                   {activeTab === item.id && (
                     <motion.div
                       layoutId="nav-underline"
-                      className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent rounded-full"
                     />
                   )}
                 </button>
@@ -83,17 +83,17 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
             <button
                onClick={() => setActiveTab('admin')}
                className={cn(
-                 "hidden md:block px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all",
-                 activeTab === 'admin' ? "bg-primary text-white" : "bg-primary-muted text-primary hover:bg-primary hover:text-white"
+                 "hidden md:block btn-primary px-5 py-2.5 rounded-lg",
+                 activeTab === 'admin' ? "bg-accent text-bg" : "bg-transparent border border-accent/30 text-accent hover:bg-accent/10"
                )}
             >
                Admin
             </button>
             <button 
-              className="xl:hidden p-2 text-text-muted hover:text-text"
+              className="xl:hidden p-2 text-muted hover:text-text"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
 
@@ -101,11 +101,14 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div 
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="xl:hidden absolute top-full left-0 right-0 bg-white border-b border-border p-8 flex flex-col gap-6 z-[101] shadow-xl"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="xl:hidden fixed inset-y-0 right-0 w-[300px] bg-dark border-l border-border p-12 flex flex-col gap-8 z-[120] shadow-2xl"
               >
+                <button onClick={() => setIsMenuOpen(false)} className="self-end p-2 text-muted hover:text-text">
+                  <X size={24} />
+                </button>
                 {navItems.map((item, idx) => (
                   <button
                     key={idx}
@@ -114,8 +117,8 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                       setIsMenuOpen(false);
                     }}
                     className={cn(
-                      "font-display text-2xl text-left tracking-wider uppercase",
-                      activeTab === item.id ? "text-primary" : "text-text-muted"
+                      "font-display text-3xl text-left tracking-wider uppercase",
+                      activeTab === item.id ? "text-accent" : "text-muted"
                     )}
                   >
                     {item.label}
@@ -127,8 +130,8 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                     setIsMenuOpen(false);
                   }}
                   className={cn(
-                    "font-display text-2xl text-left tracking-wider uppercase",
-                    activeTab === 'admin' ? "text-primary" : "text-text-muted"
+                    "font-display text-3xl text-left tracking-wider uppercase",
+                    activeTab === 'admin' ? "text-accent" : "text-muted"
                   )}
                 >
                   Admin
@@ -140,35 +143,35 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
       </header>
 
       {/* Main Content */}
-      <main className="flex-grow">
+      <main className="flex-grow z-10">
         {/* Spacer for fixed header */}
         <div className={cn(
-          announcement ? "h-[104px]" : "h-[72px]"
+          announcement ? "h-[104px]" : "h-[80px]"
         )} />
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-bg-alt border-t border-border py-20 px-6 md:px-12 text-center">
+      <footer className="bg-bg-dark border-t border-border py-20 px-6 md:px-12 text-center relative z-10">
         <div className="max-w-7xl mx-auto flex flex-col items-center gap-10">
           <div className="flex flex-col items-center gap-6">
              <img
                src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
                alt="School Logo"
-               className="h-14 object-contain mb-2 opacity-60 hover:opacity-100 transition-opacity"
+               className="h-16 object-contain mb-2 opacity-50 hover:opacity-100 transition-opacity"
                referrerPolicy="no-referrer"
              />
-             <div className="font-display text-3xl tracking-[2px] uppercase">
-               UCSF <span className="text-primary">2026</span>
+             <div className="nav-logo text-4xl">
+               UCSF <span className="text-accent">2026</span>
              </div>
-             <p className="font-ui text-[9px] font-bold uppercase tracking-[3px] text-text-muted max-w-md leading-relaxed">
+             <p className="font-ui text-[10px] font-bold uppercase tracking-[4px] text-muted max-w-md leading-relaxed">
                Union of Culture & Sports Fest
              </p>
           </div>
 
-          <div className="w-16 h-px bg-border" />
+          <div className="w-20 h-px bg-border" />
 
-          <div className="flex flex-col gap-3 font-ui text-[9px] font-bold uppercase tracking-widest text-text-muted/60">
+          <div className="flex flex-col gap-3 font-ui text-[10px] font-bold uppercase tracking-widest text-subtle">
             <span>© 2026 Shalom Hills International School</span>
           </div>
         </div>
