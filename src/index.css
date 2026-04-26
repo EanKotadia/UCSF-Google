@@ -1,154 +1,50 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&family=Rajdhani:wght@400;600;700&family=Exo+2:ital,wght@0,300;0,400;0,700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bebas Neue", sans-serif;
-  --font-ui: "Rajdhani", sans-serif;
-
-  --color-bg: #11274A;
-  --color-bg2: #162e54;
-  --color-bg3: #1c3660;
-  --color-surface: rgba(255, 255, 255, 0.045);
-  --color-border: rgba(255, 255, 255, 0.09);
-  --color-text: #f0f0ff;
-  --color-muted: rgba(240, 240, 255, 0.52);
-  --color-subtle: rgba(240, 240, 255, 0.25);
+  --font-display: "Clash Display", "Space Grotesk", system-ui;
+  --font-ui: "Inter", "Geist", system-ui;
   
-  --color-maple: #BC8A2C;
-  --color-cedar: #E63946;
-  --color-ebony: #4895EF;
-  --color-oak: #2DC653;
-  --color-accent: #4895EF;
-  --color-success: #2DC653;
-  --color-danger: #E63946;
-  --color-warn: #F5C518;
+  --color-bg: #050b1a;
+  --color-bg2: #0a1128;
+  --color-border: rgba(255, 255, 255, 0.05);
+  --color-maple: #3b82f6;
+  --color-muted: rgba(255, 255, 255, 0.4);
+  --color-text: #ffffff;
 }
 
 @layer base {
   body {
-    @apply bg-bg text-text antialiased font-sans min-h-screen relative overflow-x-hidden;
-  }
-
-  body::before {
-    content: '';
-    @apply fixed inset-0 z-0 pointer-events-none;
-    background-image: linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px), 
-                      linear-gradient(90deg, rgba(255, 255, 255, 0.022) 1px, transparent 1px);
-    background-size: 56px 56px;
-  }
-
-  h1, h2, h3, h4 {
-    @apply font-display tracking-[1px] leading-none uppercase;
-  }
-
-  h1 { @apply text-[clamp(52px,8vw,110px)]; }
-  h2 { @apply text-[clamp(32px,5vw,64px)]; }
-  h3 { @apply text-[clamp(20px,3vw,34px)]; }
-
-  p {
-    @apply font-sans text-muted leading-[1.8];
-  }
-
-  ::-webkit-scrollbar {
-    @apply w-[5px];
-  }
-  ::-webkit-scrollbar-track {
-    @apply bg-bg;
-  }
-  ::-webkit-scrollbar-thumb {
-    @apply bg-white/20 rounded-[3px];
+    @apply bg-bg text-text antialiased;
+    font-family: var(--font-ui);
   }
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center gap-[7px] px-[26px] py-[11px] bg-maple text-bg font-ui text-[12px] font-bold uppercase tracking-[2px] transition-all hover:bg-[#ffd84d] active:scale-95 cursor-pointer rounded-xl;
+  .card-glass {
+    @apply bg-bg2/50 backdrop-blur-2xl border border-border rounded-[2.5rem] transition-all duration-300;
   }
   
-  .btn-ghost {
-    @apply inline-flex items-center gap-[7px] px-[26px] py-[11px] border border-border bg-transparent text-text font-ui text-[12px] font-bold uppercase tracking-[2px] transition-all hover:border-white/30 hover:bg-white/5 active:scale-95 cursor-pointer rounded-xl;
-  }
-
-  .btn-danger {
-    @apply inline-flex items-center gap-[7px] px-[26px] py-[11px] border border-danger bg-transparent text-danger font-ui text-[12px] font-bold uppercase tracking-[2px] transition-all hover:bg-danger/10 active:scale-95 cursor-pointer rounded-xl;
-  }
-
   .sec-label {
-    @apply flex items-center gap-[10px] font-ui text-[11px] font-bold uppercase tracking-[4px] text-maple mb-[12px];
-  }
-  .sec-label::before {
-    content: '';
-    @apply w-[24px] h-[1px] bg-maple;
-  }
-
-  .card-glass {
-    @apply bg-surface border border-border backdrop-blur-sm relative rounded-3xl;
-  }
-
-  .badge {
-    @apply inline-block px-[10px] py-[4px] font-ui text-[10px] font-bold uppercase tracking-[2px] rounded-lg;
-  }
-  .badge-upcoming { @apply bg-white/10 text-muted; }
-  .badge-live { @apply bg-danger/20 text-danger; }
-  .badge-completed { @apply bg-oak/15 text-oak; }
-
-  .form-input, .form-select {
-    @apply w-full px-[13px] py-[10px] bg-bg2 border border-border text-text font-sans text-[14px] outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent/15 rounded-xl;
-  }
-  .form-input::placeholder { @apply text-subtle; }
-  .form-select option { @apply bg-bg3; }
-
-  .hero-eyebrow {
-    @apply inline-block font-ui text-[11px] font-bold tracking-[3px] uppercase text-maple border border-maple/30 bg-maple/10 px-[20px] py-[6px] mb-[20px] rounded-full;
-  }
-  .hero-title {
-    @apply font-display text-[clamp(60px,9vw,120px)] leading-[0.95] tracking-[3px] bg-gradient-to-b from-white to-white/65 bg-clip-text text-transparent;
-  }
-  .hero-sub {
-    @apply font-ui text-[16px] font-semibold tracking-[4px] uppercase text-muted mt-[16px];
-  }
-
-  .nav-logo {
-    @apply font-display text-[24px] tracking-[3px] no-underline bg-gradient-to-br from-white via-white to-maple bg-clip-text text-transparent;
-  }
-  .nav-live {
-    @apply font-ui text-[11px] font-bold tracking-[1px] text-danger animate-pulse max-w-[220px] overflow-hidden text-ellipsis whitespace-nowrap;
-  }
-
-  .timeline {
-    @apply flex flex-col gap-0 relative;
-  }
-  .timeline::before {
-    content: '';
-    @apply absolute left-[80px] md:left-[120px] top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-border to-transparent;
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    @apply text-[10px] font-bold text-maple uppercase tracking-[0.4em] mb-4;
   }
 
   .custom-scrollbar::-webkit-scrollbar {
-    @apply w-[6px] h-[6px];
+    width: 6px;
   }
+
   .custom-scrollbar::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
+
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+    @apply bg-white/10 rounded-full hover:bg-white/20;
   }
 }
 
-@keyframes orbdrift {
-  from { transform: translate(0, 0); }
-  to { transform: translate(40px, -40px); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@font-face {
+  font-family: 'Clash Display';
+  src: url('https://cdn.fontshare.com/wf/TTX2Z3BF3S6YOR6SK6J7I5S5SGLX7X6K/776M5CS6U7O4C5U4M7S4C5U4.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }

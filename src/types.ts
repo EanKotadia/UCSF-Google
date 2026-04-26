@@ -7,6 +7,8 @@ export type House = {
   logo_url?: string | null;
   banner_url?: string | null;
   points: number;
+  sports_points: number;
+  cultural_points: number;
   rank_pos: number;
   motto: string | null;
 };
