@@ -19,18 +19,6 @@ const globalCache: Record<string, any> = {
 
 const CACHE_EXPIRY = 5 * 60 * 1000;
 
-async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
-  try {
-    return await fn();
-  } catch (err: any) {
-    if (retries > 0 && (err.message?.includes('fetch') || err.message?.includes('lock'))) {
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return withRetry(fn, retries - 1, delay * 2);
-    }
-    throw err;
-  }
-}
-
 export function useAdminData() {
   const [houses, setHouses] = useState<House[]>(globalCache.houses || []);
   const [matches, setMatches] = useState<Match[]>(globalCache.matches || []);
@@ -46,6 +34,20 @@ export function useAdminData() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const safeFetch = async (table: string, orderCol = 'id', ascending = true) => {
+    try {
+      const { data, error } = await supabase!.from(table).select('*').order(orderCol, { ascending });
+      if (error) {
+         if (error.code === 'PGRST205') return null; // Table missing
+         throw error;
+      }
+      return data;
+    } catch (e) {
+      console.warn(`Error fetching ${table}:`, e);
+      return null;
+    }
+  };
+
   const fetchData = async (isInitial = false) => {
     if (!supabase) {
       setError('Supabase credentials missing.');
@@ -56,32 +58,31 @@ export function useAdminData() {
       if (isInitial && !globalCache.lastFetched) setLoading(true);
       else setIsRefreshing(true);
 
-      const [h, m, s, sett, c, g, n, cr, sc, p] = await Promise.all([
-        supabase.from('houses').select('*'),
-        supabase.from('matches').select('*'),
-        supabase.from('schedule').select('*'),
-        supabase.from('settings').select('*'),
-        supabase.from('categories').select('*'),
-        supabase.from('gallery').select('*'),
-        supabase.from('notices').select('*'),
-        supabase.from('cultural_results').select('*'),
-        supabase.from('staged_changes').select('*'),
-        supabase.auth.getSession()
+      const [h, m, s, sett, c, g, n, cr, sc] = await Promise.all([
+        safeFetch('houses', 'rank_pos', true),
+        safeFetch('matches', 'id', true),
+        safeFetch('schedule', 'sort_order', true),
+        safeFetch('settings', 'key_name', true),
+        safeFetch('categories', 'sort_order', true),
+        safeFetch('gallery', 'created_at', false),
+        safeFetch('notices', 'created_at', false),
+        safeFetch('cultural_results', 'id', true),
+        safeFetch('staged_changes', 'created_at', false)
       ]);
 
-      if (h.data) setHouses(h.data);
-      if (m.data) setMatches(m.data);
-      if (s.data) setSchedule(s.data);
-      if (sett.data) {
+      if (h) setHouses(h);
+      if (m) setMatches(m);
+      if (s) setSchedule(s);
+      if (sett) {
         const map: any = {};
-        sett.data.forEach((x: any) => map[x.key_name] = x.val);
+        sett.forEach((x: any) => map[x.key_name] = x.val);
         setSettings(map);
       }
-      if (c.data) setCategories(c.data);
-      if (g.data) setGallery(g.data);
-      if (n.data) setNotices(n.data);
-      if (cr.data) setCulturalResults(cr.data);
-      if (sc.data) setStagedChanges(sc.data);
+      if (c) setCategories(c);
+      if (g) setGallery(g);
+      if (n) setNotices(n);
+      if (cr) setCulturalResults(cr);
+      if (sc) setStagedChanges(sc);
 
       setError(null);
     } catch (err: any) {

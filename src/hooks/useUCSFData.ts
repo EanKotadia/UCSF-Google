@@ -47,116 +47,17 @@ export function useUCSFData() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHouses = async () => {
-    const { data } = await supabase!.from('houses').select('*').order('rank_pos', { ascending: true });
-    if (data) {
-      setHouses(data);
-      globalCache.houses = data;
-    }
-  };
-
-  const fetchMatches = async () => {
-    const { data } = await supabase!.from('matches').select('*, team1:team1_id(*), team2:team2_id(*), category:category_id(*)').order('id', { ascending: true });
-    if (data) {
-      setMatches(data);
-      globalCache.matches = data;
-    }
-  };
-
-  const fetchSchedule = async () => {
-    const { data } = await supabase!.from('schedule').select('*').order('sort_order', { ascending: true });
-    if (data) {
-      setSchedule(data);
-      globalCache.schedule = data;
-    }
-  };
-
-  const fetchSettings = async () => {
-    const { data } = await supabase!.from('settings').select('*');
-    if (data) {
-      const settingsMap: Record<string, string> = {};
-      data.forEach((s: Setting) => {
-        settingsMap[s.key_name] = s.val;
-      });
-      setSettings(settingsMap);
-      globalCache.settings = settingsMap;
-    }
-  };
-
-  const fetchCategories = async () => {
-    const { data } = await supabase!.from('categories').select('*').order('sort_order', { ascending: true });
-    if (data) {
-      const mergedCategories = data.map((cat: Category) => {
-        const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-        const hardcoded = HARDCODED_CATEGORIES[slug] || HARDCODED_CATEGORIES[cat.name.toLowerCase()];
-        if (hardcoded) {
-          return {
-            ...cat,
-            ...hardcoded,
-            category_type: cat.category_type || hardcoded.category_type,
-            team_size: cat.team_size || hardcoded.team_size,
-            duration: cat.duration || hardcoded.duration,
-            special_rules: cat.special_rules || hardcoded.special_rules,
-            judging_criteria: (cat.judging_criteria && cat.judging_criteria.length > 0) ? cat.judging_criteria : hardcoded.judging_criteria,
-          } as Category;
-        }
-        return cat;
-      });
-      setCategories(mergedCategories);
-      globalCache.categories = mergedCategories;
-    }
-  };
-
-  const fetchGallery = async () => {
-    const { data } = await supabase!.from('gallery').select('*').order('year', { ascending: false }).order('created_at', { ascending: false });
-    if (data) {
-      setGallery(data);
-      globalCache.gallery = data;
-    }
-  };
-
-  const fetchNotices = async () => {
-    const { data } = await supabase!.from('notices').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setNotices(data);
-      globalCache.notices = data;
-    }
-  };
-
-  const fetchCulturalResults = async () => {
-    const { data } = await supabase!.from('cultural_results').select('*, house:house_id(*), category:category_id(*)').order('rank', { ascending: true });
-    if (data) {
-      setCulturalResults(data);
-      globalCache.culturalResults = data;
-    }
-  };
-
-  const fetchStagedChanges = async () => {
-    const { data } = await supabase!.from('staged_changes').select('*').order('created_at', { ascending: false });
-    if (data) {
-      setStagedChanges(data);
-      globalCache.stagedChanges = data;
-    }
-  };
-
-  const fetchProfile = async () => {
-    const { data: { session } } = await supabase!.auth.getSession();
-    const user = session?.user;
-
-    if (!user) {
-      setProfile(null);
-      globalCache.profile = null;
-      return;
-    }
-
+  const safeFetch = async (table: string, orderCol = 'id', ascending = true) => {
     try {
-      const { data, error } = await supabase!.from('profiles').select('*').eq('id', user.id).single();
-      if (data) {
-        setProfile(data);
-        globalCache.profile = data;
+      const { data, error } = await supabase!.from(table).select('*').order(orderCol, { ascending });
+      if (error) {
+         if (error.code === 'PGRST205') return null; // Table missing
+         throw error;
       }
-    } catch (err) {
-      console.warn('Profile fetch error:', err);
+      return data;
+    } catch (e) {
+      console.warn(`Error fetching ${table}:`, e);
+      return null;
     }
   };
 
@@ -176,19 +77,51 @@ export function useUCSFData() {
       if (isInitial && !globalCache.lastFetched) setLoading(true);
       else setIsRefreshing(true);
 
-      await withRetry(fetchProfile);
-
-      await Promise.all([
-        withRetry(fetchHouses),
-        withRetry(fetchMatches),
-        withRetry(fetchSchedule),
-        withRetry(fetchSettings),
-        withRetry(fetchCategories),
-        withRetry(fetchGallery),
-        withRetry(fetchNotices),
-        withRetry(fetchCulturalResults),
-        withRetry(fetchStagedChanges)
+      const [h, m, s, sett, c, g, n, cr, sc] = await Promise.all([
+        safeFetch('houses', 'rank_pos', true),
+        safeFetch('matches', 'id', true),
+        safeFetch('schedule', 'sort_order', true),
+        safeFetch('settings', 'key_name', true),
+        safeFetch('categories', 'sort_order', true),
+        safeFetch('gallery', 'created_at', false),
+        safeFetch('notices', 'created_at', false),
+        safeFetch('cultural_results', 'id', true),
+        safeFetch('staged_changes', 'created_at', false)
       ]);
+
+      if (h) { setHouses(h); globalCache.houses = h; }
+      if (m) { setMatches(m); globalCache.matches = m; }
+      if (s) { setSchedule(s); globalCache.schedule = s; }
+      if (sett) {
+        const map: Record<string, string> = {};
+        sett.forEach((x: any) => map[x.key_name] = x.val);
+        setSettings(map);
+        globalCache.settings = map;
+      }
+      if (c) {
+        const mergedCategories = c.map((cat: Category) => {
+          const slug = cat.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+          const hardcoded = HARDCODED_CATEGORIES[slug] || HARDCODED_CATEGORIES[cat.name.toLowerCase()];
+          if (hardcoded) {
+            return {
+              ...cat,
+              ...hardcoded,
+              category_type: cat.category_type || hardcoded.category_type,
+              team_size: cat.team_size || hardcoded.team_size,
+              duration: cat.duration || hardcoded.duration,
+              special_rules: cat.special_rules || hardcoded.special_rules,
+              judging_criteria: (cat.judging_criteria && cat.judging_criteria.length > 0) ? cat.judging_criteria : hardcoded.judging_criteria,
+            } as Category;
+          }
+          return cat;
+        });
+        setCategories(mergedCategories);
+        globalCache.categories = mergedCategories;
+      }
+      if (g) { setGallery(g); globalCache.gallery = g; }
+      if (n) { setNotices(n); globalCache.notices = n; }
+      if (cr) { setCulturalResults(cr); globalCache.culturalResults = cr; }
+      if (sc) { setStagedChanges(sc); globalCache.stagedChanges = sc; }
 
       globalCache.lastFetched = Date.now();
       setError(null);

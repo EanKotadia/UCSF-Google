@@ -19,36 +19,38 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
-    { id: 'home', label: 'Home', href: '#home' },
-    { id: 'events', label: 'Committees', href: '#events' },
-
-    { id: 'leaderboards', label: 'Rankings', href: '#leaderboards' },
-    { id: 'spreadsheet', label: 'Spreadsheet', href: '#spreadsheet' },
-    { id: 'notices', label: 'Notices', href: '#notices' },
-
-    { id: 'admin', label: 'Admin', href: '/admin' },
+    { id: 'home', label: 'Home' },
+    { id: 'events', label: 'Events' },
+    { id: 'leaderboards', label: 'Rankings' },
+    { id: 'notices', label: 'Notices' },
+    { id: 'gallery', label: 'Gallery' },
+    { id: 'admin', label: 'Admin' },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-maple selection:text-bg">
+    <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-maple selection:text-bg font-ui">
       <header className="fixed top-0 left-0 right-0 z-[110]">
         {announcement && (
-          <div className="bg-maple text-bg py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
+          <div className="bg-blue-600 text-white py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
             {announcement}
           </div>
         )}
         {/* Navigation */}
-        <nav className="flex items-center justify-between px-6 md:px-10 h-[62px] bg-bg/90 backdrop-blur-xl border-b border-border">
+        <nav className="flex items-center justify-between px-6 md:px-10 h-[72px] bg-bg/90 backdrop-blur-xl border-b border-white/5">
           <button 
             onClick={() => setActiveTab('home')}
-            className="nav-logo flex items-center"
+            className="flex items-center gap-4 group"
           >
             <img 
               src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
               alt="School Logo"
-              className="h-10 md:h-12 object-contain"
+              className="h-10 md:h-12 object-contain group-hover:scale-105 transition-transform"
               referrerPolicy="no-referrer"
             />
+            <div className="hidden sm:block text-left">
+               <p className="text-[10px] font-bold uppercase tracking-[0.2em] leading-none mb-1">{title}</p>
+               <p className="text-[7px] text-white/40 uppercase tracking-widest">Union of Fest</p>
+            </div>
           </button>
 
           {/* Desktop Nav */}
@@ -56,16 +58,10 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
             {navItems.map((item, idx) => (
               <li key={idx}>
                 <button
-                  onClick={() => {
-                    setActiveTab(item.id);
-                    if (item.href.startsWith('#') && item.id === activeTab) {
-                      const el = document.getElementById(item.href.substring(1));
-                      el?.scrollIntoView({ behavior: 'smooth' });
-                    }
-                  }}
+                  onClick={() => setActiveTab(item.id)}
                   className={cn(
-                    "font-ui text-[13px] font-bold uppercase tracking-[1.5px] transition-colors",
-                    activeTab === item.id ? "text-maple" : "text-muted hover:text-text"
+                    "font-ui text-[11px] font-bold uppercase tracking-[2px] transition-colors",
+                    activeTab === item.id ? "text-blue-500" : "text-white/40 hover:text-white"
                   )}
                 >
                   {item.label}
@@ -76,10 +72,10 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
 
           <div className="flex items-center gap-4">
             <button 
-              className="md:hidden p-2 text-text"
+              className="md:hidden p-2 text-white/40 hover:text-white"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
 
@@ -90,7 +86,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="md:hidden absolute top-full left-0 right-0 bg-bg border-b border-border p-6 flex flex-col gap-6 z-[101] shadow-2xl"
+                className="md:hidden absolute top-full left-0 right-0 bg-[#0a1128] border-b border-white/10 p-8 flex flex-col gap-6 z-[101] shadow-2xl"
               >
                 {navItems.map((item, idx) => (
                   <button
@@ -98,16 +94,10 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                     onClick={() => {
                       setActiveTab(item.id);
                       setIsMenuOpen(false);
-                      if (item.href.startsWith('#')) {
-                        setTimeout(() => {
-                          const el = document.getElementById(item.href.substring(1));
-                          el?.scrollIntoView({ behavior: 'smooth' });
-                        }, 100);
-                      }
                     }}
                     className={cn(
                       "font-display text-4xl text-left tracking-wider uppercase",
-                      activeTab === item.id ? "text-maple" : "text-muted"
+                      activeTab === item.id ? "text-blue-500" : "text-white/40"
                     )}
                   >
                     {item.label}
@@ -123,34 +113,38 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
       <main className="flex-grow">
         {/* Spacer for fixed header */}
         <div className={cn(
-          announcement ? "h-[92px]" : "h-[62px]"
+          announcement ? "h-[102px]" : "h-[72px]"
         )} />
         {children}
       </main>
 
       {/* Footer */}
-      <footer className="bg-bg border-t border-border py-12 px-6 md:px-10 text-center">
-        <div className="max-w-7xl mx-auto flex flex-col items-center gap-4">
-          <img
-            src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
-            alt="School Logo"
-            className="h-16 md:h-20 object-contain mb-4 opacity-80 hover:opacity-100 transition-opacity"
-            referrerPolicy="no-referrer"
-          />
-          <div className="font-display text-3xl tracking-[4px] uppercase">
-            {title.split(' ')[0]} <span>{title.split(' ')[1] || ''}</span>
+      <footer className="bg-[#050b1a] border-t border-white/5 py-24 px-6 md:px-10 text-center">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-12">
+          <div className="flex flex-col items-center gap-6">
+             <img
+               src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
+               alt="School Logo"
+               className="h-16 md:h-20 object-contain mb-4 opacity-40 hover:opacity-100 transition-opacity"
+               referrerPolicy="no-referrer"
+             />
+             <div className="font-display text-4xl tracking-[4px] uppercase">
+               {title.split(' ')[0]} <span className="text-blue-500">{title.split(' ')[1] || ''}</span>
+             </div>
+             <p className="font-ui text-[10px] font-bold uppercase tracking-[4px] text-white/40 max-w-md leading-relaxed">
+               {subtitle}
+             </p>
           </div>
-          <p className="font-ui text-[11px] font-bold uppercase tracking-[3px] text-muted">
-            {subtitle}
-          </p>
-          <p className="font-ui text-[10px] font-bold uppercase tracking-widest text-muted/50 mt-4">
-            {footerText || `© 2026 ${title}. All rights reserved.`}
-          </p>
 
-          <div className="w-full h-px bg-border my-4" />
+          <div className="w-24 h-px bg-white/10" />
 
-          <div className="flex flex-col md:flex-row justify-between w-full gap-4 font-sans text-[12px] text-subtle">
-            <span>© 2026 Shalom Hills International School | Made by Ean Kotadia, Hardik Batra and Tanush Kansal</span>
+          <div className="flex flex-col gap-4 font-ui text-[9px] font-bold uppercase tracking-widest text-white/20">
+            <span>© 2026 Shalom Hills International School</span>
+            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
+               <span>Ean Kotadia</span>
+               <span>Hardik Batra</span>
+               <span>Tanush Kansal</span>
+            </div>
           </div>
         </div>
       </footer>

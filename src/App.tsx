@@ -1,12 +1,12 @@
 import AdminPanel from './components/AdminPanel';
 import SupabaseConfig from './components/SupabaseConfig';
 import { configureSupabase, supabase } from './lib/supabase';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Layout from './components/Layout';
 import EventsSection from './components/EventsSection';
 import { useUCSFData } from './hooks/useUCSFData';
 import { motion, AnimatePresence } from 'motion/react';
-import { Trophy, Activity, Calendar, Shield, AlertCircle, ChevronRight, ExternalLink, Bell } from 'lucide-react';
+import { Trophy, Activity, Calendar, Shield, AlertCircle, ChevronRight, ExternalLink, Bell, ImageIcon, Users, Clock, Info } from 'lucide-react';
 import { cn } from './lib/utils';
 
 export default function App() {
@@ -14,6 +14,11 @@ export default function App() {
 
   const [activeTab, setActiveTab] = useState('home');
   const { houses, matches, schedule, settings, categories, notices, gallery, culturalResults, stagedChanges, profile, loading, error, refresh } = useUCSFData();
+
+  // Scroll to top on tab change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [activeTab]);
 
   if (loading) {
     return (
@@ -38,6 +43,7 @@ export default function App() {
   const festivalName = settings['festival_name'] || 'UCSF 2026';
   const festivalSubtitle = settings['festival_subtitle'] || 'Union of Culture & Sports Fest';
   const schoolLogoUrl = settings['school_logo_url'];
+  const announcement = settings['announcement_text'];
 
   const renderContent = () => {
     switch (activeTab) {
@@ -65,7 +71,7 @@ export default function App() {
           <div className="space-y-0">
              <section className="relative py-32 md:py-48 overflow-hidden border-b border-white/5">
               <div className="absolute top-[-200px] left-[-100px] w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full" />
-              <div className="max-w-7xl mx-auto px-6 relative z-10 text-center">
+              <div className="max-w-7xl mx-auto px-6 relative z-10 text-center font-ui">
                 <div className="mb-8 flex justify-center">
                   <img src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"} alt="School Logo" className="h-20 md:h-24 object-contain" />
                 </div>
@@ -85,8 +91,8 @@ export default function App() {
             </section>
 
             <section className="py-24 bg-[#0a1128]/30">
-               <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12">
-                  <div className="card-glass p-12 space-y-6">
+               <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 font-ui">
+                  <div className="bg-white/5 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-12 space-y-6">
                      <h2 className="text-4xl font-display uppercase">The Grand Standings</h2>
                      <div className="space-y-4">
                         {houses.sort((a,b) => b.points - a.points).map((h, i) => (
@@ -100,7 +106,7 @@ export default function App() {
                         ))}
                      </div>
                   </div>
-                  <div className="card-glass p-12 space-y-6">
+                  <div className="bg-white/5 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-12 space-y-6">
                      <h2 className="text-4xl font-display uppercase">Live Feed</h2>
                      <div className="space-y-4">
                         {matches.filter(m => m.status === 'live').map(m => (
@@ -114,7 +120,10 @@ export default function App() {
                           </div>
                         ))}
                         {matches.filter(m => m.status === 'live').length === 0 && (
-                          <p className="text-white/20 text-center py-12 italic">No active matches at the moment</p>
+                          <div className="flex flex-col items-center justify-center py-12 text-white/20">
+                             <Activity size={32} className="mb-4 opacity-5" />
+                             <p className="italic uppercase text-[10px] tracking-widest">No active matches at the moment</p>
+                          </div>
                         )}
                      </div>
                   </div>
@@ -124,11 +133,11 @@ export default function App() {
         );
       case 'leaderboards':
         return (
-          <div className="max-w-7xl mx-auto px-6 py-24">
+          <div className="max-w-7xl mx-auto px-6 py-24 font-ui">
              <h2 className="text-5xl md:text-7xl font-display uppercase mb-12">Championship Standings</h2>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {houses.sort((a,b) => b.points - a.points).map((h, i) => (
-                   <div key={h.id} className="card-glass p-10 flex flex-col items-center text-center gap-6 group hover:border-blue-500/30 transition-all">
+                   <div key={h.id} className="bg-white/5 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-10 flex flex-col items-center text-center gap-6 group hover:border-blue-500/30 transition-all">
                       <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center text-4xl font-display text-blue-500 border border-blue-500/20">
                          #{i+1}
                       </div>
@@ -139,6 +148,45 @@ export default function App() {
                       </div>
                    </div>
                 ))}
+             </div>
+          </div>
+        );
+      case 'notices':
+        return (
+          <div className="max-w-4xl mx-auto px-6 py-24 font-ui">
+             <h2 className="text-5xl md:text-7xl font-display uppercase mb-12">Notices</h2>
+             <div className="space-y-6">
+                {notices.map(notice => (
+                   <div key={notice.id} className="bg-white/5 border border-white/5 backdrop-blur-xl rounded-[2rem] p-8 md:p-10 space-y-4">
+                      <div className="flex justify-between items-start">
+                         <h3 className="text-2xl font-bold uppercase">{notice.title}</h3>
+                         <span className={cn(
+                            "px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest",
+                            notice.priority === 'high' ? "bg-red-500/20 text-red-500" : "bg-blue-500/20 text-blue-500"
+                         )}>{notice.priority}</span>
+                      </div>
+                      <p className="text-white/60 leading-relaxed">{notice.content}</p>
+                      <p className="text-[8px] text-white/20 font-bold uppercase tracking-widest">{new Date(notice.created_at).toLocaleDateString()}</p>
+                   </div>
+                ))}
+                {notices.length === 0 && <p className="text-center text-white/20 py-12">No notices published yet.</p>}
+             </div>
+          </div>
+        );
+      case 'gallery':
+        return (
+          <div className="max-w-7xl mx-auto px-6 py-24 font-ui">
+             <h2 className="text-5xl md:text-7xl font-display uppercase mb-12">Gallery</h2>
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {gallery.map(item => (
+                   <div key={item.id} className="group relative aspect-square overflow-hidden rounded-[2rem] bg-white/5 border border-white/5">
+                      <img src={item.url} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-8">
+                         <h4 className="text-lg font-bold uppercase">{item.title}</h4>
+                      </div>
+                   </div>
+                ))}
+                {gallery.length === 0 && <p className="col-span-full text-center text-white/20 py-12">The gallery is currently empty.</p>}
              </div>
           </div>
         );
@@ -154,6 +202,7 @@ export default function App() {
       title={festivalName}
       subtitle={festivalSubtitle}
       schoolLogoUrl={schoolLogoUrl}
+      announcement={announcement}
     >
       <AnimatePresence mode="wait">
         <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
