@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X, Bell } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface LayoutProps {
@@ -20,18 +20,20 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
 
   const navItems = [
     { id: 'home', label: 'Home' },
-    { id: 'events', label: 'Events' },
+    { id: 'about', label: 'About' },
+    { id: 'committees', label: 'Committees' },
+    { id: 'schedule', label: 'Schedule' },
     { id: 'leaderboards', label: 'Rankings' },
     { id: 'notices', label: 'Notices' },
     { id: 'gallery', label: 'Gallery' },
-    { id: 'admin', label: 'Admin' },
+    { id: 'sponsors', label: 'Sponsors' },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-maple selection:text-bg font-ui">
+    <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-gold selection:text-bg font-ui">
       <header className="fixed top-0 left-0 right-0 z-[110]">
         {announcement && (
-          <div className="bg-maple text-white py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
+          <div className="bg-gold text-bg py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
             {announcement}
           </div>
         )}
@@ -41,27 +43,32 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
             onClick={() => setActiveTab('home')}
             className="flex items-center gap-4 group"
           >
-            <img 
-              src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
-              alt="School Logo"
-              className="h-10 md:h-12 object-contain group-hover:scale-105 transition-transform"
-              referrerPolicy="no-referrer"
-            />
-            <div className="hidden sm:block text-left">
-               <p className="text-[10px] font-bold uppercase tracking-[0.2em] leading-none mb-1">{title}</p>
-               <p className="text-[7px] text-white/40 uppercase tracking-widest">Union of Fest</p>
+            <div className="flex flex-col items-start">
+               <div className="flex items-center gap-2">
+                  <img
+                    src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
+                    alt="School Logo"
+                    className="h-8 object-contain group-hover:scale-105 transition-transform"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="h-6 w-px bg-white/20" />
+                  <div className="text-left">
+                     <p className="text-[12px] font-bold uppercase tracking-[0.1em] leading-none mb-0.5">Harmonia</p>
+                     <p className="text-[8px] text-gold font-bold uppercase tracking-widest">MUN 2026</p>
+                  </div>
+               </div>
             </div>
           </button>
 
           {/* Desktop Nav */}
-          <ul className="hidden md:flex items-center gap-8 list-none">
+          <ul className="hidden xl:flex items-center gap-8 list-none">
             {navItems.map((item, idx) => (
               <li key={idx}>
                 <button
                   onClick={() => setActiveTab(item.id)}
                   className={cn(
                     "font-ui text-[11px] font-bold uppercase tracking-[2px] transition-colors",
-                    activeTab === item.id ? "text-maple" : "text-white/40 hover:text-white"
+                    activeTab === item.id ? "text-gold" : "text-white/40 hover:text-white"
                   )}
                 >
                   {item.label}
@@ -71,8 +78,17 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
           </ul>
 
           <div className="flex items-center gap-4">
+            <button
+               onClick={() => setActiveTab('admin')}
+               className={cn(
+                 "hidden md:block px-6 py-2 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-all",
+                 activeTab === 'admin' ? "bg-gold text-bg border-gold" : "border-white/10 text-white/60 hover:border-gold hover:text-gold"
+               )}
+            >
+               Admin
+            </button>
             <button 
-              className="md:hidden p-2 text-white/40 hover:text-white"
+              className="xl:hidden p-2 text-white/40 hover:text-white"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -86,7 +102,7 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="md:hidden absolute top-full left-0 right-0 bg-[#1a0808] border-b border-white/10 p-8 flex flex-col gap-6 z-[101] shadow-2xl"
+                className="xl:hidden absolute top-full left-0 right-0 bg-bg border-b border-white/10 p-8 flex flex-col gap-6 z-[101] shadow-2xl"
               >
                 {navItems.map((item, idx) => (
                   <button
@@ -96,13 +112,25 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                       setIsMenuOpen(false);
                     }}
                     className={cn(
-                      "font-display text-4xl text-left tracking-wider uppercase",
-                      activeTab === item.id ? "text-maple" : "text-white/40"
+                      "font-display text-3xl text-left tracking-wider uppercase",
+                      activeTab === item.id ? "text-gold" : "text-white/40"
                     )}
                   >
                     {item.label}
                   </button>
                 ))}
+                <button
+                  onClick={() => {
+                    setActiveTab('admin');
+                    setIsMenuOpen(false);
+                  }}
+                  className={cn(
+                    "font-display text-3xl text-left tracking-wider uppercase",
+                    activeTab === 'admin' ? "text-gold" : "text-white/40"
+                  )}
+                >
+                  Admin
+                </button>
               </motion.div>
             )}
           </AnimatePresence>
@@ -129,10 +157,10 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                referrerPolicy="no-referrer"
              />
              <div className="font-display text-4xl tracking-[4px] uppercase">
-               {title.split(' ')[0]} <span className="text-maple">{title.split(' ')[1] || ''}</span>
+               Harmonia <span className="text-gold">MUN</span>
              </div>
              <p className="font-ui text-[10px] font-bold uppercase tracking-[4px] text-white/40 max-w-md leading-relaxed">
-               {subtitle}
+               Union of Culture & Sports Fest 2026
              </p>
           </div>
 
@@ -140,11 +168,6 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
 
           <div className="flex flex-col gap-4 font-ui text-[9px] font-bold uppercase tracking-widest text-white/20">
             <span>© 2026 Shalom Hills International School</span>
-            <div className="flex flex-wrap justify-center gap-x-8 gap-y-2">
-               <span>Ean Kotadia</span>
-               <span>Hardik Batra</span>
-               <span>Tanush Kansal</span>
-            </div>
           </div>
         </div>
       </footer>

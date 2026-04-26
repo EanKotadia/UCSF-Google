@@ -22,16 +22,16 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
         viewport={{ once: true }}
         onClick={onClick}
         className={cn(
-          "bg-white/5 border border-border p-4 rounded-2xl flex items-center justify-between gap-4 group cursor-pointer hover:border-maple/30 transition-all",
+          "bg-white/5 border border-border p-4 rounded-2xl flex items-center justify-between gap-4 group cursor-pointer hover:border-gold/30 transition-all",
           isLive && "border-danger/30 bg-danger/5"
         )}
       >
         <div className="flex items-center gap-3">
           <div className="flex -space-x-2">
-            <div className="w-8 h-8 rounded-full bg-white/10 border border-maple/30 flex items-center justify-center overflow-hidden shadow-lg">
+            <div className="w-8 h-8 rounded-full bg-white/10 border border-gold/30 flex items-center justify-center overflow-hidden shadow-lg">
               <img src={match.team1?.logo_url || ''} alt={match.team1?.name} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
             </div>
-            <div className="w-8 h-8 rounded-full bg-white/10 border border-maple/30 flex items-center justify-center overflow-hidden shadow-lg">
+            <div className="w-8 h-8 rounded-full bg-white/10 border border-gold/30 flex items-center justify-center overflow-hidden shadow-lg">
               <img src={match.team2?.logo_url || ''} alt={match.team2?.name} className="w-full h-full object-cover rounded-full" referrerPolicy="no-referrer" />
             </div>
           </div>
@@ -41,7 +41,7 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
           </div>
         </div>
         <div className="text-right">
-          <div className="font-display text-lg text-maple leading-none">
+          <div className="font-display text-lg text-gold leading-none">
             {match.score1 ?? '-'}:{match.score2 ?? '-'}
           </div>
           <div className={cn(
@@ -63,7 +63,7 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
       onClick={onClick}
       className={cn(
         "card-glass rounded-none border-border overflow-hidden group relative",
-        onClick && "cursor-pointer hover:border-maple/30",
+        onClick && "cursor-pointer hover:border-gold/30",
         "before:absolute before:left-0 before:top-0 before:bottom-0 before:w-[3px]",
         isLive ? "before:bg-danger bg-danger/5 border-danger/20" :
         isCompleted ? "before:bg-success bg-success/5 border-success/10" :
@@ -97,7 +97,7 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
           {/* Team 1 */}
           <div className="flex-1 flex flex-col items-center text-center gap-3 group/team">
             <div
-              className="w-16 h-16 rounded-full bg-white/10 border-2 border-maple/30 flex items-center justify-center relative transition-transform group-hover/team:scale-110 overflow-hidden shadow-xl"
+              className="w-16 h-16 rounded-full bg-white/10 border-2 border-gold/30 flex items-center justify-center relative transition-transform group-hover/team:scale-110 overflow-hidden shadow-xl"
             >
               <div className="absolute inset-0 blur-xl opacity-20" style={{ backgroundColor: match.team1?.color }} />
               {match.team1?.logo_url ? (
@@ -119,14 +119,14 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
             <div className="flex items-center gap-4">
               <span className={cn(
                 "text-5xl font-display tabular-nums leading-none",
-                isCompleted && match.score1! > match.score2! ? "text-maple" : "text-text"
+                isCompleted && match.score1! > match.score2! ? "text-gold" : "text-text"
               )}>
                 {match.score1 ?? '-'}
               </span>
               <span className="text-subtle font-display text-3xl">:</span>
               <span className={cn(
                 "text-5xl font-display tabular-nums leading-none",
-                isCompleted && match.score2! > match.score1! ? "text-maple" : "text-text"
+                isCompleted && match.score2! > match.score1! ? "text-gold" : "text-text"
               )}>
                 {match.score2 ?? '-'}
               </span>
@@ -136,7 +136,7 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
           {/* Team 2 */}
           <div className="flex-1 flex flex-col items-center text-center gap-3 group/team">
             <div
-              className="w-16 h-16 rounded-full bg-white/10 border-2 border-maple/30 flex items-center justify-center relative transition-transform group-hover/team:scale-110 overflow-hidden shadow-xl"
+              className="w-16 h-16 rounded-full bg-white/10 border-2 border-gold/30 flex items-center justify-center relative transition-transform group-hover/team:scale-110 overflow-hidden shadow-xl"
             >
               <div className="absolute inset-0 blur-xl opacity-20" style={{ backgroundColor: match.team2?.color }} />
               {match.team2?.logo_url ? (
@@ -158,18 +158,18 @@ const MatchCard = React.memo(({ match, compact, onClick }: MatchCardProps) => {
         <div className="mt-8 pt-6 border-t border-border flex flex-wrap gap-6 justify-center">
           {match.venue && (
             <div className="flex items-center gap-2 font-ui text-[10px] text-muted font-bold uppercase tracking-widest">
-              <MapPin size={14} className="text-maple" />
+              <MapPin size={14} className="text-gold" />
               {match.venue}
             </div>
           )}
           {match.match_time && (
             <div className="flex items-center gap-2 font-ui text-[10px] text-muted font-bold uppercase tracking-widest">
-              <Clock size={14} className="text-maple" />
+              <Clock size={14} className="text-gold" />
               {new Date(match.match_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
           )}
           {match.man_of_the_match && (
-            <div className="flex items-center gap-2 font-ui text-[10px] text-maple font-bold uppercase tracking-widest bg-maple/10 px-4 py-1 rounded-full border border-maple/20">
+            <div className="flex items-center gap-2 font-ui text-[10px] text-gold font-bold uppercase tracking-widest bg-gold/10 px-4 py-1 rounded-full border border-gold/20">
               <Trophy size={14} />
               MOTM: {match.man_of_the_match}
             </div>

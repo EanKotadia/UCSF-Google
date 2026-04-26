@@ -1,4 +1,4 @@
--- Union of Culture & Sports Fest (UCSF) 2026 - Database Fix Script
+-- Harmonia MUN 2026 - Database Fix Script
 -- Run this in your Supabase SQL Editor (https://supabase.com/dashboard/project/lyoiiwldzzvnykbrjfbh/sql/new)
 
 -- 1. Create missing tables
@@ -45,6 +45,14 @@ CREATE TABLE IF NOT EXISTS public.staged_changes (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS public.notices (
+    id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    title TEXT NOT NULL,
+    content TEXT,
+    priority TEXT DEFAULT 'normal',
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- 2. Ensure columns exist in houses
 ALTER TABLE public.houses ADD COLUMN IF NOT EXISTS sports_points INTEGER DEFAULT 0;
 ALTER TABLE public.houses ADD COLUMN IF NOT EXISTS cultural_points INTEGER DEFAULT 0;
@@ -65,8 +73,9 @@ BEGIN
     END LOOP;
 END $$;
 
--- 4. Initial Settings (Optional)
+-- 4. Initial Settings
 INSERT INTO public.settings (key_name, val) VALUES
-('festival_name', 'UCSF 2026'),
-('festival_subtitle', 'Union of Culture & Sports Fest')
-ON CONFLICT (key_name) DO NOTHING;
+('festival_name', 'Harmonia MUN 2026'),
+('festival_subtitle', 'Celebrating diplomatic excellence and exceptional contribution to the conference.'),
+('announcement_text', 'CONFERENCE AWARDS WILL BE ANNOUNCED FOLLOWING THE CLOSING CEREMONY.')
+ON CONFLICT (key_name) DO UPDATE SET val = EXCLUDED.val;

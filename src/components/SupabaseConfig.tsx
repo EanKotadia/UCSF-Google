@@ -18,15 +18,15 @@ export default function SupabaseConfig({ onConfigured }: SupabaseConfigProps) {
 
   return (
     <div className="min-h-screen bg-[#050b1a] flex items-center justify-center p-6">
-      <div className="max-w-md w-full card-glass p-10 border-maple/20">
+      <div className="max-w-md w-full card-glass p-10 border-gold/20">
         <div className="flex justify-center mb-8">
-          <div className="w-20 h-20 bg-maple/10 rounded-3xl flex items-center justify-center text-maple border border-maple/20">
+          <div className="w-20 h-20 bg-gold/10 rounded-3xl flex items-center justify-center text-gold border border-gold/20">
             <Shield size={40} />
           </div>
         </div>
 
         <h2 className="text-3xl font-display text-center text-white mb-2 uppercase tracking-tight">Database Config</h2>
-        <p className="text-white/40 text-center text-sm mb-10">Connect your UCSF Supabase instance.</p>
+        <p className="text-white/40 text-center text-sm mb-10">Connect your Harmonia MUN Supabase instance.</p>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
@@ -38,7 +38,7 @@ export default function SupabaseConfig({ onConfigured }: SupabaseConfigProps) {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://your-project.supabase.co"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-maple/50 outline-none transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold/50 outline-none transition-all"
               required
             />
           </div>
@@ -52,7 +52,7 @@ export default function SupabaseConfig({ onConfigured }: SupabaseConfigProps) {
               value={key}
               onChange={(e) => setKey(e.target.value)}
               placeholder="your-anon-key"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-maple/50 outline-none transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-gold/50 outline-none transition-all"
               required
             />
           </div>

@@ -4,11 +4,12 @@
   --font-display: "Clash Display", "Space Grotesk", system-ui;
   --font-ui: "Inter", "Geist", system-ui;
   
-  --color-bg: #050101;
-  --color-bg2: #1a0808;
-  --color-border: rgba(255, 255, 255, 0.05);
-  --color-maple: #dc2626;
-  --color-maple-muted: rgba(220, 38, 38, 0.2);
+  --color-bg: #0a1628;
+  --color-bg2: #11274a;
+  --color-border: rgba(211, 171, 109, 0.1);
+  --color-gold: #d3ab6d;
+  --color-gold-muted: rgba(211, 171, 109, 0.2);
+  --color-navy: #11274a;
   --color-muted: rgba(255, 255, 255, 0.4);
   --color-text: #ffffff;
 }
@@ -17,6 +18,10 @@
   body {
     @apply bg-bg text-text antialiased;
     font-family: var(--font-ui);
+    background-image:
+      linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 80px 80px;
   }
 }
 
@@ -26,7 +31,7 @@
   }
   
   .sec-label {
-    @apply text-[10px] font-bold text-maple uppercase tracking-[0.4em] mb-4;
+    @apply text-[10px] font-bold text-gold uppercase tracking-[0.4em] mb-4;
   }
 
   .custom-scrollbar::-webkit-scrollbar {

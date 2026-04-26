@@ -64,7 +64,7 @@ const ScheduleCard = React.memo(({ item, category, index = 0, onCategoryClick }:
                 </h4>
               </div>
               {(category?.gender || category?.eligible_years) && (
-                <div className="font-ui text-[9px] font-bold text-maple uppercase tracking-widest mb-2">
+                <div className="font-ui text-[9px] font-bold text-gold uppercase tracking-widest mb-2">
                   {category.gender} {category.eligible_years && `· ${category.eligible_years}`}
                 </div>
               )}
@@ -86,7 +86,7 @@ const ScheduleCard = React.memo(({ item, category, index = 0, onCategoryClick }:
           <div className="flex flex-wrap gap-6 mt-4 pt-4 border-t border-border">
             {item.venue && (
               <div className="flex items-center gap-2 font-ui text-[10px] text-muted font-bold uppercase tracking-widest">
-                <MapPin size={14} className="text-maple" />
+                <MapPin size={14} className="text-gold" />
                 {item.venue}
               </div>
             )}

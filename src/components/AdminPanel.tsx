@@ -87,7 +87,7 @@ export default function AdminPanel({
     setLoading(true);
     setError(null);
     try {
-      if (password === 'ucsf2026') {
+      if (password === 'harmonia2026') {
         setIsAuthenticated(true);
         return;
       }
@@ -130,12 +130,12 @@ export default function AdminPanel({
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center p-6 font-ui">
         <div className="w-full max-w-md bg-bg2 border border-white/5 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-maple to-transparent" />
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold to-transparent" />
           <div className="text-center mb-10">
-            <div className="w-16 h-16 bg-maple/10 rounded-2xl flex items-center justify-center text-maple mx-auto mb-6">
+            <div className="w-16 h-16 bg-gold/10 rounded-2xl flex items-center justify-center text-gold mx-auto mb-6">
               <Shield size={32} />
             </div>
-            <h2 className="text-3xl font-display text-white uppercase tracking-wider">UCSF Admin</h2>
+            <h2 className="text-3xl font-display text-white uppercase tracking-wider">Harmonia MUN Admin</h2>
             <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Union of Culture & Sports Fest 2026</p>
           </div>
           <form onSubmit={handleLogin} className="space-y-6">
@@ -145,7 +145,7 @@ export default function AdminPanel({
                 <input
                   type="email"
                   placeholder="Admin Email"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:outline-none focus:border-maple/50 transition-all"
+                  className="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:outline-none focus:border-gold/50 transition-all"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -155,7 +155,7 @@ export default function AdminPanel({
                 <input
                   type="password"
                   placeholder="Access Key"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:outline-none focus:border-maple/50 transition-all"
+                  className="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:outline-none focus:border-gold/50 transition-all"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
@@ -164,7 +164,7 @@ export default function AdminPanel({
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-maple hover:bg-maple/90 text-white rounded-2xl font-bold uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-maple/20"
+              className="w-full py-4 bg-gold hover:bg-gold/90 text-white rounded-2xl font-bold uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-gold/20"
             >
               {loading ? <RefreshCw className="animate-spin" size={16} /> : 'Authorize Access'}
             </button>
@@ -183,19 +183,19 @@ export default function AdminPanel({
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-2xl font-display text-white uppercase">Match Score Entry</h3>
-                <p className="text-maple text-[10px] font-bold uppercase tracking-widest mt-1">Live updates for active sports</p>
+                <p className="text-gold text-[10px] font-bold uppercase tracking-widest mt-1">Live updates for active sports</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {matches.filter(m => m.status !== 'completed').map(match => (
-                <div key={match.id} className="bg-bg2 border border-white/5 rounded-3xl p-8 space-y-6 group hover:border-maple/30 transition-all">
+                <div key={match.id} className="bg-bg2 border border-white/5 rounded-3xl p-8 space-y-6 group hover:border-gold/30 transition-all">
                   <div className="flex justify-between items-center">
                     <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
                       {categories.find(c => c.id === match.category_id)?.name} • Match #{match.match_no}
                     </span>
                     <span className={cn(
                       "px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest",
-                      match.status === 'live' ? "bg-green-500/20 text-green-500 animate-pulse" : "bg-maple/20 text-maple"
+                      match.status === 'live' ? "bg-green-500/20 text-green-500 animate-pulse" : "bg-gold/20 text-gold"
                     )}>{match.status}</span>
                   </div>
                   <div className="flex items-center justify-between gap-4">
@@ -237,7 +237,7 @@ export default function AdminPanel({
                         const winner_id = (match.score1 || 0) > (match.score2 || 0) ? match.team1_id : match.team2_id;
                         await supabase.from('matches').update({ status: 'completed', winner_id }).eq('id', match.id);
                       }, 'End Match')}
-                      className="flex-1 py-3 bg-maple/20 hover:bg-maple text-maple hover:text-white rounded-xl text-[8px] font-bold uppercase tracking-widest transition-all"
+                      className="flex-1 py-3 bg-gold/20 hover:bg-gold text-gold hover:text-white rounded-xl text-[8px] font-bold uppercase tracking-widest transition-all"
                     >End Match</button>
                   </div>
                 </div>
@@ -252,7 +252,7 @@ export default function AdminPanel({
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-2xl font-display text-white uppercase">Match Management</h3>
-                <p className="text-maple text-[10px] font-bold uppercase tracking-widest mt-1">Schedule and manage sports events</p>
+                <p className="text-gold text-[10px] font-bold uppercase tracking-widest mt-1">Schedule and manage sports events</p>
               </div>
               <button
                 onClick={() => handleAction(async () => {
@@ -268,7 +268,7 @@ export default function AdminPanel({
                   });
                   if (error) throw error;
                 }, 'Add Match')}
-                className="px-6 py-3 bg-maple text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
+                className="px-6 py-3 bg-gold text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
               >
                 <Plus size={16} /> New Match
               </button>
@@ -358,23 +358,23 @@ export default function AdminPanel({
             <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-2xl font-display text-white uppercase">Daily Schedule</h3>
-                <p className="text-maple text-[10px] font-bold uppercase tracking-widest mt-1">Timeline of events and sessions</p>
+                <p className="text-gold text-[10px] font-bold uppercase tracking-widest mt-1">Timeline of events and sessions</p>
               </div>
               <button
                 onClick={() => handleAction(async () => {
                   await supabase.from('schedule').insert({ title: 'New Event', day_label: 'Day 1', time_start: '09:00:00' });
                 }, 'Add Event')}
-                className="px-6 py-3 bg-maple text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
+                className="px-6 py-3 bg-gold text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
               >
                 <Plus size={16} /> New Event
               </button>
             </div>
             <div className="grid gap-4">
                {schedule.map(item => (
-                 <div key={item.id} className="bg-bg2 border border-white/5 rounded-2xl p-6 flex items-center justify-between gap-6 group hover:border-maple/30 transition-all">
+                 <div key={item.id} className="bg-bg2 border border-white/5 rounded-2xl p-6 flex items-center justify-between gap-6 group hover:border-gold/30 transition-all">
                     <div className="flex items-center gap-6 flex-1">
                        <div className="text-center min-w-[80px]">
-                          <p className="text-[8px] font-bold text-maple uppercase tracking-widest mb-1">{item.day_label}</p>
+                          <p className="text-[8px] font-bold text-gold uppercase tracking-widest mb-1">{item.day_label}</p>
                           <input
                             type="time"
                             className="bg-transparent text-white border-none focus:ring-0 text-xs text-center"
@@ -420,13 +420,13 @@ export default function AdminPanel({
              <div className="flex justify-between items-center">
               <div>
                 <h3 className="text-2xl font-display text-white uppercase">Official Notices</h3>
-                <p className="text-maple text-[10px] font-bold uppercase tracking-widest mt-1">Broadcast announcements to participants</p>
+                <p className="text-gold text-[10px] font-bold uppercase tracking-widest mt-1">Broadcast announcements to participants</p>
               </div>
               <button
                 onClick={() => handleAction(async () => {
                   await supabase.from('notices').insert({ title: 'New Announcement', content: 'Enter details here...', priority: 'medium' });
                 }, 'Add Notice')}
-                className="px-6 py-3 bg-maple text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
+                className="px-6 py-3 bg-gold text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
               >
                 <Plus size={16} /> New Notice
               </button>
@@ -455,7 +455,7 @@ export default function AdminPanel({
                           <select
                              className={cn(
                                "px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest bg-white/5 border-none",
-                               notice.priority === 'high' ? "text-red-500" : "text-maple"
+                               notice.priority === 'high' ? "text-red-500" : "text-gold"
                              )}
                              defaultValue={notice.priority}
                              onChange={(e) => handleAction(async () => {
@@ -493,7 +493,7 @@ export default function AdminPanel({
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                        <div className="space-y-2">
-                          <label className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Sports Pts</label>
+                          <label className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Merit Pts</label>
                           <input
                             type="number"
                             className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-xs text-white"
@@ -505,7 +505,7 @@ export default function AdminPanel({
                           />
                        </div>
                        <div className="space-y-2">
-                          <label className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Cultural Pts</label>
+                          <label className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Session Pts</label>
                           <input
                             type="number"
                             className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-xs text-white"
@@ -526,7 +526,7 @@ export default function AdminPanel({
       case 'settings':
         return (
           <div className="space-y-6">
-            <h3 className="text-xl font-display text-maple uppercase tracking-wider">Site Settings</h3>
+            <h3 className="text-xl font-display text-gold uppercase tracking-wider">Site Settings</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="bg-bg2 border border-white/5 rounded-3xl p-10 space-y-6">
                 {['festival_name', 'festival_subtitle', 'festival_dates', 'school_logo_url', 'announcement_text'].map(key => (
@@ -570,12 +570,12 @@ export default function AdminPanel({
       )}>
         <div className="p-8 border-b border-white/5">
           <div className="flex items-center gap-4 mb-6">
-            <div className="w-10 h-10 bg-maple/20 rounded-xl flex items-center justify-center text-maple border border-maple/30 shadow-lg shadow-maple/10">
+            <div className="w-10 h-10 bg-gold/20 rounded-xl flex items-center justify-center text-gold border border-gold/30 shadow-lg shadow-gold/10">
               <Shield size={20} />
             </div>
             <div>
-              <h1 className="text-xl font-display uppercase tracking-tight text-white leading-none">UCSF</h1>
-              <p className="text-maple text-[8px] font-bold uppercase tracking-[0.4em] mt-1">Fest Admin</p>
+              <h1 className="text-xl font-display uppercase tracking-tight text-white leading-none">Harmonia MUN</h1>
+              <p className="text-gold text-[8px] font-bold uppercase tracking-[0.4em] mt-1">Admin</p>
             </div>
           </div>
         </div>
@@ -594,7 +594,7 @@ export default function AdminPanel({
               onClick={() => { setActiveTab(item.id as AdminTab); setIsSidebarOpen(false); }}
               className={cn(
                 "w-full flex items-center gap-4 px-5 py-4 font-bold text-[10px] uppercase tracking-widest transition-all rounded-xl border border-transparent",
-                activeTab === item.id ? "bg-maple text-white shadow-lg shadow-maple/20" : "text-white/40 hover:text-white hover:bg-white/5"
+                activeTab === item.id ? "bg-gold text-white shadow-lg shadow-gold/20" : "text-white/40 hover:text-white hover:bg-white/5"
               )}
             >
               <item.icon size={18} /> {item.label}
@@ -623,7 +623,7 @@ export default function AdminPanel({
             <h2 className="text-2xl font-display uppercase tracking-tight text-white">{activeTab}</h2>
           </div>
           <div className="flex items-center gap-4">
-            {loading && <RefreshCw className="animate-spin text-maple" size={18} />}
+            {loading && <RefreshCw className="animate-spin text-gold" size={18} />}
             <button onClick={refresh} className="p-2 text-white/40 hover:text-white transition-all">
               <RefreshCw size={20} />
             </button>
