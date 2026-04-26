@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Trophy, Activity, Users, Info, X, ArrowRight, Music, Palette, Play, Mic, Target, Zap } from 'lucide-react';
 import { Category, Match } from '../types';
-import { Trophy, Music, Palette, Film, Theater, Swords, Target, Users, Clock, Calendar, Info, ChevronRight, X, ArrowRight, Activity } from 'lucide-react';
-import MatchCard from './MatchCard';
 import { cn } from '../lib/utils';
+import MatchCard from './MatchCard';
 
 interface EventsSectionProps {
   categories: Category[];
@@ -12,22 +12,21 @@ interface EventsSectionProps {
 }
 
 export default function EventsSection({ categories, matches, setActiveTab }: EventsSectionProps) {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<number | null>(null);
 
-  const sports = categories.filter(c => c.category_type === 'sport');
+  const sports = categories.filter(c => c.category_type === 'sports');
   const cultural = categories.filter(c => c.category_type === 'cultural');
-  const other = categories.filter(c => !c.category_type);
-
-  const expandedCategory = categories.find(c => c.id === expandedId);
-  const expandedMatches = expandedId ? matches.filter(m => m.category_id === expandedId) : [];
 
   const generalGuidelines = [
-    "Each student can represent only their own house.",
-    "It is mandatory to fill out the Google Form and complete the registration process.",
-    "A student may participate in a maximum of three events (including both sports and cultural events).",
-    "Registration and audition submissions will close as per the dates shared in notices.",
-    "All submissions must be made online through the official school links."
+    "Participants must report to the venue 30 minutes before the scheduled time.",
+    "Decisions of the judges and referees will be final and binding.",
+    "Any form of indiscipline or misconduct will lead to immediate disqualification.",
+    "Official ID cards are mandatory for all participants at all times.",
+    "Equipment required for specific events must be brought by the participants unless stated otherwise."
   ];
+
+  const expandedCategory = categories.find(c => c.id === expandedId);
+  const expandedMatches = matches.filter(m => m.category_id === expandedId);
 
   const renderEventCard = (cat: Category) => {
     return (
@@ -35,44 +34,43 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
         key={cat.id}
         layoutId={`card-${cat.id}`}
         onClick={() => setExpandedId(cat.id)}
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="bg-white/5 border border-white/10 rounded-[2.5rem] p-10 flex flex-col h-full hover:border-gold/30 transition-all group cursor-pointer font-ui"
+        className="bg-white border border-border p-10 rounded-[2.5rem] group cursor-pointer hover:border-primary/30 hover:shadow-xl transition-all flex flex-col gap-8"
       >
-        <div className="flex items-start justify-between mb-8">
-          <motion.div layoutId={`icon-${cat.id}`} className="w-16 h-16 bg-gold/10 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform overflow-hidden border border-gold/20">
-            {cat.icon || <Trophy className="text-gold" />}
+        <div className="flex justify-between items-start">
+          <motion.div layoutId={`icon-${cat.id}`} className="w-16 h-16 bg-primary-muted rounded-2xl flex items-center justify-center text-3xl overflow-hidden border border-primary/10">
+            {cat.icon || <Trophy className="text-primary" />}
           </motion.div>
-          <div className="text-right">
-            <span className="font-ui text-[9px] font-bold uppercase tracking-widest text-white/40 block mb-1">
-              {cat.category_type || 'Event'}
-            </span>
-            <span className="px-3 py-1 bg-gold/20 border border-gold/30 rounded-full font-ui text-[8px] font-bold uppercase tracking-widest text-gold">
-              {cat.gender || 'Mixed'}
-            </span>
-          </div>
+          <span className="font-ui text-[9px] font-bold uppercase tracking-[0.2em] px-4 py-1.5 bg-bg-alt rounded-full border border-border text-text-muted">
+            {cat.category_type}
+          </span>
         </div>
 
-        <motion.h3 layoutId={`title-${cat.id}`} className="text-3xl font-display uppercase tracking-wider mb-6 leading-tight">{cat.name}</motion.h3>
+        <div className="space-y-3">
+          <motion.h3 layoutId={`title-${cat.id}`} className="text-3xl font-display uppercase tracking-tight text-text leading-tight">
+            {cat.name}
+          </motion.h3>
+          <p className="text-text-muted text-sm line-clamp-2 leading-relaxed">
+            {cat.special_rules || "Official UCSF 2026 competitive category."}
+          </p>
+        </div>
 
-        <div className="grid grid-cols-2 gap-6 mb-10">
+        <div className="grid grid-cols-2 gap-4">
           {cat.team_size && (
             <div className="space-y-1">
-              <p className="font-ui text-[8px] font-bold text-white/40 uppercase tracking-widest">Team Size</p>
-              <p className="text-sm font-medium text-white">{cat.team_size}</p>
+              <p className="font-ui text-[8px] font-bold text-text-muted uppercase tracking-widest">Team Size</p>
+              <p className="text-xs font-bold text-text">{cat.team_size}</p>
             </div>
           )}
           {cat.duration && (
             <div className="space-y-1">
-              <p className="font-ui text-[8px] font-bold text-white/40 uppercase tracking-widest">Duration</p>
-              <p className="text-sm font-medium text-white">{cat.duration}</p>
+              <p className="font-ui text-[8px] font-bold text-text-muted uppercase tracking-widest">Duration</p>
+              <p className="text-xs font-bold text-text">{cat.duration}</p>
             </div>
           )}
         </div>
 
-        <div className="mt-auto flex items-center justify-between text-gold font-ui text-[9px] font-bold uppercase tracking-widest group-hover:translate-x-2 transition-transform">
-           <span>View Guidelines</span>
+        <div className="mt-auto flex items-center justify-between text-primary font-ui text-[9px] font-bold uppercase tracking-widest group-hover:translate-x-2 transition-transform">
+           <span>View Details</span>
            <ArrowRight size={14} />
         </div>
       </motion.div>
@@ -80,80 +78,80 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
   };
 
   return (
-    <div id="events" className="max-w-7xl mx-auto px-6 py-24 space-y-32 font-ui">
+    <div id="events" className="max-w-7xl mx-auto px-6 py-32 space-y-40 font-ui">
       <AnimatePresence>
         {expandedId && expandedCategory && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-8">
+          <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-12">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setExpandedId(null)}
-              className="absolute inset-0 bg-bg/95 backdrop-blur-2xl"
+              className="absolute inset-0 bg-white/95 backdrop-blur-xl"
             />
 
             <motion.div
               layoutId={`card-${expandedId}`}
-              className="relative w-full max-w-5xl max-h-[90vh] bg-bg2 border border-white/10 rounded-[3rem] overflow-hidden flex flex-col shadow-2xl"
+              className="relative w-full max-w-6xl max-h-[90vh] bg-white border border-border rounded-[3rem] overflow-hidden flex flex-col shadow-2xl"
             >
               <button
                 onClick={() => setExpandedId(null)}
-                className="absolute top-8 right-8 w-12 h-12 bg-white/5 hover:bg-white/10 rounded-full flex items-center justify-center text-white transition-all z-10"
+                className="absolute top-8 right-8 w-12 h-12 bg-bg-alt hover:bg-border rounded-full flex items-center justify-center text-text transition-all z-10"
               >
                 <X size={24} />
               </button>
 
-              <div className="overflow-y-auto p-8 md:p-16 custom-scrollbar">
-                <div className="flex flex-col md:flex-row gap-16 items-start">
-                  <div className="flex-1 space-y-12">
-                    <div className="flex items-center gap-10">
-                      <motion.div layoutId={`icon-${expandedId}`} className="w-24 h-24 bg-gold/10 rounded-[2rem] flex items-center justify-center text-5xl overflow-hidden border border-gold/20">
-                        {expandedCategory.icon || <Trophy className="text-gold" />}
+              <div className="overflow-y-auto p-10 md:p-20 custom-scrollbar">
+                <div className="flex flex-col lg:flex-row gap-20 items-start">
+                  <div className="flex-1 space-y-16">
+                    <div className="flex flex-col md:flex-row md:items-center gap-10">
+                      <motion.div layoutId={`icon-${expandedId}`} className="w-24 h-24 bg-primary-muted rounded-3xl flex items-center justify-center text-5xl overflow-hidden border border-primary/10 shrink-0">
+                        {expandedCategory.icon || <Trophy className="text-primary" />}
                       </motion.div>
                       <div>
-                        <span className="font-ui text-[10px] font-bold uppercase tracking-[0.3em] text-gold mb-3 block">
+                        <span className="font-ui text-[11px] font-bold uppercase tracking-[0.4em] text-primary mb-4 block">
                           {expandedCategory.category_type} · {expandedCategory.gender || 'Mixed'}
                         </span>
-                        <motion.h2 layoutId={`title-${expandedId}`} className="text-5xl md:text-7xl font-display uppercase tracking-tighter leading-none">
+                        <motion.h2 layoutId={`title-${expandedId}`} className="text-5xl md:text-7xl font-display uppercase tracking-tighter leading-none text-text">
                           {expandedCategory.name}
                         </motion.h2>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pt-8 border-t border-white/5">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-10 pt-10 border-t border-border">
                       {[
                         { label: 'Team Size', val: expandedCategory.team_size },
                         { label: 'Duration', val: expandedCategory.duration },
                         { label: 'Grades', val: expandedCategory.eligible_years },
                       ].filter(s => s.val).map((stat, i) => (
                         <div key={i} className="space-y-2">
-                          <p className="font-ui text-[9px] font-bold text-white/40 uppercase tracking-widest">{stat.label}</p>
-                          <p className="text-xl font-medium text-white">{stat.val}</p>
+                          <p className="font-ui text-[10px] font-bold text-text-muted uppercase tracking-widest">{stat.label}</p>
+                          <p className="text-2xl font-display text-text">{stat.val}</p>
                         </div>
                       ))}
                     </div>
 
-                    <div className="space-y-10">
+                    <div className="space-y-12">
                       <div>
-                        <h4 className="text-2xl font-display uppercase tracking-widest mb-6 flex items-center gap-3 text-gold">
-                          <Info size={20} />
-                          Rules & Regulations
+                        <h4 className="text-2xl font-display uppercase tracking-widest mb-8 flex items-center gap-4 text-primary">
+                          <Info size={24} />
+                          Event Description
                         </h4>
-                        <div className="bg-white/5 border border-white/5 rounded-[2rem] p-10">
-                          <p className="text-lg text-white/80 leading-relaxed whitespace-pre-line">
-                            {expandedCategory.special_rules || "General rules apply for this category."}
+                        <div className="bg-bg-alt border border-border rounded-[2.5rem] p-12">
+                          <p className="text-xl text-text-muted leading-relaxed whitespace-pre-line">
+                            {expandedCategory.special_rules || "Detailed guidelines for this category will be updated shortly."}
                           </p>
                         </div>
                       </div>
 
                       {expandedCategory.judging_criteria && expandedCategory.judging_criteria.length > 0 && (
                         <div>
-                          <h4 className="text-2xl font-display uppercase tracking-widest mb-6 text-gold">Judging Criteria</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <h4 className="text-2xl font-display uppercase tracking-widest mb-8 text-primary">Judging Criteria</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {expandedCategory.judging_criteria.map((item, i) => (
-                              <div key={i} className="bg-white/5 border border-white/5 p-6 rounded-2xl flex justify-between items-center">
-                                <span className="text-lg font-medium">{item.criterion}</span>
-                                <span className="text-xs font-bold text-gold bg-gold/10 px-4 py-1 rounded-full border border-gold/20">{item.weight}</span>
+                              <div key={i} className="bg-white border border-border p-8 rounded-3xl flex justify-between items-center shadow-sm">
+                                <span className="text-lg font-bold text-text">{item.criterion}</span>
+                                <span className="text-[10px] font-bold text-primary bg-primary-muted px-4 py-2 rounded-full border border-primary/10">{item.weight}</span>
                               </div>
                             ))}
                           </div>
@@ -162,21 +160,21 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
                     </div>
                   </div>
 
-                  <div className="w-full md:w-80 shrink-0 space-y-10">
-                    <h4 className="text-2xl font-display uppercase tracking-widest flex items-center justify-between text-gold">
-                      Matches
-                      <span className="text-[10px] font-bold text-white/20">{expandedMatches.length} Total</span>
+                  <div className="w-full lg:w-96 shrink-0 space-y-12">
+                    <h4 className="text-2xl font-display uppercase tracking-widest flex items-center justify-between text-primary">
+                      Recent Activity
+                      <span className="text-[11px] font-bold text-text-muted/40">{expandedMatches.length} Matches</span>
                     </h4>
 
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       {expandedMatches.length > 0 ? (
                         expandedMatches.map(match => (
                           <MatchCard key={match.id} match={match} />
                         ))
                       ) : (
-                        <div className="bg-white/5 border border-white/5 border-dashed rounded-[2rem] p-12 text-center">
-                          <Activity size={32} className="mx-auto mb-4 text-white/5" />
-                          <p className="text-white/20 text-[10px] font-bold uppercase tracking-widest">No matches scheduled yet</p>
+                        <div className="bg-bg-alt border border-border border-dashed rounded-[2.5rem] p-16 text-center">
+                          <Activity size={40} className="mx-auto mb-6 text-text-muted/10" />
+                          <p className="text-text-muted/40 text-[10px] font-bold uppercase tracking-widest">No activity logged</p>
                         </div>
                       )}
                     </div>
@@ -190,28 +188,28 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
 
       {/* General Guidelines */}
       <section>
-        <div className="mb-16">
-          <p className="text-[10px] font-bold text-gold uppercase tracking-[0.4em] mb-4">Committee Protocol</p>
-          <h2 className="text-6xl md:text-8xl font-display uppercase leading-none">General Guidelines</h2>
-          <p className="text-white/40 mt-6 text-xl max-w-2xl leading-relaxed">Essential information for all Harmonia MUN 2026 participants.</p>
+        <div className="mb-20">
+          <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">UCSF 2026</p>
+          <h2 className="text-6xl md:text-8xl font-display uppercase leading-none text-text">General Guidelines</h2>
+          <p className="text-text-muted mt-8 text-xl max-w-2xl leading-relaxed">Essential information for all participants of the Union of Culture & Sports Fest.</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-white/5 border border-white/5 p-12 rounded-[2.5rem] backdrop-blur-xl">
-            <ul className="space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <div className="bg-white border border-border p-16 rounded-[3rem] shadow-sm">
+            <ul className="space-y-10">
               {generalGuidelines.slice(0, 3).map((item, i) => (
-                <li key={i} className="flex gap-6 text-white/80 leading-relaxed group">
-                  <div className="w-2 h-2 rounded-full bg-gold mt-2.5 shrink-0 group-hover:scale-150 transition-transform shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
-                  <span className="text-lg">{item}</span>
+                <li key={i} className="flex gap-8 text-text-muted leading-relaxed group">
+                  <div className="w-3 h-3 rounded-full bg-accent mt-2 shrink-0 group-hover:scale-125 transition-transform" />
+                  <span className="text-lg font-medium">{item}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="bg-white/5 border border-white/5 p-12 rounded-[2.5rem] backdrop-blur-xl">
-            <ul className="space-y-8">
+          <div className="bg-white border border-border p-16 rounded-[3rem] shadow-sm">
+            <ul className="space-y-10">
               {generalGuidelines.slice(3).map((item, i) => (
-                <li key={i} className="flex gap-6 text-white/80 leading-relaxed group">
-                  <div className="w-2 h-2 rounded-full bg-gold mt-2.5 shrink-0 group-hover:scale-150 transition-transform shadow-[0_0_10px_rgba(37,99,235,0.5)]" />
-                  <span className="text-lg">{item}</span>
+                <li key={i} className="flex gap-8 text-text-muted leading-relaxed group">
+                  <div className="w-3 h-3 rounded-full bg-accent mt-2 shrink-0 group-hover:scale-125 transition-transform" />
+                  <span className="text-lg font-medium">{item}</span>
                 </li>
               ))}
             </ul>
@@ -221,12 +219,12 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
 
       {sports.length > 0 && (
         <section>
-          <div className="mb-16">
-             <p className="text-[10px] font-bold text-gold uppercase tracking-[0.4em] mb-4">Athletics</p>
-            <h2 className="text-6xl md:text-8xl font-display uppercase leading-none">Committees</h2>
-            <p className="text-white/40 mt-6 text-xl max-w-2xl leading-relaxed">High-intensity competitive events across multiple disciplines.</p>
+          <div className="mb-20">
+             <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">Athletics</p>
+            <h2 className="text-6xl md:text-8xl font-display uppercase leading-none text-text">Sports Events</h2>
+            <p className="text-text-muted mt-8 text-xl max-w-2xl leading-relaxed">High-intensity competitive events across multiple disciplines.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {sports.map(renderEventCard)}
           </div>
         </section>
@@ -234,12 +232,12 @@ export default function EventsSection({ categories, matches, setActiveTab }: Eve
 
       {cultural.length > 0 && (
         <section>
-          <div className="mb-16">
-             <p className="text-[10px] font-bold text-gold uppercase tracking-[0.4em] mb-4">Arts & Expression</p>
-            <h2 className="text-6xl md:text-8xl font-display uppercase leading-none">Special Sessions</h2>
-            <p className="text-white/40 mt-6 text-xl max-w-2xl leading-relaxed">Showcasing talent, creativity, and artistic excellence.</p>
+          <div className="mb-20">
+             <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">Arts & Expression</p>
+            <h2 className="text-6xl md:text-8xl font-display uppercase leading-none text-text">Cultural Events</h2>
+            <p className="text-text-muted mt-8 text-xl max-w-2xl leading-relaxed">Showcasing talent, creativity, and artistic excellence.</p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
             {cultural.map(renderEventCard)}
           </div>
         </section>

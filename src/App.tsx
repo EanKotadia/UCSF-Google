@@ -51,8 +51,8 @@ export default function App() {
     return <SupabaseConfig onConfigured={() => setIsConfigured(true)} />;
   }
 
-  const festivalName = settings['festival_name'] || 'Harmonia MUN 2026';
-  const festivalSubtitle = settings['festival_subtitle'] || 'Celebrating diplomatic excellence and exceptional contribution to the conference.';
+  const festivalName = settings['festival_name'] || 'UCSF 2026';
+  const festivalSubtitle = settings['festival_subtitle'] || 'Celebrating athletic excellence and cultural diversity through competitive spirit.';
   const schoolLogoUrl = settings['school_logo_url'];
   const announcement = settings['announcement_text'];
 
@@ -76,90 +76,118 @@ export default function App() {
           />
         );
       case 'events':
-      case 'committees':
         return <EventsSection categories={categories} matches={matches} setActiveTab={(t: any) => setActiveTab(t)} />;
       case 'home':
         return (
-          <div className="space-y-0">
-             <section className="relative py-32 md:py-48 overflow-hidden">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gold/5 blur-[120px] rounded-full pointer-events-none" />
-              <div className="max-w-7xl mx-auto px-6 relative z-10 text-center font-ui">
-                <div className="mb-6 flex flex-col items-center gap-2">
-                   <div className="h-px w-12 bg-gold/50 mb-2" />
-                   <p className="text-[10px] font-bold text-gold uppercase tracking-[0.4em]">Hall of Fame</p>
-                </div>
-                <h1 className="text-6xl md:text-9xl font-display uppercase tracking-tight mb-8 leading-none">
-                   CONFERENCE <span className="block">AWARDS</span>
-                </h1>
-                <p className="text-white/60 font-medium text-lg md:text-xl max-w-2xl mx-auto mb-16 leading-relaxed">
-                   {festivalSubtitle}
-                </p>
+          <div className="space-y-0 bg-bg">
+             <section className="relative py-40 md:py-60 flex flex-col items-center justify-center text-center px-6">
+              <div className="max-w-4xl mx-auto space-y-10 relative z-10">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                  className="space-y-4"
+                >
+                  <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em]">Annual Fest 2026</p>
+                  <h1 className="text-7xl md:text-9xl font-display uppercase tracking-tight text-text leading-none">
+                     UNION OF <span className="block text-primary">CULTURE & SPORTS</span>
+                  </h1>
+                </motion.div>
 
-                <div className="bg-bg2/40 backdrop-blur-xl border border-white/5 rounded-[2.5rem] p-12 md:p-24 min-h-[400px] flex flex-col items-center justify-center gap-8 relative overflow-hidden">
-                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-bg/20" />
-                   <div className="relative z-10 flex flex-col items-center gap-6">
-                      <div className="w-16 h-16 rounded-full border border-white/10 flex items-center justify-center text-white/20">
-                         <Trophy size={32} />
-                      </div>
-                      <p className="italic uppercase text-[11px] tracking-[0.3em] text-white/40">Awards will be announced following the closing ceremony.</p>
-                   </div>
-                </div>
+                <motion.p
+                   initial={{ opacity: 0 }}
+                   animate={{ opacity: 1 }}
+                   transition={{ delay: 0.3, duration: 0.6 }}
+                   className="text-text-muted font-medium text-lg md:text-xl max-w-2xl mx-auto leading-relaxed"
+                >
+                   {festivalSubtitle}
+                </motion.p>
+
+                <motion.div
+                   initial={{ opacity: 0, y: 10 }}
+                   animate={{ opacity: 1, y: 0 }}
+                   transition={{ delay: 0.5, duration: 0.6 }}
+                   className="flex flex-wrap justify-center gap-6 pt-4"
+                >
+                   <button
+                     onClick={() => setActiveTab('events')}
+                     className="px-10 py-4 bg-primary text-white rounded-full font-bold uppercase tracking-widest transition-all hover:bg-primary/90 hover:scale-105 shadow-xl shadow-primary/20"
+                   >
+                      View Events
+                   </button>
+                   <button
+                     onClick={() => setActiveTab('leaderboards')}
+                     className="px-10 py-4 bg-white text-text border border-border rounded-full font-bold uppercase tracking-widest transition-all hover:bg-bg-alt hover:border-primary/30"
+                   >
+                      Standings
+                   </button>
+                </motion.div>
               </div>
             </section>
 
-            <section className="py-24 border-t border-white/5">
-               <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 font-ui">
-                  <div className="bg-bg2/40 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-12 space-y-8">
+            <section className="py-32 border-t border-border bg-bg-alt">
+               <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 font-ui">
+                  <div className="space-y-10">
                      <div className="flex items-center justify-between">
-                        <h2 className="text-4xl font-display uppercase tracking-tight">The Grand Standings</h2>
-                        <Trophy className="text-gold" size={24} />
+                        <div className="space-y-1">
+                           <p className="text-[10px] font-bold text-primary uppercase tracking-[0.3em]">The Arena</p>
+                           <h2 className="text-4xl font-display uppercase tracking-tight text-text">Grand Standings</h2>
+                        </div>
+                        <Trophy className="text-accent" size={32} />
                      </div>
                      <div className="space-y-4">
                         {houses.sort((a,b) => b.points - a.points).map((h, i) => (
-                          <div key={h.id} className="flex items-center justify-between p-6 bg-white/5 rounded-2xl border border-white/5 group hover:border-gold/30 transition-all cursor-default">
+                          <div key={h.id} className="flex items-center justify-between p-6 bg-white rounded-3xl border border-border group hover:border-primary/20 hover:shadow-lg transition-all cursor-default">
                              <div className="flex items-center gap-6">
-                                <span className="text-gold font-display text-3xl opacity-40 group-hover:opacity-100 transition-opacity">#{i+1}</span>
-                                <span className="font-bold uppercase tracking-widest text-lg">{h.name}</span>
+                                <span className={cn(
+                                   "w-12 h-12 rounded-2xl flex items-center justify-center font-display text-xl transition-all",
+                                   i === 0 ? "bg-accent text-text" : "bg-bg-alt text-text-muted"
+                                )}>#{i+1}</span>
+                                <span className="font-bold uppercase tracking-widest text-lg text-text">{h.name}</span>
                              </div>
-                             <span className="font-display text-3xl text-white">{h.points}</span>
+                             <span className="font-display text-3xl text-primary">{h.points}</span>
                           </div>
                         ))}
                      </div>
                   </div>
-                  <div className="bg-bg2/40 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-12 space-y-8">
+
+                  <div className="space-y-10">
                      <div className="flex items-center justify-between">
-                        <h2 className="text-4xl font-display uppercase tracking-tight">Live Feed</h2>
-                        <Activity className="text-green-500" size={24} />
+                        <div className="space-y-1">
+                           <p className="text-[10px] font-bold text-green-600 uppercase tracking-[0.3em]">Real-time Updates</p>
+                           <h2 className="text-4xl font-display uppercase tracking-tight text-text">Live Action</h2>
+                        </div>
+                        <Activity className="text-green-600" size={32} />
                      </div>
-                     <div className="space-y-4 h-[400px] overflow-y-auto custom-scrollbar pr-2">
+                     <div className="space-y-4 min-h-[400px]">
                         {matches.filter(m => m.status === 'live').map(m => (
-                          <div key={m.id} className="p-8 bg-green-500/5 border border-green-500/20 rounded-2xl relative overflow-hidden group">
-                             <div className="absolute top-0 right-0 p-3">
+                          <div key={m.id} className="p-8 bg-white border border-border rounded-[2.5rem] relative overflow-hidden group shadow-sm hover:shadow-md transition-all">
+                             <div className="absolute top-0 right-0 p-5">
                                 <div className="flex items-center gap-2">
-                                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                                   <span className="text-[8px] font-bold text-green-500 uppercase tracking-widest">Live Now</span>
+                                   <div className="w-2 h-2 bg-green-600 rounded-full animate-pulse" />
+                                   <span className="text-[8px] font-bold text-green-600 uppercase tracking-widest">Live</span>
                                 </div>
                              </div>
-                             <p className="text-[9px] font-bold text-white/40 uppercase tracking-[0.2em] mb-4">
-                                {categories.find(c => c.id === m.category_id)?.name} • {m.venue || 'Main Hall'}
+                             <p className="text-[10px] font-bold text-text-muted uppercase tracking-[0.2em] mb-6">
+                                {categories.find(c => c.id === m.category_id)?.name} • {m.venue || 'Main Field'}
                              </p>
-                             <div className="flex justify-between items-center">
+                             <div className="flex justify-between items-center gap-4">
                                 <div className="text-center flex-1">
-                                   <p className="font-bold uppercase tracking-widest text-sm mb-1">{houses.find(h => h.id === m.team1_id)?.name}</p>
-                                   <p className="text-3xl font-display text-white">{m.score1}</p>
+                                   <p className="font-bold uppercase tracking-widest text-sm mb-2 text-text">{houses.find(h => h.id === m.team1_id)?.name}</p>
+                                   <p className="text-4xl font-display text-primary">{m.score1}</p>
                                 </div>
-                                <div className="px-6 text-white/20 font-display">VS</div>
+                                <div className="px-6 text-border font-display text-xl">VS</div>
                                 <div className="text-center flex-1">
-                                   <p className="font-bold uppercase tracking-widest text-sm mb-1">{houses.find(h => h.id === m.team2_id)?.name}</p>
-                                   <p className="text-3xl font-display text-white">{m.score2}</p>
+                                   <p className="font-bold uppercase tracking-widest text-sm mb-2 text-text">{houses.find(h => h.id === m.team2_id)?.name}</p>
+                                   <p className="text-4xl font-display text-primary">{m.score2}</p>
                                 </div>
                              </div>
                           </div>
                         ))}
                         {matches.filter(m => m.status === 'live').length === 0 && (
-                          <div className="flex flex-col items-center justify-center h-full text-white/20">
-                             <Activity size={32} className="mb-4 opacity-5" />
-                             <p className="italic uppercase text-[10px] tracking-[0.3em]">No active sessions at the moment</p>
+                          <div className="flex flex-col items-center justify-center h-full text-text-muted/20 border-2 border-dashed border-border rounded-[2.5rem] py-20">
+                             <Activity size={48} className="mb-4 opacity-5" />
+                             <p className="italic uppercase text-[11px] tracking-[0.4em] font-bold">Waiting for next event</p>
                           </div>
                         )}
                      </div>
@@ -170,22 +198,22 @@ export default function App() {
         );
       case 'leaderboards':
         return (
-          <div className="max-w-7xl mx-auto px-6 py-24 font-ui">
-             <div className="flex flex-col items-center text-center mb-20">
-                <div className="h-px w-12 bg-gold/50 mb-4" />
-                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight">Rankings</h2>
-                <p className="text-white/40 font-medium uppercase tracking-[0.3em] text-sm">Championship Standings</p>
+          <div className="max-w-7xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">Official Standings</p>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Championship</h2>
+                <div className="h-1 w-20 bg-accent rounded-full" />
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {houses.sort((a,b) => b.points - a.points).map((h, i) => (
-                   <div key={h.id} className="bg-bg2/40 border border-white/5 backdrop-blur-xl rounded-[3rem] p-12 flex flex-col items-center text-center gap-8 group hover:border-gold/30 transition-all">
-                      <div className="w-24 h-24 bg-gold/10 rounded-full flex items-center justify-center text-4xl font-display text-gold border border-gold/20 shadow-2xl shadow-gold/5">
+                   <div key={h.id} className="bg-white border border-border rounded-[3rem] p-12 flex flex-col items-center text-center gap-10 group hover:border-primary/30 transition-all hover:shadow-2xl hover:shadow-primary/5">
+                      <div className="w-24 h-24 bg-primary-muted rounded-[2rem] flex items-center justify-center text-4xl font-display text-primary transition-transform group-hover:scale-110">
                          #{i+1}
                       </div>
-                      <h3 className="text-3xl font-display uppercase leading-tight">{h.name}</h3>
-                      <div className="w-full pt-8 border-t border-white/5">
-                         <span className="text-6xl font-display text-white">{h.points}</span>
-                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-[0.3em] mt-4">Total Merit Points</p>
+                      <h3 className="text-3xl font-display uppercase leading-tight text-text">{h.name}</h3>
+                      <div className="w-full pt-10 border-t border-border">
+                         <span className="text-6xl font-display text-primary">{h.points}</span>
+                         <p className="text-[11px] font-bold text-text-muted uppercase tracking-[0.3em] mt-4">Total Points</p>
                       </div>
                    </div>
                 ))}
@@ -194,33 +222,33 @@ export default function App() {
         );
       case 'notices':
         return (
-          <div className="max-w-4xl mx-auto px-6 py-24 font-ui">
-             <div className="flex flex-col items-center text-center mb-20">
-                <div className="h-px w-12 bg-gold/50 mb-4" />
-                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight">Notices</h2>
-                <p className="text-white/40 font-medium uppercase tracking-[0.3em] text-sm">Official Announcements</p>
+          <div className="max-w-4xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">Live Updates</p>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Bulletin</h2>
+                <div className="h-1 w-20 bg-accent rounded-full" />
              </div>
              <div className="space-y-8">
                 {notices.map(notice => (
-                   <div key={notice.id} className="bg-bg2/40 border border-white/5 backdrop-blur-xl rounded-[2.5rem] p-12 space-y-6 relative overflow-hidden group">
-                      <div className="absolute top-0 right-0 p-8">
+                   <div key={notice.id} className="bg-white border border-border rounded-[2.5rem] p-12 space-y-6 relative overflow-hidden group shadow-sm">
+                      <div className="absolute top-0 right-0 p-10">
                          <span className={cn(
-                            "px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest",
-                            notice.priority === 'high' ? "bg-red-500/10 text-red-500 border border-red-500/20" : "bg-gold/10 text-gold border border-gold/20"
+                            "px-5 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest",
+                            notice.priority === 'high' ? "bg-red-50 text-red-600 border border-red-100" : "bg-bg-alt text-text-muted border border-border"
                          )}>{notice.priority}</span>
                       </div>
-                      <h3 className="text-3xl font-display uppercase tracking-tight pr-24">{notice.title}</h3>
-                      <p className="text-white/60 text-lg leading-relaxed">{notice.content}</p>
-                      <div className="pt-6 border-t border-white/5 flex items-center gap-4 text-[10px] text-white/20 font-bold uppercase tracking-widest">
-                         <Calendar size={12} />
+                      <h3 className="text-3xl font-display uppercase tracking-tight pr-24 text-text">{notice.title}</h3>
+                      <p className="text-text-muted text-lg leading-relaxed">{notice.content}</p>
+                      <div className="pt-8 border-t border-border flex items-center gap-4 text-[10px] text-text-muted font-bold uppercase tracking-widest">
+                         <Calendar size={14} className="text-primary" />
                          {new Date(notice.created_at).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}
                       </div>
                    </div>
                 ))}
                 {notices.length === 0 && (
-                   <div className="flex flex-col items-center justify-center py-24 text-white/10">
-                      <Bell size={48} className="mb-6 opacity-5" />
-                      <p className="italic uppercase text-sm tracking-[0.4em]">No announcements at this time</p>
+                   <div className="flex flex-col items-center justify-center py-32 text-text-muted/20 border-2 border-dashed border-border rounded-[2.5rem]">
+                      <Bell size={60} className="mb-6 opacity-5" />
+                      <p className="italic uppercase text-sm tracking-[0.4em] font-bold">No announcements yet</p>
                    </div>
                 )}
              </div>
@@ -228,26 +256,26 @@ export default function App() {
         );
       case 'gallery':
         return (
-          <div className="max-w-7xl mx-auto px-6 py-24 font-ui">
-             <div className="flex flex-col items-center text-center mb-20">
-                <div className="h-px w-12 bg-gold/50 mb-4" />
-                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight">Gallery</h2>
-                <p className="text-white/40 font-medium uppercase tracking-[0.3em] text-sm">Captured Moments</p>
+          <div className="max-w-7xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">Captured</p>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Moments</h2>
+                <div className="h-1 w-20 bg-accent rounded-full" />
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {gallery.map(item => (
-                   <div key={item.id} className="group relative aspect-[4/5] overflow-hidden rounded-[2.5rem] bg-bg2/40 border border-white/5">
-                      <img src={item.url} alt={item.title} className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-110" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-bg via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-10">
-                         <p className="text-gold font-bold uppercase tracking-[0.2em] text-[10px] mb-2">{item.type || 'Photograph'}</p>
-                         <h4 className="text-2xl font-display uppercase tracking-tight">{item.title}</h4>
+                   <div key={item.id} className="group relative aspect-[4/5] overflow-hidden rounded-[2.5rem] bg-bg-alt border border-border">
+                      <img src={item.url} alt={item.title} className="h-full w-full object-cover transition-all duration-1000 group-hover:scale-105 group-hover:brightness-50" />
+                      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-end p-12 translate-y-4 group-hover:translate-y-0">
+                         <p className="text-accent font-bold uppercase tracking-[0.2em] text-[11px] mb-3">{item.type || 'Event Photo'}</p>
+                         <h4 className="text-3xl font-display uppercase tracking-tight text-white">{item.title}</h4>
                       </div>
                    </div>
                 ))}
                 {gallery.length === 0 && (
-                   <div className="col-span-full flex flex-col items-center justify-center py-24 text-white/10">
-                      <Camera size={48} className="mb-6 opacity-5" />
-                      <p className="italic uppercase text-sm tracking-[0.4em]">Gallery is being curated</p>
+                   <div className="col-span-full flex flex-col items-center justify-center py-32 text-text-muted/20 border-2 border-dashed border-border rounded-[2.5rem]">
+                      <Camera size={60} className="mb-6 opacity-5" />
+                      <p className="italic uppercase text-sm tracking-[0.4em] font-bold">Curating gallery...</p>
                    </div>
                 )}
              </div>
@@ -255,69 +283,63 @@ export default function App() {
         );
       case 'schedule':
         return (
-          <div className="max-w-5xl mx-auto px-6 py-24 font-ui">
-             <div className="flex flex-col items-center text-center mb-20">
-                <div className="h-px w-12 bg-gold/50 mb-4" />
-                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight">Schedule</h2>
-                <p className="text-white/40 font-medium uppercase tracking-[0.3em] text-sm">Event Timeline</p>
+          <div className="max-w-5xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">Timeline</p>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Schedule</h2>
+                <div className="h-1 w-20 bg-accent rounded-full" />
              </div>
              <div className="space-y-6">
                 {schedule.sort((a,b) => (a.sort_order || 0) - (b.sort_order || 0)).map(item => (
-                   <div key={item.id} className="bg-bg2/40 border border-white/5 backdrop-blur-xl rounded-3xl p-8 flex flex-col md:flex-row md:items-center gap-8 group hover:border-gold/20 transition-all">
-                      <div className="md:w-32 flex flex-col">
-                         <span className="text-gold font-display text-2xl">{item.time_start?.slice(0, 5)}</span>
-                         <span className="text-white/30 text-[10px] font-bold uppercase tracking-widest">{item.day_label}</span>
+                   <div key={item.id} className="bg-white border border-border rounded-3xl p-10 flex flex-col md:flex-row md:items-center gap-10 group hover:border-primary/20 transition-all shadow-sm">
+                      <div className="md:w-40 flex flex-col border-l-4 border-primary pl-6 py-2">
+                         <span className="text-primary font-display text-3xl">{item.time_start?.slice(0, 5)}</span>
+                         <span className="text-text-muted text-[11px] font-bold uppercase tracking-widest mt-1">{item.day_label}</span>
                       </div>
                       <div className="flex-grow">
-                         <h3 className="text-2xl font-display uppercase tracking-tight mb-1">{item.title}</h3>
-                         <p className="text-white/40 text-[11px] font-bold uppercase tracking-widest">{item.venue} • {item.subtitle}</p>
+                         <h3 className="text-3xl font-display uppercase tracking-tight mb-2 text-text">{item.title}</h3>
+                         <p className="text-text-muted text-[12px] font-bold uppercase tracking-widest">{item.venue} • {item.subtitle}</p>
                       </div>
                       <div>
                          <span className={cn(
-                            "px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-[0.2em] border",
-                            item.status === 'live' ? "bg-green-500/10 text-green-500 border-green-500/20" :
-                            item.status === 'completed' ? "bg-white/5 text-white/40 border-white/10" : "bg-gold/5 text-gold border-gold/20"
-                         )}>{item.status === 'live' ? 'Live Now' : item.status}</span>
+                            "px-6 py-2 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border",
+                            item.status === 'live' ? "bg-green-50 text-green-600 border-green-100" :
+                            item.status === 'completed' ? "bg-bg-alt text-text-muted border-border" : "bg-primary-muted text-primary border-primary/10"
+                         )}>{item.status === 'live' ? 'In Progress' : item.status}</span>
                       </div>
                    </div>
                 ))}
-                {schedule.length === 0 && (
-                   <div className="flex flex-col items-center justify-center py-24 text-white/10">
-                      <Calendar size={48} className="mb-6 opacity-5" />
-                      <p className="italic uppercase text-sm tracking-[0.4em]">Schedule will be released soon</p>
-                   </div>
-                )}
              </div>
           </div>
         );
       case 'about':
         return (
-          <div className="max-w-4xl mx-auto px-6 py-24 font-ui">
-             <div className="flex flex-col items-center text-center mb-20">
-                <div className="h-px w-12 bg-gold/50 mb-4" />
-                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight">About</h2>
-                <p className="text-white/40 font-medium uppercase tracking-[0.3em] text-sm">Our Mission & Vision</p>
+          <div className="max-w-4xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">The Fest</p>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">About UCSF</h2>
+                <div className="h-1 w-20 bg-accent rounded-full" />
              </div>
-             <div className="prose prose-invert max-w-none space-y-12">
-                <div className="bg-bg2/40 border border-white/5 rounded-[3rem] p-12 md:p-16">
-                   <h3 className="text-4xl font-display uppercase tracking-tight mb-8">The Conference</h3>
-                   <p className="text-white/60 text-lg leading-relaxed mb-6">
-                      Harmonia Model United Nations is a premier simulation of the UN, where students step into the shoes of diplomats to debate, negotiate, and solve some of the world's most pressing issues.
+             <div className="space-y-12">
+                <div className="bg-white border border-border rounded-[3rem] p-16 shadow-sm">
+                   <h3 className="text-4xl font-display uppercase tracking-tight mb-8 text-text">Vision</h3>
+                   <p className="text-text-muted text-xl leading-relaxed mb-8">
+                      The Union of Culture & Sports Fest (UCSF) is a celebration of talent, resilience, and unity. It brings together athletes and performers to showcase excellence on and off the field.
                    </p>
-                   <p className="text-white/60 text-lg leading-relaxed">
-                      Our mission is to foster a generation of empathetic, informed, and articulate leaders who understand the complexities of global governance and the power of collaboration.
+                   <p className="text-text-muted text-xl leading-relaxed">
+                      Our goal is to foster spirit, sportsmanship, and creativity among our community, creating memories that last a lifetime.
                    </p>
                 </div>
                 <div className="grid md:grid-cols-2 gap-8">
-                   <div className="bg-bg2/40 border border-white/5 rounded-[2.5rem] p-10">
-                      <Info className="text-gold mb-6" size={32} />
-                      <h4 className="text-2xl font-display uppercase tracking-tight mb-4">Excellence</h4>
-                      <p className="text-white/40 text-sm leading-relaxed">Promoting the highest standards of research, public speaking, and policy writing.</p>
+                   <div className="bg-white border border-border rounded-[2.5rem] p-12">
+                      <Trophy className="text-primary mb-8" size={40} />
+                      <h4 className="text-2xl font-display uppercase tracking-tight mb-4 text-text">Sports</h4>
+                      <p className="text-text-muted text-sm leading-relaxed">Competitive athletics ranging from football to track events, emphasizing teamwork and fair play.</p>
                    </div>
-                   <div className="bg-bg2/40 border border-white/5 rounded-[2.5rem] p-10">
-                      <Users className="text-gold mb-6" size={32} />
-                      <h4 className="text-2xl font-display uppercase tracking-tight mb-4">Inclusion</h4>
-                      <p className="text-white/40 text-sm leading-relaxed">Creating a platform where every voice is heard and every perspective is valued.</p>
+                   <div className="bg-white border border-border rounded-[2.5rem] p-12">
+                      <Users className="text-primary mb-8" size={40} />
+                      <h4 className="text-2xl font-display uppercase tracking-tight mb-4 text-text">Culture</h4>
+                      <p className="text-text-muted text-sm leading-relaxed">A platform for dance, music, drama, and fine arts to celebrate our diverse cultural heritage.</p>
                    </div>
                 </div>
              </div>
@@ -325,23 +347,23 @@ export default function App() {
         );
       case 'sponsors':
         return (
-          <div className="max-w-5xl mx-auto px-6 py-24 font-ui">
-             <div className="flex flex-col items-center text-center mb-20">
-                <div className="h-px w-12 bg-gold/50 mb-4" />
-                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight">Sponsors</h2>
-                <p className="text-white/40 font-medium uppercase tracking-[0.3em] text-sm">Partners in Excellence</p>
+          <div className="max-w-5xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <p className="text-[12px] font-bold text-primary uppercase tracking-[0.5em] mb-4">Partners</p>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Sponsors</h2>
+                <div className="h-1 w-20 bg-accent rounded-full" />
              </div>
              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12">
                 {[1,2,3,4].map(i => (
-                   <div key={i} className="aspect-video bg-bg2/40 border border-white/5 rounded-3xl flex items-center justify-center p-8 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all cursor-default">
+                   <div key={i} className="aspect-video bg-white border border-border rounded-3xl flex items-center justify-center p-10 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all cursor-default hover:shadow-xl hover:shadow-primary/5">
                       <div className="text-center">
-                         <div className="w-12 h-12 bg-white/5 rounded-full mx-auto mb-4" />
-                         <div className="h-2 w-24 bg-white/10 rounded-full mx-auto" />
+                         <div className="w-14 h-14 bg-bg-alt rounded-full mx-auto mb-4" />
+                         <div className="h-2 w-28 bg-bg-alt rounded-full mx-auto" />
                       </div>
                    </div>
                 ))}
              </div>
-             <p className="text-center text-white/20 uppercase text-[10px] tracking-[0.5em] mt-24">Interested in partnering? Contact the organizing committee.</p>
+             <p className="text-center text-text-muted/40 uppercase text-[11px] tracking-[0.4em] mt-32 font-bold">Contact us for sponsorship opportunities.</p>
           </div>
         );
       default:

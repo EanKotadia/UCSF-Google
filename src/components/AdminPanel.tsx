@@ -16,17 +16,20 @@ import {
   LogOut,
   ExternalLink,
   Shield,
+  LayoutDashboard,
+  Users,
+  Edit,
+  ClipboardList,
+  Menu,
   ChevronRight,
-  Search,
-  Mail,
-  Lock,
-  AlertCircle
+  PlusCircle,
+  Settings
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { cn } from '../lib/utils';
 import { House, Match, ScheduleItem, Category, GalleryItem, Notice, CulturalResult, StagedChange, Profile } from '../types';
 
-type AdminTab = 'results' | 'matches' | 'schedule' | 'categories' | 'notices' | 'gallery' | 'leaderboards' | 'settings' | 'approvals';
+type AdminTab = 'dashboard' | 'events' | 'scores' | 'schedule' | 'notices' | 'gallery' | 'houses' | 'config';
 
 interface AdminPanelProps {
   matches: Match[];
@@ -60,26 +63,16 @@ export default function AdminPanel({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [activeTab, setActiveTab] = useState<AdminTab>('results');
+  const [activeTab, setActiveTab] = useState<AdminTab>('dashboard');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [session, setSession] = useState<any>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
       if (session) setIsAuthenticated(true);
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
-      setSession(session);
-      if (session) setIsAuthenticated(true);
-      else setIsAuthenticated(false);
-    });
-
-    return () => subscription.unsubscribe();
   }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -87,11 +80,10 @@ export default function AdminPanel({
     setLoading(true);
     setError(null);
     try {
-      if (password === 'harmonia2026') {
+      if (password === 'ucsf2026') {
         setIsAuthenticated(true);
         return;
       }
-
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       setIsAuthenticated(true);
@@ -105,22 +97,19 @@ export default function AdminPanel({
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setIsAuthenticated(false);
-    setSession(null);
   };
 
-  const handleAction = async (action: () => Promise<any>, context: string) => {
+  const handleAction = async (action: () => Promise<any>, successMsg: string) => {
     setLoading(true);
     setError(null);
     setSuccess(null);
     try {
       await action();
-      setSuccess(`${context} successful`);
+      setSuccess(successMsg);
       refresh();
-      setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
-      console.error(`Error during ${context}:`, err);
-      setError(`System Error: ${err.message || `Failed to ${context.toLowerCase()}`}`);
-      setTimeout(() => setError(null), 5000);
+      setError(err.message);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false);
     }
@@ -128,48 +117,45 @@ export default function AdminPanel({
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-bg flex items-center justify-center p-6 font-ui">
-        <div className="w-full max-w-md bg-bg2 border border-white/5 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-gold to-transparent" />
-          <div className="text-center mb-10">
-            <div className="w-16 h-16 bg-gold/10 rounded-2xl flex items-center justify-center text-gold mx-auto mb-6">
-              <Shield size={32} />
+      <div className="min-h-screen bg-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full bg-white border border-slate-200 p-12 rounded-[2.5rem] shadow-2xl">
+          <div className="flex justify-center mb-10">
+            <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center text-blue-600 border border-blue-100">
+              <Shield size={40} />
             </div>
-            <h2 className="text-3xl font-display text-white uppercase tracking-wider">Harmonia MUN Admin</h2>
-            <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">Union of Culture & Sports Fest 2026</p>
           </div>
+          <h2 className="text-4xl font-display text-center text-slate-900 mb-2 uppercase tracking-tight">Admin Login</h2>
+          <p className="text-slate-500 text-center text-[10px] mb-12 uppercase tracking-[0.4em] font-bold">UCSF 2026 Portal</p>
           <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-4">
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-                <input
-                  type="email"
-                  placeholder="Admin Email"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:outline-none focus:border-gold/50 transition-all"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" size={18} />
-                <input
-                  type="password"
-                  placeholder="Access Key"
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm text-white focus:outline-none focus:border-gold/50 transition-all"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Email Address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm focus:border-blue-500 outline-none transition-all"
+                placeholder="admin@ucsf.com"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm focus:border-blue-500 outline-none transition-all"
+                placeholder="••••••••"
+                required
+              />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-gold hover:bg-gold/90 text-white rounded-2xl font-bold uppercase tracking-[0.2em] text-xs transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-lg shadow-gold/20"
+              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-bold uppercase tracking-widest transition-all hover:bg-blue-700 disabled:opacity-50 shadow-xl shadow-blue-500/20"
             >
-              {loading ? <RefreshCw className="animate-spin" size={16} /> : 'Authorize Access'}
+              {loading ? 'Processing...' : 'Access Portal'}
             </button>
           </form>
-          {error && <p className="mt-6 text-center text-red-500 text-[10px] font-bold uppercase tracking-widest">{error}</p>}
         </div>
       </div>
     );
@@ -177,482 +163,482 @@ export default function AdminPanel({
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'results':
+      case 'dashboard':
         return (
-          <div className="space-y-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-2xl font-display text-white uppercase">Match Score Entry</h3>
-                <p className="text-gold text-[10px] font-bold uppercase tracking-widest mt-1">Live updates for active sports</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {matches.filter(m => m.status !== 'completed').map(match => (
-                <div key={match.id} className="bg-bg2 border border-white/5 rounded-3xl p-8 space-y-6 group hover:border-gold/30 transition-all">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                      {categories.find(c => c.id === match.category_id)?.name} • Match #{match.match_no}
-                    </span>
-                    <span className={cn(
-                      "px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest",
-                      match.status === 'live' ? "bg-green-500/20 text-green-500 animate-pulse" : "bg-gold/20 text-gold"
-                    )}>{match.status}</span>
-                  </div>
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex-1 text-center space-y-3">
-                      <p className="text-xs font-bold uppercase tracking-widest text-white/60">{houses.find(h => h.id === match.team1_id)?.name || 'Team 1'}</p>
-                      <input
-                        type="number"
-                        className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-center text-xl font-display text-white"
-                        defaultValue={match.score1 || 0}
-                        onChange={(e) => handleAction(async () => {
-                          await supabase.from('matches').update({ score1: parseInt(e.target.value) }).eq('id', match.id);
-                        }, 'Update Score')}
-                      />
-                    </div>
-                    <div className="text-2xl font-display text-white/20">VS</div>
-                    <div className="flex-1 text-center space-y-3">
-                      <p className="text-xs font-bold uppercase tracking-widest text-white/60">{houses.find(h => h.id === match.team2_id)?.name || 'Team 2'}</p>
-                      <input
-                        type="number"
-                        className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-center text-xl font-display text-white"
-                        defaultValue={match.score2 || 0}
-                        onChange={(e) => handleAction(async () => {
-                          await supabase.from('matches').update({ score2: parseInt(e.target.value) }).eq('id', match.id);
-                        }, 'Update Score')}
-                      />
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => handleAction(async () => {
-                        await supabase.from('matches').update({ status: match.status === 'live' ? 'upcoming' : 'live' }).eq('id', match.id);
-                      }, 'Toggle Live')}
-                      className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl text-[8px] font-bold uppercase tracking-widest transition-all"
-                    >
-                      {match.status === 'live' ? 'Stop Live' : 'Go Live'}
-                    </button>
-                    <button
-                      onClick={() => handleAction(async () => {
-                        const winner_id = (match.score1 || 0) > (match.score2 || 0) ? match.team1_id : match.team2_id;
-                        await supabase.from('matches').update({ status: 'completed', winner_id }).eq('id', match.id);
-                      }, 'End Match')}
-                      className="flex-1 py-3 bg-gold/20 hover:bg-gold text-gold hover:text-white rounded-xl text-[8px] font-bold uppercase tracking-widest transition-all"
-                    >End Match</button>
-                  </div>
+          <div className="space-y-12">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {[
+                   { label: 'Events', count: categories.length, icon: Layers, color: 'bg-blue-50 text-blue-600' },
+                   { label: 'Active Matches', count: matches.filter(m => m.status === 'live').length, icon: Activity, color: 'bg-green-50 text-green-600' },
+                   { label: 'Houses', count: houses.length, icon: Users, color: 'bg-yellow-50 text-yellow-600' },
+                   { label: 'Bulletins', count: notices.length, icon: Bell, color: 'bg-purple-50 text-purple-600' },
+                ].map((stat, i) => (
+                   <div key={i} className="bg-white border border-slate-200 p-8 rounded-[2rem] flex items-center gap-6 shadow-sm">
+                      <div className={cn("w-16 h-16 rounded-2xl flex items-center justify-center", stat.color)}>
+                         <stat.icon size={28} />
+                      </div>
+                      <div>
+                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                         <p className="text-3xl font-display text-slate-900">{stat.count}</p>
+                      </div>
+                   </div>
+                ))}
+             </div>
+             <div className="bg-white border border-slate-200 rounded-[2.5rem] p-10 shadow-sm">
+                <h3 className="text-2xl font-display uppercase mb-8 text-slate-900">Recent Activity</h3>
+                <div className="space-y-4">
+                   {matches.slice(-5).reverse().map(m => (
+                      <div key={m.id} className="flex items-center justify-between p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                         <span className="font-bold text-sm text-slate-700 uppercase tracking-wider">
+                            {houses.find(h => h.id === m.team1_id)?.name} vs {houses.find(h => h.id === m.team2_id)?.name}
+                         </span>
+                         <div className="flex items-center gap-4">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{categories.find(c => c.id === m.category_id)?.name}</span>
+                            <span className="font-display text-blue-600 text-xl">{m.score1} - {m.score2}</span>
+                         </div>
+                      </div>
+                   ))}
                 </div>
-              ))}
-            </div>
+             </div>
           </div>
         );
 
-      case 'matches':
+      case 'events':
         return (
           <div className="space-y-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-2xl font-display text-white uppercase">Match Management</h3>
-                <p className="text-gold text-[10px] font-bold uppercase tracking-widest mt-1">Schedule and manage sports events</p>
-              </div>
-              <button
-                onClick={() => handleAction(async () => {
-                  if (categories.length === 0) throw new Error("No categories available. Add an event category first.");
-                  if (houses.length < 2) throw new Error("At least 2 houses are required to create a match.");
-
-                  const { error } = await supabase.from('matches').insert({
-                    category_id: categories[0].id,
-                    team1_id: houses[0].id,
-                    team2_id: houses[1].id,
-                    status: 'upcoming',
-                    match_no: matches.length + 1
-                  });
-                  if (error) throw error;
-                }, 'Add Match')}
-                className="px-6 py-3 bg-gold text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
-              >
-                <Plus size={16} /> New Match
-              </button>
+            <div className="flex justify-between items-center bg-white border border-slate-200 p-10 rounded-[2rem] shadow-sm">
+               <div>
+                  <h3 className="text-3xl font-display uppercase text-slate-900 leading-none">Event Categories</h3>
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-3">Sports and Cultural Competitions</p>
+               </div>
+               <button
+                  onClick={() => handleAction(async () => {
+                     const { error } = await supabase.from('categories').insert({ name: 'New Event', category_type: 'sports' });
+                     if (error) throw error;
+                  }, 'Event added successfully')}
+                  className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold text-[11px] uppercase tracking-widest flex items-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20"
+               >
+                  <PlusCircle size={20} /> Add New Event
+               </button>
             </div>
-            <div className="bg-bg2 border border-white/5 rounded-[2.5rem] overflow-hidden">
-               <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/5">
-                      <th className="p-6 text-[8px] font-bold text-white/40 uppercase tracking-widest">Category</th>
-                      <th className="p-6 text-[8px] font-bold text-white/40 uppercase tracking-widest">Teams</th>
-                      <th className="p-6 text-[8px] font-bold text-white/40 uppercase tracking-widest">Details</th>
-                      <th className="p-6 text-[8px] font-bold text-white/40 uppercase tracking-widest">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {matches.map(match => (
-                      <tr key={match.id} className="border-b border-white/5 hover:bg-white/5 transition-all">
-                        <td className="p-6">
-                           <select
-                             className="bg-transparent text-white border-none focus:ring-0 text-xs font-bold uppercase"
-                             defaultValue={match.category_id}
-                             onChange={(e) => handleAction(async () => {
-                               await supabase.from('matches').update({ category_id: e.target.value }).eq('id', match.id);
-                             }, 'Update Category')}
-                           >
-                             {categories.map(c => <option key={c.id} value={c.id} className="bg-bg2">{c.name}</option>)}
-                           </select>
-                        </td>
-                        <td className="p-6">
-                           <div className="flex flex-col gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               {categories.map(cat => (
+                  <div key={cat.id} className="bg-white border border-slate-200 rounded-[2.5rem] p-10 space-y-8 group hover:border-blue-200 transition-all shadow-sm">
+                     <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-5">
+                           <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 border border-blue-100">
+                              <Layers size={24} />
+                           </div>
+                           <div>
+                              <h4 className="text-2xl font-display text-slate-900 uppercase leading-none">{cat.name}</h4>
+                              <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest mt-2 block">{cat.category_type}</span>
+                           </div>
+                        </div>
+                        <button
+                           onClick={() => handleAction(async () => {
+                              if (!confirm('Permanently delete this event category?')) return;
+                              const { error } = await supabase.from('categories').delete().eq('id', cat.id);
+                              if (error) throw error;
+                           }, 'Event deleted')}
+                           className="p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
+                        >
+                           <Trash2 size={22} />
+                        </button>
+                     </div>
+                     <div className="grid grid-cols-1 gap-6 pt-8 border-t border-slate-100">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Event Title</label>
+                           <input
+                              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 focus:border-blue-500 outline-none transition-all"
+                              defaultValue={cat.name}
+                              onBlur={(e) => handleAction(async () => {
+                                 await supabase.from('categories').update({ name: e.target.value }).eq('id', cat.id);
+                              }, 'Title updated')}
+                           />
+                        </div>
+                        <div className="grid grid-cols-2 gap-6">
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Type</label>
                               <select
-                                className="bg-transparent text-white/60 border-none focus:ring-0 text-[10px] font-bold uppercase"
-                                defaultValue={match.team1_id}
-                                onChange={(e) => handleAction(async () => {
-                                  await supabase.from('matches').update({ team1_id: e.target.value }).eq('id', match.id);
-                                }, 'Update Team 1')}
+                                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 focus:border-blue-500 outline-none"
+                                 defaultValue={cat.category_type}
+                                 onChange={(e) => handleAction(async () => {
+                                    await supabase.from('categories').update({ category_type: e.target.value }).eq('id', cat.id);
+                                 }, 'Category type updated')}
                               >
-                                {houses.map(h => <option key={h.id} value={h.id} className="bg-bg2">{h.name}</option>)}
-                              </select>
-                              <select
-                                className="bg-transparent text-white/60 border-none focus:ring-0 text-[10px] font-bold uppercase"
-                                defaultValue={match.team2_id}
-                                onChange={(e) => handleAction(async () => {
-                                  await supabase.from('matches').update({ team2_id: e.target.value }).eq('id', match.id);
-                                }, 'Update Team 2')}
-                              >
-                                {houses.map(h => <option key={h.id} value={h.id} className="bg-bg2">{h.name}</option>)}
+                                 <option value="sports">Sports</option>
+                                 <option value="cultural">Cultural</option>
                               </select>
                            </div>
-                        </td>
-                        <td className="p-6">
-                           <input
-                             className="bg-transparent text-white border-none focus:ring-0 text-xs w-full"
-                             defaultValue={match.venue || ''}
-                             placeholder="Set Venue"
-                             onBlur={(e) => handleAction(async () => {
-                               await supabase.from('matches').update({ venue: e.target.value }).eq('id', match.id);
-                             }, 'Update Venue')}
-                           />
-                        </td>
-                        <td className="p-6">
-                           <button
-                             onClick={() => handleAction(async () => {
-                               await supabase.from('matches').delete().eq('id', match.id);
-                             }, 'Delete Match')}
-                             className="p-2 text-white/20 hover:text-red-500 transition-all"
-                           >
-                             <Trash2 size={16} />
-                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {matches.length === 0 && (
-                      <tr>
-                        <td colSpan={4} className="p-12 text-center text-white/10 uppercase text-[10px] font-bold tracking-widest">No matches found</td>
-                      </tr>
-                    )}
-                  </tbody>
-               </table>
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Team Format</label>
+                              <input
+                                 className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm text-slate-900 focus:border-blue-500 outline-none"
+                                 defaultValue={cat.team_size || ''}
+                                 placeholder="e.g. Solo / 7-a-side"
+                                 onBlur={(e) => handleAction(async () => {
+                                    await supabase.from('categories').update({ team_size: e.target.value }).eq('id', cat.id);
+                                 }, 'Format updated')}
+                              />
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               ))}
             </div>
           </div>
         );
 
-      case 'schedule':
+      case 'scores':
         return (
-          <div className="space-y-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-2xl font-display text-white uppercase">Daily Schedule</h3>
-                <p className="text-gold text-[10px] font-bold uppercase tracking-widest mt-1">Timeline of events and sessions</p>
-              </div>
-              <button
-                onClick={() => handleAction(async () => {
-                  await supabase.from('schedule').insert({ title: 'New Event', day_label: 'Day 1', time_start: '09:00:00' });
-                }, 'Add Event')}
-                className="px-6 py-3 bg-gold text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
-              >
-                <Plus size={16} /> New Event
-              </button>
+           <div className="space-y-8">
+             <div className="flex justify-between items-center bg-white border border-slate-200 p-10 rounded-[2rem] shadow-sm">
+               <div>
+                  <h3 className="text-3xl font-display uppercase text-slate-900 leading-none">Sports Scores</h3>
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-3">Live Result Management</p>
+               </div>
+               <button
+                  onClick={() => handleAction(async () => {
+                     if (houses.length < 2 || categories.length === 0) throw new Error('Add houses and categories first');
+                     const { error } = await supabase.from('matches').insert({
+                        team1_id: houses[0].id,
+                        team2_id: houses[1].id,
+                        category_id: categories[0].id,
+                        status: 'upcoming',
+                        score1: 0,
+                        score2: 0
+                     });
+                     if (error) throw error;
+                  }, 'Match scheduled')}
+                  className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold text-[11px] uppercase tracking-widest flex items-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20"
+               >
+                  <PlusCircle size={20} /> Create Match
+               </button>
             </div>
-            <div className="grid gap-4">
-               {schedule.map(item => (
-                 <div key={item.id} className="bg-bg2 border border-white/5 rounded-2xl p-6 flex items-center justify-between gap-6 group hover:border-gold/30 transition-all">
-                    <div className="flex items-center gap-6 flex-1">
-                       <div className="text-center min-w-[80px]">
-                          <p className="text-[8px] font-bold text-gold uppercase tracking-widest mb-1">{item.day_label}</p>
-                          <input
-                            type="time"
-                            className="bg-transparent text-white border-none focus:ring-0 text-xs text-center"
-                            defaultValue={item.time_start}
-                            onChange={(e) => handleAction(async () => {
-                              await supabase.from('schedule').update({ time_start: e.target.value }).eq('id', item.id);
-                            }, 'Update Time')}
-                          />
-                       </div>
-                       <div className="flex-1 space-y-1">
-                          <input
-                            className="bg-transparent text-white border-none focus:ring-0 text-lg font-bold w-full"
-                            defaultValue={item.title}
-                            onBlur={(e) => handleAction(async () => {
-                              await supabase.from('schedule').update({ title: e.target.value }).eq('id', item.id);
-                            }, 'Update Title')}
-                          />
-                          <input
-                            className="bg-transparent text-white/40 border-none focus:ring-0 text-[10px] font-bold uppercase tracking-widest w-full"
-                            defaultValue={item.subtitle || ''}
-                            placeholder="Add Subtitle"
-                            onBlur={(e) => handleAction(async () => {
-                              await supabase.from('schedule').update({ subtitle: e.target.value }).eq('id', item.id);
-                            }, 'Update Subtitle')}
-                          />
-                       </div>
-                    </div>
-                    <button onClick={() => handleAction(async () => {
-                      await supabase.from('schedule').delete().eq('id', item.id);
-                    }, 'Delete Event')} className="p-2 text-white/10 hover:text-red-500">
-                       <Trash2 size={16} />
-                    </button>
-                 </div>
+            <div className="space-y-8">
+               {matches.map(m => (
+                  <div key={m.id} className="bg-white border border-slate-200 rounded-[3rem] p-12 grid lg:grid-cols-4 gap-12 relative shadow-sm hover:border-blue-100 transition-all">
+                     <button
+                        onClick={() => handleAction(async () => {
+                           if (!confirm('Delete this score record?')) return;
+                           const { error } = await supabase.from('matches').delete().eq('id', m.id);
+                           if (error) throw error;
+                        }, 'Score record removed')}
+                        className="absolute top-8 right-8 p-3 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
+                     >
+                        <Trash2 size={24} />
+                     </button>
+                     <div className="space-y-8">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Event</label>
+                           <select
+                              className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold text-slate-900 focus:border-blue-500 outline-none"
+                              defaultValue={m.category_id}
+                              onChange={(e) => handleAction(async () => {
+                                 await supabase.from('matches').update({ category_id: parseInt(e.target.value) }).eq('id', m.id);
+                              }, 'Match event updated')}
+                           >
+                              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                           </select>
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Live Status</label>
+                           <select
+                              className={cn(
+                                 "w-full bg-slate-50 border border-slate-200 rounded-2xl px-6 py-4 text-sm font-bold uppercase outline-none transition-colors",
+                                 m.status === 'live' ? "text-green-600 bg-green-50 border-green-200" : "text-slate-900"
+                              )}
+                              defaultValue={m.status}
+                              onChange={(e) => handleAction(async () => {
+                                 await supabase.from('matches').update({ status: e.target.value }).eq('id', m.id);
+                              }, 'Status updated')}
+                           >
+                              <option value="upcoming">Upcoming</option>
+                              <option value="live">Live Now</option>
+                              <option value="completed">Final Result</option>
+                           </select>
+                        </div>
+                     </div>
+                     <div className="lg:col-span-3 grid grid-cols-3 gap-12 items-center bg-slate-50 p-12 rounded-[2.5rem] border border-slate-100">
+                        <div className="text-center space-y-8">
+                           <select
+                              className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs font-bold text-slate-900"
+                              defaultValue={m.team1_id}
+                              onChange={(e) => handleAction(async () => {
+                                 await supabase.from('matches').update({ team1_id: parseInt(e.target.value) }).eq('id', m.id);
+                              }, 'Team updated')}
+                           >
+                              {houses.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                           </select>
+                           <div className="space-y-3">
+                              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Score</label>
+                              <input
+                                 type="number"
+                                 className="w-24 bg-white border border-slate-200 rounded-[1.5rem] px-4 py-6 text-center text-5xl font-display text-blue-600 shadow-sm focus:border-blue-500 outline-none transition-all"
+                                 defaultValue={m.score1}
+                                 onBlur={(e) => handleAction(async () => {
+                                    await supabase.from('matches').update({ score1: parseInt(e.target.value) }).eq('id', m.id);
+                                 }, 'Score updated')}
+                              />
+                           </div>
+                        </div>
+                        <div className="text-center font-display text-3xl text-slate-200 italic">vs</div>
+                        <div className="text-center space-y-8">
+                           <select
+                              className="w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs font-bold text-slate-900"
+                              defaultValue={m.team2_id}
+                              onChange={(e) => handleAction(async () => {
+                                 await supabase.from('matches').update({ team2_id: parseInt(e.target.value) }).eq('id', m.id);
+                              }, 'Team updated')}
+                           >
+                              {houses.map(h => <option key={h.id} value={h.id}>{h.name}</option>)}
+                           </select>
+                           <div className="space-y-3">
+                              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Score</label>
+                              <input
+                                 type="number"
+                                 className="w-24 bg-white border border-slate-200 rounded-[1.5rem] px-4 py-6 text-center text-5xl font-display text-blue-600 shadow-sm focus:border-blue-500 outline-none transition-all"
+                                 defaultValue={m.score2}
+                                 onBlur={(e) => handleAction(async () => {
+                                    await supabase.from('matches').update({ score2: parseInt(e.target.value) }).eq('id', m.id);
+                                 }, 'Score updated')}
+                              />
+                           </div>
+                        </div>
+                     </div>
+                  </div>
                ))}
-               {schedule.length === 0 && <p className="text-center text-white/10 py-12 uppercase text-[10px] font-bold tracking-widest">Schedule is empty</p>}
             </div>
-          </div>
+           </div>
         );
 
       case 'notices':
         return (
-          <div className="space-y-8">
-             <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-2xl font-display text-white uppercase">Official Notices</h3>
-                <p className="text-gold text-[10px] font-bold uppercase tracking-widest mt-1">Broadcast announcements to participants</p>
-              </div>
-              <button
-                onClick={() => handleAction(async () => {
-                  await supabase.from('notices').insert({ title: 'New Announcement', content: 'Enter details here...', priority: 'medium' });
-                }, 'Add Notice')}
-                className="px-6 py-3 bg-gold text-white rounded-2xl font-bold text-[10px] uppercase tracking-widest flex items-center gap-2"
-              >
-                <Plus size={16} /> New Notice
-              </button>
+           <div className="space-y-8">
+             <div className="flex justify-between items-center bg-white border border-slate-200 p-10 rounded-[2rem] shadow-sm">
+               <div>
+                  <h3 className="text-3xl font-display uppercase text-slate-900 leading-none">Bulletin Board</h3>
+                  <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-3">Post Important Announcements</p>
+               </div>
+               <button
+                  onClick={() => handleAction(async () => {
+                     const { error } = await supabase.from('notices').insert({ title: 'New Notice', content: 'Details...', priority: 'normal' });
+                     if (error) throw error;
+                  }, 'Notice published')}
+                  className="px-8 py-4 bg-blue-600 text-white rounded-2xl font-bold text-[11px] uppercase tracking-widest flex items-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-500/20"
+               >
+                  <PlusCircle size={20} /> New Bulletin
+               </button>
             </div>
-            <div className="space-y-4">
-               {notices.map(notice => (
-                 <div key={notice.id} className="bg-bg2 border border-white/5 rounded-[2rem] p-8 space-y-6">
-                    <div className="flex justify-between items-start">
-                       <div className="flex-1">
-                          <input
-                             className="bg-transparent text-white border-none focus:ring-0 text-xl font-bold w-full mb-2"
-                             defaultValue={notice.title}
-                             onBlur={(e) => handleAction(async () => {
-                               await supabase.from('notices').update({ title: e.target.value }).eq('id', notice.id);
-                             }, 'Update Title')}
-                          />
-                          <textarea
-                             className="bg-transparent text-white/60 border-none focus:ring-0 text-xs w-full min-h-[80px]"
-                             defaultValue={notice.content}
-                             onBlur={(e) => handleAction(async () => {
-                               await supabase.from('notices').update({ content: e.target.value }).eq('id', notice.id);
-                             }, 'Update Content')}
-                          />
-                       </div>
-                       <div className="flex items-center gap-4">
-                          <select
-                             className={cn(
-                               "px-3 py-1 rounded-full text-[8px] font-bold uppercase tracking-widest bg-white/5 border-none",
-                               notice.priority === 'high' ? "text-red-500" : "text-gold"
-                             )}
-                             defaultValue={notice.priority}
-                             onChange={(e) => handleAction(async () => {
-                               await supabase.from('notices').update({ priority: e.target.value }).eq('id', notice.id);
-                             }, 'Update Priority')}
-                          >
-                             <option value="low" className="bg-bg2">Low</option>
-                             <option value="medium" className="bg-bg2">Medium</option>
-                             <option value="high" className="bg-bg2">High</option>
-                          </select>
-                          <button onClick={() => handleAction(async () => {
-                            await supabase.from('notices').delete().eq('id', notice.id);
-                          }, 'Delete Notice')} className="p-2 text-white/10 hover:text-red-500">
-                             <Trash2 size={16} />
-                          </button>
-                       </div>
-                    </div>
-                 </div>
-               ))}
-               {notices.length === 0 && <p className="text-center text-white/10 py-12 uppercase text-[10px] font-bold tracking-widest">No notices posted</p>}
-            </div>
-          </div>
-        );
-
-      case 'leaderboards':
-        return (
-          <div className="space-y-8">
-            <h3 className="text-2xl font-display text-white uppercase">Overall Standings</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               {houses.map(house => (
-                 <div key={house.id} className="bg-bg2 border border-white/5 rounded-3xl p-8 space-y-6">
-                    <div className="flex justify-between items-center">
-                       <h4 className="text-xl font-display uppercase" style={{ color: house.color }}>{house.name}</h4>
-                       <span className="text-2xl font-display text-white">{house.points}</span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="space-y-2">
-                          <label className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Merit Pts</label>
-                          <input
-                            type="number"
-                            className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-xs text-white"
-                            defaultValue={house.sports_points}
-                            onBlur={(e) => handleAction(async () => {
-                              const val = parseInt(e.target.value);
-                              await supabase.from('houses').update({ sports_points: val, points: val + house.cultural_points }).eq('id', house.id);
-                            }, 'Update Sports Points')}
-                          />
-                       </div>
-                       <div className="space-y-2">
-                          <label className="text-[8px] font-bold text-white/20 uppercase tracking-widest">Session Pts</label>
-                          <input
-                            type="number"
-                            className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-xs text-white"
-                            defaultValue={house.cultural_points}
-                            onBlur={(e) => handleAction(async () => {
-                              const val = parseInt(e.target.value);
-                              await supabase.from('houses').update({ cultural_points: val, points: house.sports_points + val }).eq('id', house.id);
-                            }, 'Update Cultural Points')}
-                          />
-                       </div>
-                    </div>
-                 </div>
-               ))}
-            </div>
-          </div>
-        );
-
-      case 'settings':
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-display text-gold uppercase tracking-wider">Site Settings</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-bg2 border border-white/5 rounded-3xl p-10 space-y-6">
-                {['festival_name', 'festival_subtitle', 'festival_dates', 'school_logo_url', 'announcement_text'].map(key => (
-                  <div key={key} className="space-y-1">
-                    <label className="text-[8px] font-bold text-white/40 uppercase tracking-widest">{key.replace(/_/g, ' ')}</label>
-                    {key === 'announcement_text' ? (
-                      <textarea
-                        className="w-full bg-white/5 border border-white/5 rounded-xl px-6 py-4 text-xs text-white min-h-[100px]"
-                        defaultValue={settings[key] || ''}
-                        onBlur={(e) => handleAction(async () => {
-                          await supabase.from('settings').upsert({ key_name: key, val: e.target.value }, { onConflict: 'key_name' });
-                        }, 'Update Setting')}
-                      />
-                    ) : (
-                      <input
-                        className="w-full bg-white/5 border border-white/5 rounded-xl px-6 py-4 text-xs text-white"
-                        defaultValue={settings[key] || ''}
-                        onBlur={(e) => handleAction(async () => {
-                          await supabase.from('settings').upsert({ key_name: key, val: e.target.value }, { onConflict: 'key_name' });
-                        }, 'Update Setting')}
-                      />
-                    )}
+            <div className="space-y-10">
+               {notices.map(n => (
+                  <div key={n.id} className="bg-white border border-slate-200 rounded-[3rem] p-12 shadow-sm group hover:border-blue-100 transition-all">
+                     <div className="flex justify-between items-start gap-12">
+                        <div className="flex-1 space-y-8">
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Notice Title</label>
+                              <input
+                                 className="w-full bg-transparent border-b border-slate-200 focus:border-blue-500 text-4xl font-display uppercase outline-none py-4 transition-all text-slate-900"
+                                 defaultValue={n.title}
+                                 onBlur={(e) => handleAction(async () => {
+                                    await supabase.from('notices').update({ title: e.target.value }).eq('id', n.id);
+                                 }, 'Notice title updated')}
+                              />
+                           </div>
+                           <div className="space-y-2">
+                              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Body Text</label>
+                              <textarea
+                                 className="w-full bg-slate-50 border border-slate-200 rounded-[2rem] px-8 py-6 text-lg text-slate-700 min-h-[180px] outline-none focus:border-blue-500 transition-all"
+                                 defaultValue={n.content}
+                                 onBlur={(e) => handleAction(async () => {
+                                    await supabase.from('notices').update({ content: e.target.value }).eq('id', n.id);
+                                 }, 'Notice content updated')}
+                              />
+                           </div>
+                        </div>
+                        <div className="space-y-6 shrink-0">
+                           <button
+                              onClick={() => handleAction(async () => {
+                                 if (!confirm('Remove this bulletin?')) return;
+                                 const { error } = await supabase.from('notices').delete().eq('id', n.id);
+                                 if (error) throw error;
+                              }, 'Notice removed')}
+                              className="p-4 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-[1.5rem] transition-all ml-auto block"
+                           >
+                              <Trash2 size={28} />
+                           </button>
+                           <div className="space-y-2">
+                              <label className="text-[9px] font-bold text-slate-400 uppercase tracking-widest text-right block">Alert Level</label>
+                              <select
+                                 className={cn(
+                                    "bg-slate-50 border border-slate-200 rounded-xl px-6 py-4 text-[10px] font-bold uppercase outline-none",
+                                    n.priority === 'high' ? "text-red-600 bg-red-50 border-red-100" : "text-slate-900"
+                                 )}
+                                 defaultValue={n.priority}
+                                 onChange={(e) => handleAction(async () => {
+                                    await supabase.from('notices').update({ priority: e.target.value }).eq('id', n.id);
+                                 }, 'Notice priority updated')}
+                              >
+                                 <option value="normal">Standard</option>
+                                 <option value="high">Urgent</option>
+                              </select>
+                           </div>
+                        </div>
+                     </div>
                   </div>
-                ))}
-              </div>
+               ))}
+            </div>
+           </div>
+        );
+
+      case 'config':
+        return (
+          <div className="space-y-12">
+            <div>
+               <h3 className="text-4xl font-display text-slate-900 uppercase tracking-tight">Portal Config</h3>
+               <p className="text-slate-500 text-[10px] font-bold uppercase tracking-[0.4em] mt-3">Global Identity and Parameters</p>
+            </div>
+            <div className="bg-white border border-slate-200 rounded-[3rem] p-12 space-y-10 max-w-4xl shadow-sm">
+               {['festival_name', 'festival_subtitle', 'school_logo_url', 'announcement_text'].map(key => (
+                  <div key={key} className="space-y-3">
+                     <label className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">{key.replace(/_/g, ' ')}</label>
+                     <input
+                        className="w-full bg-slate-50 border border-slate-200 rounded-[1.5rem] px-8 py-5 text-lg text-slate-900 focus:border-blue-500 outline-none transition-all shadow-inner"
+                        defaultValue={settings[key] || ''}
+                        onBlur={(e) => handleAction(async () => {
+                           await supabase.from('settings').upsert({ key_name: key, val: e.target.value }, { onConflict: 'key_name' });
+                        }, 'Global configuration updated')}
+                     />
+                  </div>
+               ))}
             </div>
           </div>
         );
 
       default:
-        return null;
+        return (
+           <div className="flex flex-col items-center justify-center py-60 bg-white border border-slate-200 border-dashed rounded-[3rem]">
+              <ClipboardList size={100} className="mb-8 text-slate-100" />
+              <p className="font-display uppercase text-3xl tracking-[0.2em] text-slate-200 text-center">
+                 Advanced Controls<br/>
+                 <span className="text-xs font-bold uppercase tracking-[0.5em] mt-6 block text-slate-300">Under Development</span>
+              </p>
+           </div>
+        );
     }
   };
 
   return (
-    <div className="min-h-screen bg-bg text-white flex overflow-hidden font-ui">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex overflow-hidden font-ui">
+      {/* Fixed Sidebar */}
       <aside className={cn(
-        "fixed inset-y-0 left-0 w-72 bg-bg2 border-r border-white/5 flex flex-col z-50 transition-transform lg:translate-x-0",
-        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        "fixed inset-y-0 left-0 w-80 bg-white border-r border-slate-200 flex flex-col z-50 transition-all duration-500 ease-in-out",
+        isSidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full lg:translate-x-0 lg:w-28"
       )}>
-        <div className="p-8 border-b border-white/5">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-10 h-10 bg-gold/20 rounded-xl flex items-center justify-center text-gold border border-gold/30 shadow-lg shadow-gold/10">
-              <Shield size={20} />
+        <div className={cn("p-12 border-b border-slate-100 flex items-center justify-center transition-all", !isSidebarOpen && "px-6")}>
+          <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-blue-600 text-white rounded-[1.5rem] flex items-center justify-center shrink-0 shadow-2xl shadow-blue-500/30">
+              <Shield size={32} />
             </div>
-            <div>
-              <h1 className="text-xl font-display uppercase tracking-tight text-white leading-none">Harmonia MUN</h1>
-              <p className="text-gold text-[8px] font-bold uppercase tracking-[0.4em] mt-1">Admin</p>
-            </div>
+            {isSidebarOpen && (
+               <div className="animate-in fade-in slide-in-from-left-4 duration-700">
+                  <h1 className="text-4xl font-display uppercase tracking-tight text-blue-600 leading-none">UCSF</h1>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-[0.4em] mt-2">Admin Panel</p>
+               </div>
+            )}
           </div>
         </div>
-        <nav className="flex-1 p-6 space-y-2 overflow-y-auto custom-scrollbar">
+
+        <nav className="flex-1 p-10 space-y-6 overflow-y-auto custom-scrollbar">
           {[
-            { id: 'results', label: 'Score Entry', icon: Trophy },
-            { id: 'matches', label: 'Match MGMT', icon: Activity },
-            { id: 'schedule', label: 'Schedule', icon: Calendar },
-            { id: 'categories', label: 'Events', icon: Layers },
-            { id: 'notices', label: 'Notices', icon: Bell },
-            { id: 'leaderboards', label: 'Standings', icon: Trophy },
-            { id: 'settings', label: 'Settings', icon: SettingsIcon },
+            { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+            { id: 'events', label: 'Events', icon: Layers },
+            { id: 'scores', label: 'Sports Scores', icon: Activity },
+            { id: 'results', label: 'Standings', icon: Trophy },
+            { id: 'schedule', label: 'Timeline', icon: Calendar },
+            { id: 'notices', label: 'Bulletins', icon: Bell },
+            { id: 'gallery', label: 'Media', icon: ImageIcon },
+            { id: 'houses', label: 'Houses', icon: Users },
+            { id: 'config', label: 'Portal Config', icon: Settings },
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => { setActiveTab(item.id as AdminTab); setIsSidebarOpen(false); }}
+              onClick={() => setActiveTab(item.id as AdminTab)}
               className={cn(
-                "w-full flex items-center gap-4 px-5 py-4 font-bold text-[10px] uppercase tracking-widest transition-all rounded-xl border border-transparent",
-                activeTab === item.id ? "bg-gold text-white shadow-lg shadow-gold/20" : "text-white/40 hover:text-white hover:bg-white/5"
+                "w-full flex items-center gap-6 px-6 py-5 font-bold text-[11px] uppercase tracking-[0.2em] transition-all rounded-[1.5rem] group relative",
+                activeTab === item.id ? "bg-blue-600 text-white shadow-2xl shadow-blue-500/20" : "text-slate-400 hover:text-blue-600 hover:bg-blue-50"
               )}
             >
-              <item.icon size={18} /> {item.label}
+              <item.icon size={24} className={cn("shrink-0", activeTab === item.id ? "text-white" : "text-slate-300 group-hover:text-blue-600")} />
+              {isSidebarOpen && <span className="animate-in fade-in duration-500">{item.label}</span>}
+              {!isSidebarOpen && activeTab === item.id && <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1.5 h-8 bg-blue-600 rounded-l-full" />}
             </button>
           ))}
         </nav>
-        <div className="p-6 border-t border-white/5 space-y-4">
-          <button onClick={handleLogout} className="w-full py-4 bg-white/5 hover:bg-red-500/10 text-white/40 hover:text-red-500 rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-            <LogOut size={16} /> Logout
+
+        <div className="p-10 border-t border-slate-100 space-y-4">
+          <button onClick={handleLogout} className="w-full py-5 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-[1.5rem] font-bold text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-4 shadow-sm hover:shadow-xl hover:shadow-red-500/20">
+            <LogOut size={20} /> {isSidebarOpen && 'Logout'}
           </button>
-          {onBack && (
-            <button onClick={onBack} className="w-full py-4 bg-white/5 hover:bg-white/10 text-white/40 hover:text-white rounded-xl font-bold text-[10px] uppercase tracking-widest transition-all flex items-center justify-center gap-2">
-              <ExternalLink size={16} /> Back to Site
-            </button>
-          )}
+          <button onClick={onBack} className="w-full py-5 bg-slate-50 text-slate-400 hover:text-slate-900 rounded-[1.5rem] font-bold text-[11px] uppercase tracking-widest transition-all flex items-center justify-center gap-4 border border-slate-100">
+            <ExternalLink size={20} /> {isSidebarOpen && 'Exit Admin'}
+          </button>
         </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-20 bg-bg2/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-8 z-40">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsSidebarOpen(true)} className="lg:hidden p-2 text-white/40 hover:text-white">
-              <Shield size={20} />
+      {/* Main Panel Content */}
+      <div className={cn(
+         "flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out",
+         isSidebarOpen ? "ml-80" : "lg:ml-28"
+      )}>
+        <header className="h-32 bg-white/95 backdrop-blur-xl border-b border-slate-100 flex items-center justify-between px-16 z-40">
+          <div className="flex items-center gap-10">
+            <button
+               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+               className="p-4 bg-slate-50 text-slate-400 hover:text-blue-600 rounded-2xl transition-all shadow-sm hover:shadow-md"
+            >
+              <Menu size={24} />
             </button>
-            <h2 className="text-2xl font-display uppercase tracking-tight text-white">{activeTab}</h2>
+            <div className="space-y-1">
+               <h2 className="text-5xl font-display uppercase tracking-tight text-slate-900 leading-none">{activeTab}</h2>
+               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.4em] ml-1">Portal Root</p>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            {loading && <RefreshCw className="animate-spin text-gold" size={18} />}
-            <button onClick={refresh} className="p-2 text-white/40 hover:text-white transition-all">
-              <RefreshCw size={20} />
+
+          <div className="flex items-center gap-10">
+            <div className="hidden xl:flex flex-col items-end border-r border-slate-100 pr-10">
+               <p className="text-[12px] font-bold text-slate-900 uppercase tracking-widest">Root Admin</p>
+               <p className="text-[9px] text-slate-400 uppercase tracking-widest font-medium">UCSF 2026</p>
+            </div>
+            <button onClick={refresh} className="w-16 h-16 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-[1.5rem] transition-all flex items-center justify-center shadow-sm hover:shadow-2xl hover:shadow-blue-500/20">
+              <RefreshCw size={28} className={cn(loading && "animate-spin")} />
             </button>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          <div className="max-w-6xl mx-auto space-y-8">
+        <main className="flex-1 overflow-y-auto p-16 custom-scrollbar bg-slate-50/50">
+          <div className="max-w-7xl mx-auto space-y-12 pb-32">
             {error && (
-              <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-start gap-4 text-red-500 shadow-xl shadow-red-500/5">
-                <AlertCircle size={20} className="shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                   <p className="text-[10px] font-bold uppercase tracking-widest">System Error</p>
-                   <p className="text-xs opacity-80">{error}</p>
+              <div className="p-10 bg-red-50 border border-red-100 rounded-[3rem] flex items-start gap-8 text-red-600 shadow-2xl shadow-red-500/10 animate-in slide-in-from-top-12 duration-500">
+                <AlertCircle size={40} className="shrink-0 mt-1" />
+                <div className="space-y-2 flex-1">
+                   <p className="text-[14px] font-bold uppercase tracking-[0.3em]">Critical Alert</p>
+                   <p className="text-xl font-medium leading-relaxed">{error}</p>
                 </div>
-                <button onClick={() => setError(null)} className="ml-auto p-1 hover:bg-red-500/10 rounded-lg">
-                   <X size={16} />
+                <button onClick={() => setError(null)} className="p-2 hover:bg-red-100 rounded-xl transition-all">
+                   <X size={28} />
                 </button>
               </div>
             )}
             {success && (
-              <div className="p-6 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-start gap-4 text-green-500 shadow-xl shadow-green-500/5 animate-in fade-in slide-in-from-top-2">
-                <CheckCircle size={20} className="shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                   <p className="text-[10px] font-bold uppercase tracking-widest">Operation Success</p>
-                   <p className="text-xs opacity-80">{success}</p>
+              <div className="p-10 bg-green-50 border border-green-100 rounded-[3rem] flex items-start gap-8 text-green-600 shadow-2xl shadow-green-500/10 animate-in slide-in-from-top-12 duration-500">
+                <CheckCircle size={40} className="shrink-0 mt-1" />
+                <div className="space-y-2 flex-1">
+                   <p className="text-[14px] font-bold uppercase tracking-[0.3em]">Operation Confirmed</p>
+                   <p className="text-xl font-medium leading-relaxed">{success}</p>
                 </div>
-                <button onClick={() => setSuccess(null)} className="ml-auto p-1 hover:bg-green-500/10 rounded-lg">
-                   <X size={16} />
+                <button onClick={() => setSuccess(null)} className="p-2 hover:bg-green-100 rounded-xl transition-all">
+                   <X size={28} />
                 </button>
               </div>
             )}

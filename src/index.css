@@ -4,34 +4,31 @@
   --font-display: "Clash Display", "Space Grotesk", system-ui;
   --font-ui: "Inter", "Geist", system-ui;
   
-  --color-bg: #0a1628;
-  --color-bg2: #11274a;
-  --color-border: rgba(211, 171, 109, 0.1);
-  --color-gold: #d3ab6d;
-  --color-gold-muted: rgba(211, 171, 109, 0.2);
-  --color-navy: #11274a;
-  --color-muted: rgba(255, 255, 255, 0.4);
-  --color-text: #ffffff;
+  --color-bg: #ffffff;
+  --color-bg-alt: #f8fafc;
+  --color-border: #e2e8f0;
+  --color-primary: #2563eb;
+  --color-primary-muted: rgba(37, 99, 235, 0.1);
+  --color-accent: #facc15;
+  --color-accent-muted: rgba(250, 204, 21, 0.2);
+  --color-text: #1e293b;
+  --color-text-muted: #64748b;
 }
 
 @layer base {
   body {
     @apply bg-bg text-text antialiased;
     font-family: var(--font-ui);
-    background-image:
-      linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-    background-size: 80px 80px;
   }
 }
 
 @layer components {
-  .card-glass {
-    @apply bg-bg2/50 backdrop-blur-2xl border border-border rounded-[2.5rem] transition-all duration-300;
+  .card-clean {
+    @apply bg-white border border-border rounded-3xl transition-all duration-300;
   }
   
   .sec-label {
-    @apply text-[10px] font-bold text-gold uppercase tracking-[0.4em] mb-4;
+    @apply text-[10px] font-bold text-primary uppercase tracking-[0.4em] mb-4;
   }
 
   .custom-scrollbar::-webkit-scrollbar {
@@ -43,7 +40,7 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full hover:bg-white/20;
+    @apply bg-slate-200 rounded-full hover:bg-slate-300;
   }
 }
 
