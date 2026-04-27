@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Shield } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 interface LayoutProps {
@@ -13,102 +13,136 @@ interface LayoutProps {
   footerText?: string;
   schoolLogoUrl?: string;
   profile?: any;
+  winner?: any;
 }
 
-export default function Layout({ children, activeTab, setActiveTab, title, subtitle, announcement, footerText, schoolLogoUrl, profile }: LayoutProps) {
+export default function Layout({ children, activeTab, setActiveTab, title, subtitle, announcement, footerText, schoolLogoUrl, profile, winner }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const navItems = [
     { id: 'home', label: 'Home' },
-    { id: 'about', label: 'About' },
-    { id: 'events', label: 'Events' },
-    { id: 'schedule', label: 'Schedule' },
-    { id: 'leaderboards', label: 'Rankings' },
-    { id: 'notices', label: 'Notices' },
-    { id: 'gallery', label: 'Gallery' },
-    { id: 'sponsors', label: 'Sponsors' },
+    { id: 'events', label: 'Mainstage' },
+    { id: 'schedule', label: 'Agenda' },
+    { id: 'leaderboards', label: 'Standings' },
+    { id: 'notices', label: 'Bulletin' },
+    { id: 'gallery', label: 'Chronicle' },
   ];
 
   return (
     <div className="min-h-screen flex flex-col bg-bg text-text selection:bg-accent/30 font-sans relative">
-      <header className="fixed top-0 left-0 right-0 z-[110]">
+      <header
+        className={cn(
+          "fixed top-0 left-0 right-0 z-[110] transition-all duration-500",
+          scrolled ? "pt-0" : "pt-4"
+        )}
+      >
         {announcement && (
-          <div className="bg-accent text-bg py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-widest relative">
-            {announcement}
+          <div className="bg-accent text-bg py-2 px-6 text-center font-ui text-[10px] font-bold uppercase tracking-[0.4em] relative overflow-hidden">
+            <div className="relative z-10">{announcement}</div>
+            <div className="absolute inset-0 bg-white/10 animate-pulse" />
           </div>
         )}
-        {/* Navigation */}
-        <nav className="flex items-center justify-between px-6 md:px-12 h-[80px] bg-bg/80 backdrop-blur-xl border-b border-border">
+
+        <nav
+          className={cn(
+            "mx-auto transition-all duration-500 flex items-center justify-between px-10 md:px-20 h-[90px]",
+            scrolled
+              ? "max-w-full bg-bg-dark/80 backdrop-blur-2xl border-b border-white/5"
+              : "max-w-[95%] bg-white/[0.02] backdrop-blur-lg border border-white/5 rounded-2xl mt-4"
+          )}
+        >
           <button 
             onClick={() => setActiveTab('home')}
-            className="flex items-center gap-3 group"
+            className="flex items-center gap-5 group"
           >
-            <img
-              src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
-              alt="School Logo"
-              className="h-10 object-contain group-hover:scale-105 transition-transform"
-              referrerPolicy="no-referrer"
-            />
-            <div className="h-6 w-px bg-border mx-2" />
+            <div className="relative">
+               {winner ? (
+                  <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="relative">
+                     <Shield size={32} style={{ color: winner.color }} className="group-hover:scale-110 transition-transform" />
+                     <div className="absolute inset-0 blur-xl opacity-40 animate-pulse" style={{ backgroundColor: winner.color }} />
+                  </motion.div>
+               ) : (
+                  <div className="relative">
+                     <Shield size={28} className="text-accent group-hover:scale-110 transition-transform" />
+                     <div className="absolute inset-0 bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
+                  </div>
+               )}
+            </div>
             <div className="text-left">
                <p className="nav-logo leading-none">UCSF</p>
-               <p className="text-[8px] text-muted font-bold uppercase tracking-widest mt-1">Fest 2026</p>
+               <p className="text-[9px] text-muted/60 font-bold uppercase tracking-[0.3em] mt-1.5">
+                  {winner ? `Champion: ${winner.name}` : 'Fest 2026'}
+               </p>
             </div>
           </button>
 
-          {/* Desktop Nav */}
-          <ul className="hidden xl:flex items-center gap-10 list-none">
+          {/* Minimal Desktop Nav */}
+          <ul className="hidden xl:flex items-center gap-14 list-none">
             {navItems.map((item, idx) => (
               <li key={idx}>
                 <button
                   onClick={() => setActiveTab(item.id)}
                   className={cn(
-                    "font-ui text-[12px] font-bold uppercase tracking-[2px] transition-all relative py-2",
+                    "font-ui text-[12px] font-bold uppercase tracking-[3px] transition-all relative py-3 group",
                     activeTab === item.id ? "text-accent" : "text-muted hover:text-text"
                   )}
                 >
                   {item.label}
-                  {activeTab === item.id && (
-                    <motion.div
-                      layoutId="nav-underline"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-accent rounded-full"
-                    />
-                  )}
+                  <div className={cn(
+                    "absolute bottom-0 left-0 right-0 h-[1px] bg-accent transition-all duration-500 transform origin-left",
+                    activeTab === item.id ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                  )} />
                 </button>
               </li>
             ))}
           </ul>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-8">
             <button
                onClick={() => setActiveTab('admin')}
                className={cn(
-                 "hidden md:block btn-primary px-5 py-2.5 rounded-lg",
-                 activeTab === 'admin' ? "bg-accent text-bg" : "bg-transparent border border-accent/30 text-accent hover:bg-accent/10"
+                 "hidden md:inline-flex items-center gap-3 font-ui text-[11px] font-bold uppercase tracking-[2px] transition-all hover:text-accent",
+                 activeTab === 'admin' ? "text-accent" : "text-muted"
                )}
             >
-               Admin
+               <Shield size={14} /> Admin
             </button>
             <button 
-              className="xl:hidden p-2 text-muted hover:text-text"
+              className="xl:hidden p-3 bg-white/5 rounded-xl text-muted hover:text-text border border-white/5"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
 
-          {/* Mobile Nav */}
+          {/* Mobile Overlay Nav */}
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div 
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
-                className="xl:hidden fixed inset-y-0 right-0 w-[300px] bg-dark border-l border-border p-12 flex flex-col gap-8 z-[120] shadow-2xl"
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 1.1 }}
+                className="xl:hidden fixed inset-0 bg-bg-dark/95 backdrop-blur-3xl flex flex-col items-center justify-center gap-12 z-[120] p-10"
               >
-                <button onClick={() => setIsMenuOpen(false)} className="self-end p-2 text-muted hover:text-text">
-                  <X size={24} />
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="absolute top-10 right-10 p-4 bg-white/5 rounded-full text-muted border border-white/5"
+                >
+                  <X size={32} />
                 </button>
+
+                <div className="flex flex-col items-center gap-4 mb-8">
+                   <Shield size={60} className="text-accent" />
+                   <h2 className="nav-logo text-6xl">UCSF</h2>
+                </div>
+
                 {navItems.map((item, idx) => (
                   <button
                     key={idx}
@@ -117,24 +151,22 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
                       setIsMenuOpen(false);
                     }}
                     className={cn(
-                      "font-display text-3xl text-left tracking-wider uppercase",
-                      activeTab === item.id ? "text-accent" : "text-muted"
+                      "font-display text-5xl tracking-widest uppercase transition-all",
+                      activeTab === item.id ? "text-accent scale-110" : "text-muted hover:text-text"
                     )}
                   >
                     {item.label}
                   </button>
                 ))}
+
                 <button
                   onClick={() => {
                     setActiveTab('admin');
                     setIsMenuOpen(false);
                   }}
-                  className={cn(
-                    "font-display text-3xl text-left tracking-wider uppercase",
-                    activeTab === 'admin' ? "text-accent" : "text-muted"
-                  )}
+                  className="mt-12 font-ui text-sm font-bold uppercase tracking-[4px] text-accent border border-accent/20 px-10 py-4 rounded-2xl bg-accent/5"
                 >
-                  Admin
+                  Administrative Portal
                 </button>
               </motion.div>
             )}
@@ -142,37 +174,49 @@ export default function Layout({ children, activeTab, setActiveTab, title, subti
         </nav>
       </header>
 
-      {/* Main Content */}
       <main className="flex-grow z-10">
-        {/* Spacer for fixed header */}
-        <div className={cn(
-          announcement ? "h-[104px]" : "h-[80px]"
-        )} />
         {children}
       </main>
 
-      {/* Footer */}
-      <footer className="bg-bg-dark border-t border-border py-20 px-6 md:px-12 text-center relative z-10">
-        <div className="max-w-7xl mx-auto flex flex-col items-center gap-10">
-          <div className="flex flex-col items-center gap-6">
-             <img
-               src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
-               alt="School Logo"
-               className="h-16 object-contain mb-2 opacity-50 hover:opacity-100 transition-opacity"
-               referrerPolicy="no-referrer"
-             />
-             <div className="nav-logo text-4xl">
-               UCSF <span className="text-accent">2026</span>
+      {/* Modern Footer */}
+      <footer className="bg-bg-dark border-t border-white/5 py-32 px-10 md:px-20 relative z-10">
+        <div className="max-w-7xl mx-auto flex flex-col items-center gap-16">
+          <div className="flex flex-col items-center text-center gap-8">
+             <div className="relative group">
+                <img
+                  src={schoolLogoUrl || "https://www.shalomhills.com/images/logo.png"}
+                  alt="School Logo"
+                  className="h-20 object-contain grayscale opacity-30 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-1000"
+                  referrerPolicy="no-referrer"
+                />
              </div>
-             <p className="font-ui text-[10px] font-bold uppercase tracking-[4px] text-muted max-w-md leading-relaxed">
-               Union of Culture & Sports Fest
-             </p>
+             <div className="space-y-4">
+                <div className="nav-logo text-5xl tracking-[8px]">UCSF <span className="text-accent">2026</span></div>
+                <p className="font-ui text-[11px] font-bold uppercase tracking-[6px] text-muted/40 max-w-lg leading-relaxed mx-auto">
+                  Union of Culture & Sports Festival
+                </p>
+             </div>
           </div>
 
-          <div className="w-20 h-px bg-border" />
+          <div className="w-24 h-px bg-white/5" />
 
-          <div className="flex flex-col gap-3 font-ui text-[10px] font-bold uppercase tracking-widest text-subtle">
-            <span>© 2026 Shalom Hills International School</span>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10 w-full text-center">
+             <div className="space-y-4">
+                <p className="text-[10px] font-bold uppercase tracking-[4px] text-accent">Venue</p>
+                <p className="text-muted text-sm uppercase tracking-widest font-medium">Grand Arena, SHIS Campus</p>
+             </div>
+             <div className="space-y-4 border-y md:border-y-0 md:border-x border-white/5 py-8 md:py-0">
+                <p className="text-[10px] font-bold uppercase tracking-[4px] text-accent">Contact</p>
+                <p className="text-muted text-sm uppercase tracking-widest font-medium">info@shalomhills.com</p>
+             </div>
+             <div className="space-y-4">
+                <p className="text-[10px] font-bold uppercase tracking-[4px] text-accent">Dates</p>
+                <p className="text-muted text-sm uppercase tracking-widest font-medium">November 12-15, 2026</p>
+             </div>
+          </div>
+
+          <div className="pt-20 text-[10px] font-bold uppercase tracking-[3px] text-subtle/30">
+            © 2026 Shalom Hills International School • All Rights Reserved
           </div>
         </div>
       </footer>

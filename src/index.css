@@ -6,26 +6,35 @@
   --font-display: "Bebas Neue", sans-serif;
   --font-ui: "Rajdhani", sans-serif;
 
-  --color-bg: #003262;
-  --color-bg2: #005C96;
-  --color-bg3: #1c3660;
-  --color-bg-dark: #001A33;
-  --color-dark: #001021;
+  --color-bg: var(--house-bg, #003262);
+  --color-bg2: var(--house-bg2, #005C96);
+  --color-bg3: var(--house-bg3, #1c3660);
+  --color-bg-dark: var(--house-bg-dark, #001A33);
+  --color-dark: var(--house-bg-dark, #001021);
   --color-surface: rgba(255, 255, 255, 0.045);
   --color-border: rgba(255, 255, 255, 0.09);
   --color-text: #f0f0ff;
   --color-muted: rgba(240, 240, 255, 0.52);
   --color-subtle: rgba(240, 240, 255, 0.25);
   
-  --color-accent: #BC8A2C;
+  --color-accent: var(--house-accent, #BC8A2C);
   --color-success: #2DC653;
   --color-danger: #E63946;
   --color-warn: #F5C518;
 }
 
 @layer base {
+  :root {
+    --house-bg: #003262;
+    --house-bg2: #005C96;
+    --house-bg3: #1c3660;
+    --house-bg-dark: #001A33;
+    --house-accent: #BC8A2C;
+  }
+
   body {
     @apply bg-bg text-text antialiased font-sans min-h-screen relative overflow-x-hidden;
+    transition: background-color 1s ease-in-out;
   }
 
   body::before {
@@ -40,9 +49,9 @@
     @apply font-display tracking-[1px] leading-none uppercase;
   }
 
-  h1 { @apply text-[clamp(52px,8vw,110px)]; }
-  h2 { @apply text-[clamp(32px,5vw,64px)]; }
-  h3 { @apply text-[clamp(20px,3vw,34px)]; }
+  h1 { @apply text-[clamp(60px,10vw,140px)]; }
+  h2 { @apply text-[clamp(40px,7vw,80px)]; }
+  h3 { @apply text-[clamp(24px,4vw,40px)]; }
 
   p {
     @apply font-sans text-muted leading-[1.8];
@@ -61,92 +70,49 @@
 
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center gap-[7px] px-[26px] py-[11px] bg-accent text-bg font-ui text-[12px] font-bold uppercase tracking-[2px] transition-all hover:bg-[#ffd84d] active:scale-95 cursor-pointer rounded-xl;
+    @apply inline-flex items-center gap-[10px] px-[32px] py-[14px] bg-accent text-bg font-ui text-[13px] font-bold uppercase tracking-[2px] transition-all hover:brightness-110 active:scale-95 cursor-pointer rounded-2xl shadow-lg shadow-accent/20;
   }
   
   .btn-ghost {
-    @apply inline-flex items-center gap-[7px] px-[26px] py-[11px] border border-border bg-transparent text-text font-ui text-[12px] font-bold uppercase tracking-[2px] transition-all hover:border-white/30 hover:bg-white/5 active:scale-95 cursor-pointer rounded-xl;
-  }
-
-  .btn-danger {
-    @apply inline-flex items-center gap-[7px] px-[26px] py-[11px] border border-danger bg-transparent text-danger font-ui text-[12px] font-bold uppercase tracking-[2px] transition-all hover:bg-danger/10 active:scale-95 cursor-pointer rounded-xl;
+    @apply inline-flex items-center gap-[10px] px-[32px] py-[14px] border border-border bg-white/5 text-text font-ui text-[13px] font-bold uppercase tracking-[2px] transition-all hover:border-white/30 hover:bg-white/10 active:scale-95 cursor-pointer rounded-2xl;
   }
 
   .sec-label {
-    @apply flex items-center gap-[10px] font-ui text-[11px] font-bold uppercase tracking-[4px] text-accent mb-[12px];
+    @apply flex items-center gap-[12px] font-ui text-[12px] font-bold uppercase tracking-[5px] text-accent mb-[16px];
   }
   .sec-label::before {
     content: '';
-    @apply w-[24px] h-[1px] bg-accent;
+    @apply w-[30px] h-[1.5px] bg-accent;
   }
 
   .card-glass {
-    @apply bg-surface border border-border backdrop-blur-sm relative rounded-3xl;
+    @apply bg-white/[0.03] border border-white/[0.08] backdrop-blur-md relative rounded-[2.5rem] transition-all duration-500;
+  }
+  .card-glass:hover {
+    @apply bg-white/[0.05] border-white/[0.15] shadow-2xl shadow-black/20;
   }
 
   .badge {
-    @apply inline-block px-[10px] py-[4px] font-ui text-[10px] font-bold uppercase tracking-[2px] rounded-lg;
+    @apply inline-block px-[12px] py-[5px] font-ui text-[11px] font-bold uppercase tracking-[2.5px] rounded-xl;
   }
   .badge-upcoming { @apply bg-white/10 text-muted; }
-  .badge-live { @apply bg-danger/20 text-danger; }
-  .badge-completed { @apply bg-success/15 text-success; }
-
-  .form-input, .form-select {
-    @apply w-full px-[13px] py-[10px] bg-bg2 border border-border text-text font-sans text-[14px] outline-none transition-all focus:border-accent focus:ring-3 focus:ring-accent/15 rounded-xl;
-  }
-  .form-input::placeholder { @apply text-subtle; }
-  .form-select option { @apply bg-bg3; }
+  .badge-live { @apply bg-danger/20 text-danger border border-danger/20; }
+  .badge-completed { @apply bg-success/15 text-success border border-success/20; }
 
   .hero-eyebrow {
-    @apply inline-block font-ui text-[11px] font-bold tracking-[3px] uppercase text-accent border border-accent/30 bg-accent/10 px-[20px] py-[6px] mb-[20px] rounded-full;
+    @apply inline-block font-ui text-[12px] font-bold tracking-[4px] uppercase text-accent border border-accent/20 bg-accent/5 px-[24px] py-[8px] mb-[28px] rounded-full;
   }
+
   .hero-title {
-    @apply font-display text-[clamp(60px,9vw,120px)] leading-[0.95] tracking-[3px] bg-gradient-to-b from-white to-white/65 bg-clip-text text-transparent;
-  }
-  .hero-sub {
-    @apply font-ui text-[16px] font-semibold tracking-[4px] uppercase text-muted mt-[16px];
+    @apply font-display text-[clamp(70px,12vw,160px)] leading-[0.9] tracking-[2px] bg-gradient-to-b from-white via-white to-white/60 bg-clip-text text-transparent;
   }
 
   .nav-logo {
-    @apply font-display text-[24px] tracking-[3px] no-underline bg-gradient-to-br from-white via-white to-accent bg-clip-text text-transparent;
-  }
-  .nav-live {
-    @apply font-ui text-[11px] font-bold tracking-[1px] text-danger animate-pulse max-w-[220px] overflow-hidden text-ellipsis whitespace-nowrap;
-  }
-
-  .timeline {
-    @apply flex flex-col gap-0 relative;
-  }
-  .timeline::before {
-    content: '';
-    @apply absolute left-[80px] md:left-[120px] top-0 bottom-0 w-[1px] bg-gradient-to-b from-transparent via-border to-transparent;
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar {
-    @apply w-[6px] h-[6px];
-  }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    @apply bg-transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+    @apply font-display text-[26px] tracking-[4px] no-underline bg-gradient-to-br from-white via-white to-accent bg-clip-text text-transparent transition-all;
   }
 }
 
-@keyframes orbdrift {
-  from { transform: translate(0, 0); }
-  to { transform: translate(40px, -40px); }
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+@keyframes orb-glow {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.1); }
 }
