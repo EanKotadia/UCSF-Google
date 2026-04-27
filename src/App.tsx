@@ -84,8 +84,8 @@ function App() {
                >
                  <div className="hero-eyebrow">The Ultimate Showdown</div>
                  <h1 className="hero-title leading-[0.85] flex flex-col items-center">
-                    <span>BEYOND ALL</span>
-                    <span className="text-accent">BOUNDARIES</span>
+                    <span>UCSF</span>
+                    <span className="text-accent">2026</span>
                  </h1>
                  <p className="hero-sub">Union of Culture & Sports Fest 2026</p>
 
@@ -103,10 +103,10 @@ function App() {
             {/* Quick Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 max-w-6xl mx-auto w-full -mt-20 relative z-20 mb-32">
                {[
-                  { label: 'Athletes', val: '500+', icon: Target },
-                  { label: 'Performers', val: '200+', icon: Heart },
-                  { label: 'Events', val: '24', icon: Star },
-                  { label: 'Prize Pool', val: '100K+', icon: Award }
+                  { label: 'Houses', val: '4', icon: Shield },
+                  { label: 'Sporting Events', val: '8', icon: Activity },
+                  { label: 'Cultural Events', val: '4', icon: Sparkles },
+                  { label: 'Champion', val: '1', icon: Trophy }
                ].map((s, i) => (
                   <div key={i} className="card-glass p-8 text-center group hover:border-accent/30 transition-all">
                      <s.icon size={24} className="text-accent/50 group-hover:text-accent mx-auto mb-4 transition-colors" />
@@ -114,6 +114,104 @@ function App() {
                      <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{s.label}</p>
                   </div>
                ))}
+            {/* Rankings + Scores Section */}
+            <div className="max-w-6xl mx-auto px-6 w-full mb-32">
+               <div className="flex flex-col items-center text-center mb-12">
+                  <div className="sec-label">Rankings & Standing</div>
+                  <h2 className="text-5xl md:text-7xl font-display uppercase tracking-tight text-text">House Standings</h2>
+               </div>
+
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {houses.sort((a, b) => b.points - a.points).slice(0, 4).map((house, i) => (
+                     <div key={house.id} className={cn(
+                        "card-glass p-8 flex items-center justify-between group hover:border-accent/30 transition-all",
+                        i === 0 ? "border-accent/40 bg-accent/5" : ""
+                     )}>
+                        <div className="flex items-center gap-6">
+                           <div className="text-3xl font-display text-accent/30 w-8">{(i + 1).toString().padStart(2, '0')}</div>
+                           <div className="w-12 h-12 rounded-xl bg-bg2 flex items-center justify-center p-2 border border-border group-hover:border-accent/30 transition-all">
+                              {house.logo_url ? (
+                                 <img src={house.logo_url} alt={house.name} className="w-full h-full object-contain" />
+                              ) : (
+                                 <Shield className="text-accent/50" size={24} />
+                              )}
+                           </div>
+                           <div>
+                              <h3 className="text-xl font-display uppercase tracking-tight text-text">House {house.name}</h3>
+                              <p className="text-muted text-[9px] font-bold uppercase tracking-widest">{house.mascot_name || 'Titans'}</p>
+                           </div>
+                        </div>
+                        <div className="text-right">
+                           <div className="text-3xl font-display text-accent">{house.points}</div>
+                           <div className="text-muted text-[8px] font-bold uppercase tracking-widest">Points</div>
+                        </div>
+                     </div>
+                  ))}
+               </div>
+               <div className="mt-12 text-center">
+                  <button onClick={() => setActiveTab('leaderboards')} className="btn-ghost px-10 py-4">
+                     Detailed Rankings <ChevronRight size={18} />
+                  </button>
+               </div>
+            </div>
+
+            {/* Notices + Schedule Snippet Section */}
+            <div className="max-w-6xl mx-auto px-6 w-full mb-32 grid lg:grid-cols-2 gap-16">
+               {/* Left: Recent Notices */}
+               <div>
+                  <div className="flex items-center gap-4 mb-8">
+                     <Bell className="text-accent" size={24} />
+                     <h2 className="text-4xl font-display uppercase tracking-tight text-text">Latest Notices</h2>
+                  </div>
+                  <div className="space-y-4">
+                     {notices.slice(0, 3).map(notice => (
+                        <div key={notice.id} className={cn(
+                           "card-glass p-6",
+                           notice.priority === 'high' ? "border-danger/30 bg-danger/5" : ""
+                        )}>
+                           <div className="flex justify-between items-start mb-2">
+                              <h3 className="text-lg font-display text-text uppercase">{notice.title}</h3>
+                              <span className="text-[9px] text-muted font-bold uppercase tracking-widest">{new Date(notice.created_at).toLocaleDateString()}</span>
+                           </div>
+                           <p className="text-muted text-sm line-clamp-2">{notice.content}</p>
+                        </div>
+                     ))}
+                     <button onClick={() => setActiveTab('notices')} className="w-full btn-ghost justify-center py-4 mt-4">
+                        All Notices
+                     </button>
+                  </div>
+               </div>
+
+               {/* Right: Schedule Snippet */}
+               <div>
+                  <div className="flex items-center gap-4 mb-8">
+                     <Calendar className="text-accent" size={24} />
+                     <h2 className="text-4xl font-display uppercase tracking-tight text-text">Upcoming Events</h2>
+                  </div>
+                  <div className="space-y-4">
+                     {schedule.filter(s => s.status !== 'completed').slice(0, 3).map(item => (
+                        <div key={item.id} className="card-glass p-6 flex items-center justify-between">
+                           <div className="flex items-center gap-6">
+                              <div className="text-center">
+                                 <p className="text-accent font-display text-xl leading-none">{item.time_start?.slice(0, 5)}</p>
+                                 <p className="text-muted text-[8px] font-bold uppercase tracking-widest mt-1">{item.day_label}</p>
+                              </div>
+                              <div>
+                                 <h3 className="text-lg font-display text-text uppercase leading-none mb-1">{item.title}</h3>
+                                 <p className="text-muted text-[10px] font-bold uppercase tracking-widest">{item.venue}</p>
+                              </div>
+                           </div>
+                           <span className={cn(
+                              "badge",
+                              item.status === 'live' ? "badge-live" : "badge-upcoming"
+                           )}>{item.status === 'live' ? 'Live' : 'Next'}</span>
+                        </div>
+                     ))}
+                     <button onClick={() => setActiveTab('schedule')} className="w-full btn-ghost justify-center py-4 mt-4">
+                        Full Schedule
+                     </button>
+                  </div>
+               </div>
             </div>
           </div>
         );
@@ -250,31 +348,31 @@ function App() {
         );
 
       case 'gallery':
+        const galleryUrl = settings['gallery_drive_url'] || 'https://drive.google.com/drive/folders/1placeholder-link';
         return (
-          <div className="max-w-7xl mx-auto px-6 py-24 font-ui">
+          <div className="max-w-7xl mx-auto px-6 py-24 font-ui min-h-[60vh] flex flex-col">
              <div className="flex flex-col items-center text-center mb-20">
                 <div className="sec-label">Moments</div>
                 <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight text-text">Gallery</h2>
                 <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
              </div>
-             <div className="grid md:grid-cols-3 gap-8">
-                {gallery.length > 0 ? gallery.map((item) => (
-                   <div key={item.id} className="group relative aspect-video overflow-hidden rounded-3xl border border-border bg-surface">
-                      <img
-                        src={item.url}
-                        alt={item.title}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-bg/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex flex-col justify-end">
-                         <p className="text-xl font-display text-text uppercase">{item.title}</p>
-                      </div>
-                   </div>
-                )) : (
-                  <div className="col-span-full py-32 text-center card-glass">
-                    <Camera size={48} className="text-muted mx-auto mb-6 opacity-20" />
-                    <p className="text-muted uppercase tracking-[0.3em] font-bold">No memories captured yet.</p>
-                  </div>
-                )}
+
+             <div className="flex-grow flex flex-col items-center justify-center">
+                <div className="card-glass p-16 text-center max-w-2xl w-full border-dashed border-accent/30 bg-accent/5">
+                   <Camera size={80} className="text-accent mb-8 mx-auto" />
+                   <h3 className="text-4xl font-display text-text uppercase mb-6">Official Event Gallery</h3>
+                   <p className="text-muted mb-12 text-sm md:text-base uppercase tracking-widest font-bold leading-relaxed">
+                      All memories, high-resolution photos, and videos from UCSF 2026 are captured and shared in our official Google Drive repository.
+                   </p>
+                   <a
+                      href={galleryUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary px-16 py-6 text-lg inline-flex items-center gap-4 group"
+                   >
+                      View on Google Drive <ArrowRight size={24} className="group-hover:translate-x-2 transition-transform" />
+                   </a>
+                </div>
              </div>
           </div>
         );

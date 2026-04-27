@@ -379,7 +379,7 @@ export default function AdminPanel({ onBack }: AdminPanelProps) {
                      <h4 className="text-2xl font-display uppercase tracking-tight">Branding & Meta</h4>
                   </div>
                   <div className="space-y-10">
-                     {['festival_name', 'festival_subtitle', 'school_logo_url', 'announcement_text'].map(key => (
+                     {['festival_name', 'festival_subtitle', 'school_logo_url', 'announcement_text', 'gallery_drive_url'].map(key => (
                         <div key={key} className="space-y-3">
                            <label className="text-[11px] font-bold text-muted uppercase tracking-[0.2em]">{key.replace(/_/g, ' ')}</label>
                            <input
