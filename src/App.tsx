@@ -5,7 +5,7 @@ import {
   Layers, Camera, Bell, Info, Shield,
   ChevronRight, Heart, Star, Sparkles,
   Award, Target, Rocket, Zap, X, ArrowRight,
-  Crown
+  MapPin, Clock
 } from 'lucide-react';
 import Layout from './components/Layout';
 import AdminPanel from './components/AdminPanel';
@@ -25,37 +25,19 @@ function App() {
   const [showCelebration, setShowCelebration] = useState(false);
   const [lastCelebratedWinnerId, setLastCelebratedWinnerId] = useState<string | null>(null);
 
-  // Dynamic Theme Injection & House Takeover
+  // Sync winner from settings
   useEffect(() => {
     const winnerId = settings['winner_house_id'];
-    const root = document.documentElement;
-
     if (winnerId && houses.length > 0) {
-       const winningHouse = houses.find(h => h.id === winnerId);
-       if (winningHouse) {
-          setWinner(winningHouse);
-
-          // FULL THEME TAKEOVER: Shift root colors to match House Identity
-          root.style.setProperty('--house-bg', `${winningHouse.color}15`);
-          root.style.setProperty('--house-bg2', `${winningHouse.color}25`);
-          root.style.setProperty('--house-bg-dark', `${winningHouse.color}05`);
-          root.style.setProperty('--house-accent', winningHouse.color);
-
-          if (winnerId !== lastCelebratedWinnerId) {
+       if (winnerId !== lastCelebratedWinnerId) {
+          const winningHouse = houses.find(h => h.id === winnerId);
+          if (winningHouse) {
+             setWinner(winningHouse);
              setShowCelebration(true);
              setLastCelebratedWinnerId(winnerId);
           }
-          return;
        }
-    }
-
-    // Default UCSF Baseline (Navy/Gold)
-    root.style.setProperty('--house-bg', '#003262');
-    root.style.setProperty('--house-bg2', '#005C96');
-    root.style.setProperty('--house-bg-dark', '#001A33');
-    root.style.setProperty('--house-accent', '#BC8A2C');
-
-    if (!winnerId) {
+    } else if (!winnerId) {
        setWinner(null);
        setShowCelebration(false);
        setLastCelebratedWinnerId(null);
@@ -64,28 +46,19 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-16">
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-8">
         <div className="relative">
-          <div className="w-40 h-40 border-2 border-accent/5 border-t-accent rounded-full animate-spin duration-[2s]" />
+          <div className="w-24 h-24 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
           <div className="absolute inset-0 flex items-center justify-center">
-             <motion.div
-               animate={{ scale: [1, 1.1, 1], opacity: [0.5, 1, 0.5] }}
-               transition={{ duration: 3, repeat: Infinity }}
-             >
-                <Shield size={64} className="text-accent/20" />
-             </motion.div>
+            <div className="w-12 h-12 bg-accent/10 rounded-full animate-pulse" />
           </div>
         </div>
-        <div className="text-center space-y-6">
-           <h1 className="nav-logo text-6xl tracking-[0.4em] font-light">UCSF</h1>
-           <p className="text-accent/40 font-bold uppercase tracking-[1em] text-[9px] animate-pulse">Initializing V3 Identity</p>
+        <div className="text-center">
+           <h1 className="nav-logo text-4xl mb-2">UCSF</h1>
+           <p className="text-muted font-bold uppercase tracking-[0.5em] text-[10px]">Initializing Experience</p>
         </div>
       </div>
     );
-  }
-
-  if (activeTab === 'admin') {
-     return <AdminPanel onBack={() => setActiveTab('home')} />;
   }
 
   const festivalName = settings['festival_name'] || 'UCSF 2026';
@@ -98,241 +71,312 @@ function App() {
       case 'home':
         return (
           <div className="flex flex-col">
-            <section className="relative min-h-screen flex flex-col items-center justify-center px-6 overflow-hidden pt-32">
-               <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                  <motion.div
-                    animate={{
-                       x: [0, 60, 0],
-                       y: [0, -60, 0],
-                       scale: [1, 1.15, 1]
-                    }}
-                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                    className="absolute top-[5%] left-[5%] w-[1000px] h-[1000px] bg-accent/20 rounded-full blur-[220px]"
-                  />
-                  <motion.div
-                    animate={{
-                       x: [0, -80, 0],
-                       y: [0, 80, 0],
-                       scale: [1, 1.25, 1]
-                    }}
-                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-                    className="absolute bottom-[0%] right-[0%] w-[1200px] h-[1200px] bg-accent/15 rounded-full blur-[250px]"
-                  />
-               </div>
+            {/* Hero Section */}
+            <div className="relative h-[85vh] flex flex-col items-center justify-center text-center overflow-hidden">
+               {/* Premium Background Orbs */}
+               <div className="absolute top-1/4 -left-20 w-[600px] h-[600px] bg-accent/15 blur-[140px] rounded-full animate-pulse pointer-events-none" />
+               <div className="absolute bottom-1/4 -right-20 w-[500px] h-[500px] bg-bg2/30 blur-[120px] rounded-full animate-pulse delay-700 pointer-events-none" />
 
                <motion.div
-                 initial={{ opacity: 0, y: 120 }}
+                 initial={{ opacity: 0, y: 30 }}
                  animate={{ opacity: 1, y: 0 }}
-                 transition={{ duration: 1.8, ease: [0.16, 1, 0.3, 1] }}
-                 className="text-center z-10 max-w-[95vw] mx-auto"
+                 className="relative z-10 px-6"
                >
-                  <div className="hero-eyebrow inline-flex items-center gap-6 mb-12">
-                     <span className="w-2.5 h-2.5 bg-accent rounded-full animate-ping" />
-                     The Continental Championship 2026
-                  </div>
+                 <div className="hero-eyebrow">The Ultimate Showdown</div>
+                 <h1 className="hero-title leading-[0.85] flex flex-col items-center">
+                    <span>BEYOND ALL</span>
+                    <span className="text-accent">BOUNDARIES</span>
+                 </h1>
+                 <p className="hero-sub">Union of Culture & Sports Fest 2026</p>
 
-                  <h1 className="hero-title mb-16">
-                    BEYOND ALL<br/>
-                    <span className="text-accent drop-shadow-[0_0_60px_rgba(var(--house-accent-rgb),0.4)]">EXPECTATIONS</span>
-                  </h1>
-
-                  <motion.p
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 0.6 }}
-                    transition={{ delay: 1, duration: 1.2 }}
-                    className="font-ui text-2xl md:text-4xl text-text uppercase tracking-[0.9em] font-light max-w-7xl mx-auto leading-relaxed mb-28"
-                  >
-                     Merging athletic supremacy with soulful creation.
-                  </motion.p>
-
-                  <div className="flex flex-wrap justify-center gap-12">
-                     <button
-                        onClick={() => setActiveTab('events')}
-                        className="btn-primary py-10 px-24 text-sm group relative overflow-hidden shadow-[0_0_50px_rgba(var(--house-accent-rgb),0.3)]"
-                     >
-                        <span className="relative z-10 flex items-center gap-6">
-                           The Mainstage <Zap size={24} className="group-hover:rotate-12 transition-transform duration-500" />
-                        </span>
-                        <div className="absolute inset-0 bg-white/30 translate-y-full group-hover:translate-y-0 transition-transform duration-700" />
-                     </button>
-                     <button
-                        onClick={() => setActiveTab('leaderboards')}
-                        className="btn-ghost py-10 px-24 text-sm border-white/10 hover:border-accent/40 backdrop-blur-3xl"
-                     >
-                        The Standing
-                     </button>
-                  </div>
+                 <div className="flex flex-wrap items-center justify-center gap-6 mt-16">
+                    <button onClick={() => setActiveTab('leaderboards')} className="btn-primary px-12 py-5 text-[14px]">
+                       View Leaderboard <ArrowRight size={20} />
+                    </button>
+                    <button onClick={() => setActiveTab('schedule')} className="btn-ghost px-12 py-5 text-[14px]">
+                       Event Schedule
+                    </button>
+                 </div>
                </motion.div>
+            </div>
 
-               <div className="grid grid-cols-2 lg:grid-cols-4 gap-10 mt-56 z-10 w-full max-w-7xl px-8 mx-auto">
-                  {[
-                     { label: 'Competitors', val: '950+', icon: Target },
-                     { label: 'Soul Arts', val: '180+', icon: Heart },
-                     { label: 'Coliseum', val: '52', icon: Star },
-                     { label: 'Excellence', val: 'V3 ELITE', icon: Award }
-                  ].map((s, i) => (
-                     <motion.div
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 1.5 + (i * 0.15), duration: 0.8 }}
-                        key={i}
-                        className="card-glass p-14 group hover:-translate-y-4 border-white/5 shadow-2xl"
-                     >
-                        <s.icon size={36} className="text-accent/20 group-hover:text-accent group-hover:scale-125 mb-10 transition-all duration-700" />
-                        <p className="text-6xl font-display text-text mb-4 tracking-tighter tabular-nums">{s.val}</p>
-                        <p className="text-[10px] font-bold text-muted/40 uppercase tracking-[0.6em]">{s.label}</p>
-                     </motion.div>
-                  ))}
-               </div>
-            </section>
-
-            {/* Premium Narrative Section */}
-            <section className="py-72 px-10 border-t border-white/5 relative bg-bg-dark/60 overflow-hidden">
-               <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-40 items-center">
-                  <motion.div
-                     initial={{ opacity: 0, x: -80 }}
-                     whileInView={{ opacity: 1, x: 0 }}
-                     viewport={{ once: true }}
-                     transition={{ duration: 1.2 }}
-                     className="space-y-16"
-                  >
-                     <div className="sec-label">The Sovereign Ethos</div>
-                     <h2 className="text-9xl font-display leading-[0.8] text-text tracking-tighter">Legacy<br/>In Motion</h2>
-                     <p className="text-muted/70 text-3xl leading-relaxed max-w-2xl font-light">
-                        UCSF 2026 defines the intersection of raw power and elegant art. We invite the bold to step into the arena and carve their names into the annals of history.
-                     </p>
-                     <button onClick={() => setActiveTab('about')} className="btn-ghost px-16 py-8 group border-white/10 hover:bg-accent/5">
-                        Our Chronicle <ArrowRight size={24} className="group-hover:translate-x-3 transition-transform duration-500" />
-                     </button>
-                  </motion.div>
-                  <div className="relative">
-                     <div className="absolute inset-0 bg-accent/15 rounded-[6rem] blur-[160px] animate-pulse" />
-                     <div className="relative aspect-square card-glass border-white/10 flex items-center justify-center p-28 group overflow-hidden">
-                        <motion.div
-                           animate={{ rotate: 360 }}
-                           transition={{ duration: 80, repeat: Infinity, ease: "linear" }}
-                           className="absolute inset-0 border-[20px] border-accent/5 rounded-full border-dashed"
-                        />
-                        <Trophy size={240} className="text-accent/5 group-hover:text-accent/10 transition-all duration-1000 scale-125" />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                           <div className="text-center space-y-4">
-                              <p className="text-accent font-display text-7xl tracking-tighter">MMXXVI</p>
-                              <div className="h-px w-32 bg-accent/20 mx-auto" />
-                              <p className="text-[13px] text-muted font-bold uppercase tracking-[0.8em]">Supreme Edition</p>
-                           </div>
-                        </div>
-                     </div>
+            {/* Quick Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-6 max-w-6xl mx-auto w-full -mt-20 relative z-20 mb-32">
+               {[
+                  { label: 'Athletes', val: '500+', icon: Target },
+                  { label: 'Performers', val: '200+', icon: Heart },
+                  { label: 'Events', val: '24', icon: Star },
+                  { label: 'Prize Pool', val: '100K+', icon: Award }
+               ].map((s, i) => (
+                  <div key={i} className="card-glass p-8 text-center group hover:border-accent/30 transition-all">
+                     <s.icon size={24} className="text-accent/50 group-hover:text-accent mx-auto mb-4 transition-colors" />
+                     <p className="text-3xl font-display text-text mb-1">{s.val}</p>
+                     <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{s.label}</p>
                   </div>
-               </div>
-            </section>
-          </div>
-        );
-
-      case 'events':
-        return (
-          <div className="max-w-[95vw] mx-auto px-6 py-60 font-ui">
-             <div className="flex flex-col items-center text-center mb-48">
-                <div className="sec-label">Live Action</div>
-                <h2 className="text-8xl md:text-[12rem] font-display uppercase mb-12 tracking-tighter text-text leading-none">The Arena</h2>
-                <p className="text-muted/40 text-[13px] font-bold uppercase tracking-[1.2em]">Synchronized Intelligence Feed • Active Sessions</p>
-             </div>
-
-             <div className="grid grid-cols-1 gap-20">
-                {matches.filter(m => m.status === 'live').map(match => (
-                   <motion.div layout initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} key={match.id} className="card-glass p-20 md:p-32 border-l-[24px] border-l-danger relative group overflow-hidden border-white/5">
-                      <div className="absolute top-0 right-0 p-20">
-                         <div className="flex items-center gap-10 bg-danger/10 border border-danger/30 px-10 py-4 rounded-full">
-                            <span className="w-4 h-4 bg-danger rounded-full animate-ping" />
-                            <span className="font-ui text-danger font-bold uppercase tracking-[0.5em] text-sm">Real-time Feed</span>
-                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-32 items-center">
-                         <div className="space-y-12">
-                            <p className="text-accent font-bold uppercase tracking-[0.8em] text-sm">Championship Sanctioned Event</p>
-                            <h3 className="text-8xl font-display uppercase tracking-tighter text-text leading-none">{match.category_id?.replace(/-/g, ' ')}</h3>
-                            <div className="flex flex-wrap items-center gap-12 text-muted/50 font-bold uppercase tracking-[0.4em] text-[14px] pt-8">
-                               <span className="flex items-center gap-4"><Info size={24} className="text-accent/30" /> {match.venue}</span>
-                               <span className="w-2 h-2 bg-white/10 rounded-full" />
-                               <span>{match.match_time || 'Continuous Action'}</span>
-                            </div>
-                         </div>
-
-                         <div className="bg-white/[0.01] border border-white/5 rounded-[6rem] p-24 flex items-center justify-around group-hover:bg-white/[0.03] transition-all duration-1000 shadow-3xl">
-                            <div className="text-center space-y-8">
-                               <Shield size={72} className="text-accent/10 mx-auto group-hover:scale-110 transition-transform" />
-                               <span className="text-3xl font-display text-text block tracking-widest">{match.team1_id}</span>
-                            </div>
-                            <div className="text-9xl md:text-[12rem] font-display text-text tabular-nums tracking-tighter flex items-center gap-12">
-                               {match.score1 ?? '0'}<span className="text-accent/10">:</span>{match.score2 ?? '0'}
-                            </div>
-                            <div className="text-center space-y-8">
-                               <Shield size={72} className="text-accent/10 mx-auto group-hover:scale-110 transition-transform" />
-                               <span className="text-3xl font-display text-text block tracking-widest">{match.team2_id}</span>
-                            </div>
-                         </div>
-                      </div>
-                   </motion.div>
-                ))}
-                {matches.filter(m => m.status === 'live').length === 0 && (
-                   <div className="col-span-full card-glass border-dashed flex flex-col items-center justify-center py-96 text-muted/20">
-                      <Rocket size={160} className="mb-16 opacity-5 animate-pulse" />
-                      <p className="italic uppercase text-3xl tracking-[1em] font-extralight">Standby Sequence Active. Coliseum Awaiting Signal.</p>
-                   </div>
-                )}
-             </div>
+               ))}
+            </div>
           </div>
         );
 
       case 'leaderboards':
         return (
-          <div className="max-w-[95vw] mx-auto px-6 py-60 font-ui">
-             <div className="flex flex-col items-center text-center mb-48">
-                <div className="sec-label">The Pinnacle</div>
-                <h2 className="text-8xl md:text-[12rem] font-display uppercase mb-12 tracking-tighter text-text leading-none">Hierarchy</h2>
-                <p className="text-muted/40 text-[13px] font-bold uppercase tracking-[1.2em]">Absolute Dominance Rankings • Cumulative Performance Index</p>
+          <div className="max-w-6xl mx-auto px-6 py-24 font-ui">
+             <div className="flex flex-col items-center text-center mb-20">
+                <div className="sec-label">Rankings</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight text-text">Leaderboard</h2>
+                <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
              </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-14">
-                {houses.sort((a,b) => b.points - a.points).map((house, idx) => (
-                   <motion.div
-                     initial={{ opacity: 0, y: 80 }}
-                     animate={{ opacity: 1, y: 0 }}
-                     transition={{ delay: idx * 0.25, duration: 1, ease: "easeOut" }}
-                     key={house.id}
-                     className="card-glass p-24 flex flex-col items-center group relative overflow-hidden border-white/5 shadow-3xl hover:bg-white/[0.04]"
-                   >
-                      <div className="absolute top-0 left-0 p-20">
-                         <span className="text-[12rem] font-display text-white/[0.01] group-hover:text-accent/[0.03] transition-all duration-1000 leading-none tracking-tighter">0{idx + 1}</span>
-                      </div>
-                      <div className="w-56 h-56 rounded-[5rem] flex items-center justify-center mb-20 shadow-4xl relative z-10 transition-all duration-1000 group-hover:scale-110" style={{ backgroundColor: `${house.color}06`, border: `2px solid ${house.color}15` }}>
-                         <Shield size={110} style={{ color: house.color }} className="drop-shadow-[0_0_50px_rgba(255,255,255,0.1)]" />
-                         <div className="absolute -inset-20 bg-white/5 rounded-full blur-[100px] opacity-0 group-hover:opacity-100 transition-all duration-1000" />
-                      </div>
-                      <h3 className="text-7xl font-display uppercase tracking-tight mb-6 text-text group-hover:text-accent transition-colors leading-none">{house.name}</h3>
-                      <p className="text-muted/40 font-bold uppercase tracking-[0.8em] text-[12px] mb-24 italic text-center">"{house.motto || 'Supreme Dominion'}"</p>
 
-                      <div className="w-full space-y-12 relative z-10">
-                         <div className="flex justify-between items-end">
-                            <span className="text-[14px] font-bold text-muted/30 uppercase tracking-[0.6em]">Aggregate</span>
-                            <span className="text-8xl font-display text-accent leading-none tracking-tighter tabular-nums">{house.points}</span>
+             <div className="grid gap-6">
+                {houses.sort((a, b) => b.points - a.points).map((house, i) => (
+                   <div key={house.id} className={cn(
+                      "card-glass overflow-hidden flex items-center p-6 md:p-8 transition-all hover:translate-x-2 group",
+                      i === 0 ? "border-accent/40 bg-accent/5" : ""
+                   )}>
+                      <div className="w-16 md:w-24 text-4xl md:text-6xl font-display text-accent/20 group-hover:text-accent/40 transition-colors">
+                         {(i + 1).toString().padStart(2, '0')}
+                      </div>
+                      <div className="flex-grow flex items-center gap-6">
+                         <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-bg2 flex items-center justify-center p-3 border border-border group-hover:border-accent/30 transition-all">
+                            {house.logo_url ? (
+                               <img src={house.logo_url} alt={house.name} className="w-full h-full object-contain" />
+                            ) : (
+                               <Shield className="text-accent/50" size={32} />
+                            )}
                          </div>
-                         <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
-                            <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, (house.points / 3000) * 100)}%` }} transition={{ duration: 3, ease: "easeOut" }} className="h-full bg-accent rounded-full shadow-[0_0_30px_rgba(var(--house-accent-rgb),0.5)]" />
-                         </div>
-                         <div className="grid grid-cols-2 gap-12 pt-14 border-t border-white/5">
-                            <div className="text-center space-y-3">
-                               <p className="text-[12px] font-bold text-subtle uppercase tracking-widest">Athletic</p>
-                               <p className="text-5xl font-display text-text/90 tabular-nums leading-none">{house.sports_points || 0}</p>
-                            </div>
-                            <div className="text-center border-l border-white/5 space-y-3">
-                               <p className="text-[12px] font-bold text-subtle uppercase tracking-widest">Creative</p>
-                               <p className="text-5xl font-display text-text/90 tabular-nums leading-none">{house.cultural_points || 0}</p>
-                            </div>
+                         <div>
+                            <h3 className="text-2xl md:text-4xl font-display uppercase tracking-tight text-text">House {house.name}</h3>
+                            <p className="text-muted text-[11px] font-bold uppercase tracking-[0.3em]">{house.mascot_name || 'Titans'}</p>
                          </div>
                       </div>
-                   </motion.div>
+                      <div className="text-right">
+                         <div className="text-4xl md:text-6xl font-display text-text">{house.points}</div>
+                         <div className="text-muted text-[10px] font-bold uppercase tracking-widest">Points</div>
+                      </div>
+                   </div>
                 ))}
              </div>
+          </div>
+        );
+
+      case 'events':
+        return (
+          <div className="max-w-6xl mx-auto px-6 py-24 font-ui">
+             <div className="flex flex-col items-center text-center mb-20">
+                <div className="sec-label">Sports</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight text-text">Fixtures</h2>
+                <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
+             </div>
+             <div className="grid md:grid-cols-2 gap-8">
+                {matches.map(match => {
+                   const h1 = houses.find(h => h.id === match.team1_id);
+                   const h2 = houses.find(h => h.id === match.team2_id);
+                   return (
+                      <div key={match.id} className="card-glass p-8 hover:border-accent/30 transition-all group">
+                         <div className="flex justify-between items-center mb-8">
+                            <span className="badge badge-upcoming">Match #{match.match_no}</span>
+                            <span className="text-[11px] font-bold uppercase tracking-widest text-muted">{match.match_time}</span>
+                         </div>
+                         <div className="flex items-center justify-between gap-4">
+                            <div className="flex-1 text-center">
+                               <div className="w-16 h-16 bg-bg2 rounded-2xl mx-auto mb-4 border border-border flex items-center justify-center group-hover:border-accent/20 transition-all">
+                                  {h1?.logo_url ? (
+                                     <img src={h1.logo_url} className="w-full h-full object-contain" alt="" />
+                                  ) : (
+                                     <Shield size={24} className="text-accent/40" />
+                                  )}
+                               </div>
+                               <p className="font-display text-xl text-text uppercase">{h1?.name || 'TBD'}</p>
+                            </div>
+                            <div className="px-6 py-2 bg-white/5 rounded-full font-display text-accent text-lg">VS</div>
+                            <div className="flex-1 text-center">
+                               <div className="w-16 h-16 bg-bg2 rounded-2xl mx-auto mb-4 border border-border flex items-center justify-center group-hover:border-accent/20 transition-all">
+                                  {h2?.logo_url ? (
+                                     <img src={h2.logo_url} className="w-full h-full object-contain" alt="" />
+                                  ) : (
+                                     <Shield size={24} className="text-accent/40" />
+                                  )}
+                               </div>
+                               <p className="font-display text-xl text-text uppercase">{h2?.name || 'TBD'}</p>
+                            </div>
+                         </div>
+                         <div className="mt-8 pt-8 border-t border-white/5 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-muted">
+                               <Info size={14} />
+                               <span className="text-[11px] font-bold uppercase tracking-widest">{match.venue}</span>
+                            </div>
+                            <div className="text-accent font-display text-xl uppercase">{match.status}</div>
+                         </div>
+                      </div>
+                   );
+                })}
+             </div>
+          </div>
+        );
+
+      case 'schedule':
+        return (
+          <div className="max-w-4xl mx-auto px-6 py-24 font-ui">
+             <div className="flex flex-col items-center text-center mb-20">
+                <div className="sec-label">Timeline</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight text-text">Schedule</h2>
+                <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
+             </div>
+             <div className="timeline">
+                {schedule.map((item, i) => (
+                   <div key={item.id} className="relative flex gap-8 pb-16 last:pb-0 group">
+                      <div className="w-[80px] md:w-[120px] flex flex-col items-end pt-2">
+                         <span className="text-accent font-display text-3xl md:text-4xl">{item.time_start?.slice(0, 5)}</span>
+                         <span className="text-muted text-[11px] font-bold uppercase tracking-widest mt-2">{item.day_label}</span>
+                      </div>
+                      <div className="flex-grow">
+                         <h3 className="text-3xl font-display uppercase tracking-tight mb-2 text-text">{item.title}</h3>
+                         <p className="text-muted text-[13px] font-bold uppercase tracking-widest flex items-center gap-3">
+                            <Info size={14} className="text-accent/50" />
+                            {item.venue} • {item.subtitle}
+                         </p>
+                      </div>
+                      <div>
+                         <span className={cn(
+                            "badge",
+                            item.status === 'live' ? "badge-live" :
+                            item.status === 'completed' ? "badge-completed" : "badge-upcoming"
+                         )}>{item.status === 'live' ? 'Live & Ongoing' : item.status}</span>
+                      </div>
+                   </div>
+                ))}
+             </div>
+          </div>
+        );
+
+      case 'gallery':
+        return (
+          <div className="max-w-7xl mx-auto px-6 py-24 font-ui">
+             <div className="flex flex-col items-center text-center mb-20">
+                <div className="sec-label">Moments</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight text-text">Gallery</h2>
+                <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
+             </div>
+             <div className="grid md:grid-cols-3 gap-8">
+                {gallery.length > 0 ? gallery.map((item) => (
+                   <div key={item.id} className="group relative aspect-video overflow-hidden rounded-3xl border border-border bg-surface">
+                      <img
+                        src={item.url}
+                        alt={item.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-bg/90 to-transparent opacity-0 group-hover:opacity-100 transition-opacity p-8 flex flex-col justify-end">
+                         <p className="text-xl font-display text-text uppercase">{item.title}</p>
+                      </div>
+                   </div>
+                )) : (
+                  <div className="col-span-full py-32 text-center card-glass">
+                    <Camera size={48} className="text-muted mx-auto mb-6 opacity-20" />
+                    <p className="text-muted uppercase tracking-[0.3em] font-bold">No memories captured yet.</p>
+                  </div>
+                )}
+             </div>
+          </div>
+        );
+
+      case 'notices':
+        return (
+          <div className="max-w-4xl mx-auto px-6 py-24 font-ui">
+             <div className="flex flex-col items-center text-center mb-20">
+                <div className="sec-label">Bulletin</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-4 tracking-tight text-text">Notices</h2>
+                <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
+             </div>
+             <div className="space-y-6">
+                {notices.length > 0 ? notices.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).map((notice) => (
+                   <div key={notice.id} className={cn(
+                      "card-glass p-8 relative overflow-hidden",
+                      notice.priority === 'high' ? "border-danger/30 bg-danger/5" : ""
+                   )}>
+                      {notice.priority === 'high' && (
+                         <div className="absolute top-0 right-0 px-4 py-1 bg-danger text-bg text-[9px] font-bold uppercase tracking-widest rounded-bl-xl">
+                            Urgent
+                         </div>
+                      )}
+                      <div className="flex items-start gap-6">
+                         <div className={cn(
+                            "w-12 h-12 rounded-xl flex items-center justify-center shrink-0",
+                            notice.priority === 'high' ? "bg-danger/20 text-danger" : "bg-accent/10 text-accent"
+                         )}>
+                            <Bell size={20} />
+                         </div>
+                         <div>
+                            <div className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">
+                               {new Date(notice.created_at).toLocaleDateString()}
+                            </div>
+                            <h3 className="text-2xl font-display text-text uppercase mb-4">{notice.title}</h3>
+                            <p className="text-muted leading-relaxed">{notice.content}</p>
+                         </div>
+                      </div>
+                   </div>
+                )) : (
+                  <div className="py-32 text-center card-glass">
+                    <Bell size={48} className="text-muted mx-auto mb-6 opacity-20" />
+                    <p className="text-muted uppercase tracking-[0.3em] font-bold">All clear for now.</p>
+                  </div>
+                )}
+             </div>
+          </div>
+        );
+
+      case 'about':
+        return (
+          <div className="max-w-4xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <div className="sec-label">The Fest</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">About UCSF</h2>
+                <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
+             </div>
+             <div className="space-y-12">
+                <div className="card-glass p-16 shadow-2xl">
+                   <h3 className="text-4xl font-display uppercase tracking-tight mb-8 text-text">Vision</h3>
+                   <p className="text-muted text-xl leading-relaxed mb-8">
+                      The Union of Culture & Sports Fest (UCSF) is a celebration of talent, resilience, and unity. It brings together athletes and performers to showcase excellence on and off the field.
+                   </p>
+                   <p className="text-muted text-xl leading-relaxed">
+                      Our goal is to foster spirit, sportsmanship, and creativity among our community, creating memories that last a lifetime.
+                   </p>
+                </div>
+                <div className="grid md:grid-cols-2 gap-8">
+                   <div className="card-glass p-12">
+                      <Trophy className="text-accent mb-8" size={48} />
+                      <h4 className="text-3xl font-display uppercase tracking-tight mb-4 text-text">Sports</h4>
+                      <p className="text-muted text-sm leading-relaxed">Competitive athletics ranging from football to track events, emphasizing teamwork and fair play.</p>
+                   </div>
+                   <div className="card-glass p-12">
+                      <Users className="text-accent mb-8" size={48} />
+                      <h4 className="text-3xl font-display uppercase tracking-tight mb-4 text-text">Culture</h4>
+                      <p className="text-muted text-sm leading-relaxed">A platform for dance, music, drama, and fine arts to celebrate our diverse cultural heritage.</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+        );
+
+      case 'sponsors':
+        return (
+          <div className="max-w-5xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <div className="sec-label">Partners</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Sponsors</h2>
+                <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
+             </div>
+             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-12">
+                {[1,2,3,4].map(i => (
+                   <div key={i} className="aspect-video bg-white/5 border border-border rounded-3xl flex items-center justify-center p-10 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all cursor-default hover:border-accent/20">
+                      <div className="text-center">
+                         <div className="w-16 h-16 bg-white/5 rounded-full mx-auto mb-4" />
+                         <div className="h-2 w-32 bg-white/5 rounded-full mx-auto" />
+                      </div>
+                   </div>
+                ))}
+             </div>
+             <p className="text-center text-subtle uppercase text-[11px] tracking-[0.4em] mt-32 font-bold">Contact us for sponsorship opportunities.</p>
           </div>
         );
 
@@ -342,7 +386,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-bg transition-colors duration-[3s] ease-in-out">
+    <div className="min-h-screen bg-bg">
       {activeTab === 'admin' ? (
          <AdminPanel onBack={() => setActiveTab('home')} />
       ) : (
@@ -353,7 +397,6 @@ function App() {
            subtitle={festivalSubtitle}
            schoolLogoUrl={schoolLogoUrl}
            announcement={announcement}
-           winner={winner}
          >
            <AnimatePresence mode="wait">
              <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
@@ -363,106 +406,96 @@ function App() {
          </Layout>
       )}
 
-      {/* SUPREME CELEBRATION OVERLAY */}
+      {/* Winner Surprise Overlay */}
       <AnimatePresence>
         {showCelebration && winner && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[3000] flex items-center justify-center bg-bg/95 backdrop-blur-[150px] overflow-hidden p-10 md:p-40"
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-bg/95 backdrop-blur-3xl overflow-hidden p-6"
           >
             <button
                onClick={() => setShowCelebration(false)}
-               className="absolute top-24 right-24 p-10 text-muted/30 hover:text-white transition-all hover:scale-125 z-[3100] card-glass rounded-full border-white/10 hover:border-accent/40 shadow-5xl group"
+               className="absolute top-8 right-8 p-4 text-muted hover:text-white transition-colors z-[1100]"
             >
-               <X size={80} className="group-hover:rotate-90 transition-transform duration-700" />
+               <X size={40} />
             </button>
 
-            <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-40">
-               {[...Array(150)].map((_, i) => (
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+               {[...Array(60)].map((_, i) => (
                   <motion.div
                     key={i}
                     initial={{ y: -100, opacity: 1 }}
-                    animate={{ y: 2000, rotate: i % 2 === 0 ? 1440 : -1440, x: Math.random() * 600 - 300 }}
-                    transition={{ duration: Math.random() * 6 + 5, repeat: Infinity, delay: Math.random() * 12 }}
-                    className="absolute w-6 h-12 rounded-sm"
-                    style={{ backgroundColor: i % 3 === 0 ? winner.color : i % 3 === 1 ? '#BC8A2C' : '#fff', left: `${Math.random() * 100}%`, top: `-60px` }}
+                    animate={{
+                       y: 1200,
+                       rotate: 360,
+                       x: Math.random() * 100 - 50
+                    }}
+                    transition={{
+                       duration: Math.random() * 3 + 2,
+                       repeat: Infinity,
+                       delay: Math.random() * 5
+                    }}
+                    className="absolute w-2 h-4 rounded-sm"
+                    style={{
+                       backgroundColor: i % 3 === 0 ? winner.color : i % 3 === 1 ? '#BC8A2C' : '#fff',
+                       left: `${Math.random() * 100}%`,
+                       top: `-20px`
+                    }}
                   />
                ))}
             </div>
 
             <motion.div
-              initial={{ scale: 0.4, opacity: 0, y: 200 }}
+              initial={{ scale: 0.8, opacity: 0, y: 40 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              transition={{ type: "spring", damping: 35, stiffness: 50, delay: 0.4 }}
-              className="max-w-[100vw] w-full text-center relative z-10 space-y-32"
+              className="max-w-4xl w-full text-center relative z-10"
             >
-               <div className="flex justify-center">
+               <div className="mb-12 flex justify-center">
                   <div className="relative">
-                     <motion.div animate={{ rotate: 360, scale: [1, 1.1, 1] }} transition={{ rotate: { duration: 60, repeat: Infinity, ease: "linear" }, scale: { duration: 8, repeat: Infinity } }} className="absolute -inset-40 md:-inset-80 rounded-full border border-accent/5" />
-                     <motion.div animate={{ rotate: -360 }} transition={{ duration: 90, repeat: Infinity, ease: "linear" }} className="absolute -inset-20 md:-inset-40 rounded-full border-2 border-dashed border-accent/15" />
-                     <div className="w-[400px] h-[400px] md:w-[850px] md:h-[850px] rounded-[10rem] md:rounded-[18rem] bg-white/[0.005] border-[16px] backdrop-blur-[80px] p-32 md:p-64 flex items-center justify-center shadow-[0_0_250px_rgba(var(--house-accent-rgb),0.3)] transition-all duration-[3s]" style={{ borderColor: winner.color }}>
-                        {winner.logo_url ? (
-                           <motion.img
-                             initial={{ scale: 0.2, filter: 'blur(30px)' }}
-                             animate={{ scale: 1, filter: 'blur(0px)' }}
-                             transition={{ duration: 3, type: "spring" }}
-                             src={winner.logo_url}
-                             alt={winner.name}
-                             className="w-full h-full object-contain filter drop-shadow-[0_0_150px_rgba(255,255,255,0.5)]"
-                           />
+                     <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-0 w-80 h-80 rounded-full border-2 border-dashed border-accent/30"
+                     />
+                     <div
+                        className="w-72 h-72 rounded-[3rem] bg-surface border border-border p-12 flex items-center justify-center shadow-[0_0_80px_rgba(188,138,44,0.3)]"
+                        style={{ borderColor: winner.color }}
+                     >
+                        {houseMascotLogos[winner.name] ? (
+                           <img src={houseMascotLogos[winner.name]} alt={winner.name} className="w-48 h-48 object-contain" />
+                        ) : winner.logo_url ? (
+                           <img src={winner.logo_url} alt={winner.name} className="w-48 h-48 object-contain" />
                         ) : (
-                           <Shield size={450} style={{ color: winner.color }} className="filter drop-shadow-[0_0_200px_rgba(255,255,255,0.25)]" />
+                           <Shield size={160} style={{ color: winner.color }} />
                         )}
                      </div>
-                     <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 2.5 }} className="absolute -top-32 left-1/2 -translate-x-1/2">
-                        <Crown size={180} className="text-accent animate-bounce" />
-                     </motion.div>
                   </div>
                </div>
 
-               <div className="space-y-16">
-                  <motion.h2
-                    initial={{ opacity: 0, letterSpacing: '0em' }}
-                    animate={{ opacity: 1, letterSpacing: '2em' }}
-                    transition={{ delay: 1.5, duration: 2.5 }}
-                    className="text-[24px] md:text-[32px] font-bold text-accent uppercase font-ui text-center w-full"
-                  >
-                     Absolute Champion Confirmed
-                  </motion.h2>
+               <h2 className="text-[12px] font-bold text-accent uppercase tracking-[0.6em] mb-6">UCSF 2026 Champion</h2>
+               <h1 className="text-7xl md:text-9xl font-display text-text uppercase mb-8 tracking-tight">
+                  HOUSE {winner.name}
+               </h1>
 
-                  <motion.h1
-                    initial={{ opacity: 0, y: 80 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 2, duration: 2, ease: [0.16, 1, 0.3, 1] }}
-                    className="text-8xl md:text-[18rem] font-display text-text uppercase leading-[0.75] tracking-tighter"
-                  >
-                     CONGRATULATIONS<br/>
-                     <span style={{ color: winner.color }} className="drop-shadow-[0_0_80px_rgba(0,0,0,0.7)]">HOUSE {winner.name}</span>
-                  </motion.h1>
+               <p className="font-ui text-2xl md:text-3xl text-muted uppercase tracking-[0.3em] font-semibold mb-16">
+                  {winner.mascot_name || 'The Invincibles'}
+               </p>
 
-                  <motion.p
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 3, duration: 1.5 }}
-                    className="font-ui text-6xl md:text-[10rem] text-muted/20 uppercase tracking-[0.4em] font-thin italic"
-                  >
-                     Congratulations {winner.name} House Won!
-                  </motion.p>
-               </div>
-
-               <div className="grid grid-cols-1 md:grid-cols-3 gap-20 max-w-[90vw] mx-auto pt-32 px-10">
-                  {[
-                     { l: 'Total Dominance', v: winner.points, c: 'text-accent' },
-                     { l: 'Athletic Index', v: winner.sports_points, c: 'text-text' },
-                     { l: 'Cultural Index', v: winner.cultural_points, c: 'text-text' }
-                  ].map((st, i) => (
-                     <motion.div initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 4 + (i*0.4) }} key={i} className="card-glass p-24 border-white/5 shadow-5xl">
-                        <p className="text-[16px] font-bold text-muted/50 uppercase tracking-[0.8em] mb-12">{st.l}</p>
-                        <p className={cn("text-[10rem] font-display tabular-nums leading-none tracking-tighter", st.c)}>{st.v}</p>
-                     </motion.div>
-                  ))}
+               <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+                  <div className="card-glass p-8">
+                     <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Total Points</p>
+                     <p className="text-4xl font-display text-accent">{winner.points}</p>
+                  </div>
+                  <div className="card-glass p-8">
+                     <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Sports</p>
+                     <p className="text-4xl font-display text-text">{winner.sports_points}</p>
+                  </div>
+                  <div className="card-glass p-8">
+                     <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Culture</p>
+                     <p className="text-4xl font-display text-text">{winner.cultural_points}</p>
+                  </div>
                </div>
             </motion.div>
           </motion.div>
@@ -471,5 +504,12 @@ function App() {
     </div>
   );
 }
+
+const houseMascotLogos: Record<string, string> = {
+  'TITANS': 'https://v3.v0.app/api/assets?id=titans-logo',
+  'PHOENIX': 'https://v3.v0.app/api/assets?id=phoenix-logo',
+  'WARRIORS': 'https://v3.v0.app/api/assets?id=warriors-logo',
+  'DRAGONS': 'https://v3.v0.app/api/assets?id=dragons-logo'
+};
 
 export default App;
