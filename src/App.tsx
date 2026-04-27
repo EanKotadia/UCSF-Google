@@ -22,21 +22,26 @@ function App() {
 
   const [winner, setWinner] = useState<any>(null);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [lastCelebratedWinnerId, setLastCelebratedWinnerId] = useState<string | null>(null);
 
   // Sync winner from settings
   useEffect(() => {
     const winnerId = settings['winner_house_id'];
     if (winnerId && houses.length > 0) {
-       const winningHouse = houses.find(h => h.id === winnerId);
-       if (winningHouse) {
-          setWinner(winningHouse);
-          setShowCelebration(true);
+       if (winnerId !== lastCelebratedWinnerId) {
+          const winningHouse = houses.find(h => h.id === winnerId);
+          if (winningHouse) {
+             setWinner(winningHouse);
+             setShowCelebration(true);
+             setLastCelebratedWinnerId(winnerId);
+          }
        }
-    } else {
+    } else if (!winnerId) {
        setWinner(null);
        setShowCelebration(false);
+       setLastCelebratedWinnerId(null);
     }
-  }, [settings, houses]);
+  }, [settings, houses, lastCelebratedWinnerId]);
 
   if (loading) {
     return (
@@ -55,10 +60,6 @@ function App() {
     );
   }
 
-  if (activeTab === 'admin') {
-     return <AdminPanel onBack={() => setActiveTab('home')} />;
-  }
-
   const festivalName = settings['festival_name'] || 'UCSF 2026';
   const festivalSubtitle = settings['festival_subtitle'] || 'Union of Culture & Sports Fest';
   const schoolLogoUrl = settings['school_logo_url'];
@@ -69,7 +70,6 @@ function App() {
       case 'home':
         return (
           <div className="flex flex-col">
-            {/* Hero Section */}
             <section className="relative min-h-[95vh] flex flex-col items-center justify-center px-6 overflow-hidden">
                <div className="absolute inset-0 pointer-events-none overflow-hidden">
                   <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] animate-pulse" />
@@ -100,7 +100,6 @@ function App() {
                   </div>
                </motion.div>
 
-               {/* Stats Grid */}
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-32 z-10 w-full max-w-6xl">
                   {[
                      { label: 'Athletes', val: '500+', icon: Target },
@@ -376,21 +375,25 @@ function App() {
   };
 
   return (
-    <>
-      <Layout
-        activeTab={activeTab}
-        setActiveTab={(t: any) => setActiveTab(t)}
-        title={festivalName}
-        subtitle={festivalSubtitle}
-        schoolLogoUrl={schoolLogoUrl}
-        announcement={announcement}
-      >
-        <AnimatePresence mode="wait">
-          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {renderContent()}
-          </motion.div>
-        </AnimatePresence>
-      </Layout>
+    <div className="min-h-screen bg-bg">
+      {activeTab === 'admin' ? (
+         <AdminPanel onBack={() => setActiveTab('home')} />
+      ) : (
+         <Layout
+           activeTab={activeTab}
+           setActiveTab={(t: any) => setActiveTab(t)}
+           title={festivalName}
+           subtitle={festivalSubtitle}
+           schoolLogoUrl={schoolLogoUrl}
+           announcement={announcement}
+         >
+           <AnimatePresence mode="wait">
+             <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+               {renderContent()}
+             </motion.div>
+           </AnimatePresence>
+         </Layout>
+      )}
 
       {/* Winner Surprise Overlay */}
       <AnimatePresence>
@@ -401,7 +404,13 @@ function App() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[1000] flex items-center justify-center bg-bg/95 backdrop-blur-3xl overflow-hidden p-6"
           >
-            {/* Confetti Elements */}
+            <button
+               onClick={() => setShowCelebration(false)}
+               className="absolute top-8 right-8 p-4 text-muted hover:text-white transition-colors z-[1100]"
+            >
+               <X size={40} />
+            </button>
+
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
                {[...Array(60)].map((_, i) => (
                   <motion.div
@@ -432,13 +441,6 @@ function App() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               className="max-w-4xl w-full text-center relative z-10"
             >
-               <button
-                  onClick={() => setShowCelebration(false)}
-                  className="absolute -top-20 right-0 p-4 text-muted hover:text-white transition-colors"
-               >
-                  <X size={40} />
-               </button>
-
                <div className="mb-12 flex justify-center">
                   <div className="relative">
                      <motion.div
@@ -486,7 +488,7 @@ function App() {
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 }
 
