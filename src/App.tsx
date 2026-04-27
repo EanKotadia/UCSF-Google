@@ -1,214 +1,221 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronRight, Activity, Trophy, Calendar, Users, Camera, Bell, Info } from 'lucide-react';
-import { supabase } from './lib/supabase';
-import { useUCSFData } from './hooks/useUCSFData';
+import {
+  Trophy, Users, Calendar, Activity,
+  Layers, Camera, Bell, Info, Shield,
+  ChevronRight, Heart, Star, Sparkles,
+  Award, Target, Rocket, Zap, X
+} from 'lucide-react';
 import Layout from './components/Layout';
 import AdminPanel from './components/AdminPanel';
-import EventsSection from './components/EventsSection';
-import SupabaseConfig from './components/SupabaseConfig';
+import { useUCSFData } from './hooks/useUCSFData';
 import { cn } from './lib/utils';
+import { supabase } from './lib/supabase';
 
-export default function App() {
+function App() {
   const [activeTab, setActiveTab] = useState('home');
-  const [isConfigured, setIsConfigured] = useState(false);
   const {
-    houses,
-    matches,
-    categories,
-    notices,
-    gallery,
-    culturalResults,
-    schedule,
-    stagedChanges,
-    settings,
-    loading,
-    refresh
+    houses, matches, schedule, settings,
+    gallery, notices, culturalResults,
+    loading, refresh
   } = useUCSFData();
 
-  const [profile, setProfile] = useState<any>(null);
+  const [winner, setWinner] = useState<any>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
+  // Sync winner from settings
   useEffect(() => {
-    const checkConfig = () => {
-      const url = localStorage.getItem('SUPABASE_URL') || import.meta.env.VITE_SUPABASE_URL;
-      const key = localStorage.getItem('SUPABASE_ANON_KEY') || import.meta.env.VITE_SUPABASE_ANON_KEY;
-      setIsConfigured(!!(url && key));
-    };
-    checkConfig();
+    const winnerId = settings['winner_house_id'];
+    if (winnerId && houses.length > 0) {
+       const winningHouse = houses.find(h => h.id === winnerId);
+       if (winningHouse) {
+          setWinner(winningHouse);
+          setShowCelebration(true);
+       }
+    } else {
+       setWinner(null);
+       setShowCelebration(false);
+    }
+  }, [settings, houses]);
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setProfile(session?.user ?? null);
-    });
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-8">
+        <div className="relative">
+          <div className="w-24 h-24 border-4 border-accent/20 border-t-accent rounded-full animate-spin" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-12 h-12 bg-accent/10 rounded-full animate-pulse" />
+          </div>
+        </div>
+        <div className="text-center">
+           <h1 className="nav-logo text-4xl mb-2">UCSF</h1>
+           <p className="text-muted font-bold uppercase tracking-[0.5em] text-[10px]">Initializing Experience</p>
+        </div>
+      </div>
+    );
+  }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setProfile(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  if (!isConfigured) {
-    return <SupabaseConfig onConfigured={() => setIsConfigured(true)} />;
+  if (activeTab === 'admin') {
+     return <AdminPanel onBack={() => setActiveTab('home')} />;
   }
 
   const festivalName = settings['festival_name'] || 'UCSF 2026';
-  const festivalSubtitle = settings['festival_subtitle'] || 'Celebrating athletic excellence and cultural diversity through competitive spirit.';
+  const festivalSubtitle = settings['festival_subtitle'] || 'Union of Culture & Sports Fest';
   const schoolLogoUrl = settings['school_logo_url'];
   const announcement = settings['announcement_text'];
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'admin':
-        return (
-          <AdminPanel
-            matches={matches}
-            houses={houses}
-            schedule={schedule}
-            categories={categories}
-            notices={notices}
-            gallery={gallery}
-            culturalResults={culturalResults}
-            stagedChanges={stagedChanges}
-            profile={profile}
-            settings={settings}
-            refresh={refresh}
-            onBack={() => setActiveTab('home')}
-          />
-        );
-      case 'events':
-        return <EventsSection categories={categories} matches={matches} setActiveTab={(t: any) => setActiveTab(t)} />;
       case 'home':
         return (
-          <div className="space-y-0">
-             <section className="relative py-40 md:py-60 flex flex-col items-center justify-center text-center px-6">
-              <div className="absolute inset-0 z-0 opacity-10">
-                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-accent blur-[120px] rounded-full" />
-              </div>
+          <div className="flex flex-col">
+            {/* Hero Section */}
+            <section className="relative min-h-[95vh] flex flex-col items-center justify-center px-6 overflow-hidden">
+               <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  <div className="absolute top-[10%] left-[10%] w-[500px] h-[500px] bg-accent/10 rounded-full blur-[120px] animate-pulse" />
+                  <div className="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-accent/5 rounded-full blur-[120px] animate-pulse delay-1000" />
+               </div>
 
-              <div className="max-w-5xl mx-auto space-y-10 relative z-10">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  <span className="hero-eyebrow">Annual Fest 2026</span>
-                  <h1 className="hero-title">
-                     UNION OF <span className="block text-accent">CULTURE & SPORTS</span>
+               <motion.div
+                 initial={{ opacity: 0, y: 40 }}
+                 animate={{ opacity: 1, y: 0 }}
+                 className="text-center z-10 max-w-5xl"
+               >
+                  <div className="hero-eyebrow">The Ultimate Convergence</div>
+                  <h1 className="hero-title mb-8">
+                    EMPOWERING<br/>
+                    <span className="text-accent">EXCELLENCE</span>
                   </h1>
-                  <p className="hero-sub">{festivalSubtitle}</p>
-                </motion.div>
+                  <p className="hero-sub mb-16 mx-auto">
+                    Where spirit meets skill and culture transcends boundaries.
+                  </p>
 
-                <motion.div
-                   initial={{ opacity: 0, y: 10 }}
-                   animate={{ opacity: 1, y: 0 }}
-                   transition={{ delay: 0.5, duration: 0.8 }}
-                   className="flex flex-wrap justify-center gap-6 pt-6"
-                >
-                   <button
-                     onClick={() => setActiveTab('events')}
-                     className="btn-primary"
-                   >
-                      Explore Events <ChevronRight size={16} />
-                   </button>
-                   <button
-                     onClick={() => setActiveTab('leaderboards')}
-                     className="btn-ghost"
-                   >
-                      Live Rankings
-                   </button>
-                </motion.div>
-              </div>
-            </section>
-
-            <section className="py-32 border-t border-border bg-bg-dark/50">
-               <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 font-ui">
-                  <div className="space-y-10">
-                     <div className="flex items-center justify-between">
-                        <div className="sec-label mb-0">The Grand Standings</div>
-                        <Trophy className="text-accent/40" size={24} />
-                     </div>
-                     <div className="card-glass p-8 space-y-4">
-                        {houses.sort((a,b) => b.points - a.points).map((h, i) => (
-                          <div key={h.id} className="flex items-center justify-between p-5 bg-white/5 rounded-2xl border border-white/5 group hover:border-accent/30 transition-all cursor-default">
-                             <div className="flex items-center gap-6">
-                                <span className={cn(
-                                   "w-12 h-12 rounded-xl flex items-center justify-center font-display text-2xl transition-all",
-                                   i === 0 ? "bg-accent text-bg" : "bg-white/5 text-muted"
-                                )}>#{i+1}</span>
-                                <span className="font-bold uppercase tracking-widest text-lg text-text">{h.name}</span>
-                             </div>
-                             <span className="font-display text-3xl text-accent group-hover:scale-110 transition-transform">{h.points}</span>
-                          </div>
-                        ))}
-                     </div>
+                  <div className="flex flex-wrap justify-center gap-6">
+                     <button onClick={() => setActiveTab('events')} className="btn-primary py-5 px-10 text-base">
+                        Explore Events <ChevronRight size={20} />
+                     </button>
+                     <button onClick={() => setActiveTab('leaderboards')} className="btn-ghost py-5 px-10 text-base">
+                        View Rankings
+                     </button>
                   </div>
+               </motion.div>
 
-                  <div className="space-y-10">
-                     <div className="flex items-center justify-between">
-                        <div className="sec-label mb-0">Live Action Feed</div>
-                        <Activity className="text-danger/40" size={24} />
+               {/* Stats Grid */}
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-32 z-10 w-full max-w-6xl">
+                  {[
+                     { label: 'Athletes', val: '500+', icon: Target },
+                     { label: 'Performers', val: '200+', icon: Heart },
+                     { label: 'Events', val: '24', icon: Star },
+                     { label: 'Prize Pool', val: '100K+', icon: Award }
+                  ].map((s, i) => (
+                     <div key={i} className="card-glass p-8 text-center group hover:border-accent/30 transition-all">
+                        <s.icon size={24} className="text-accent/50 group-hover:text-accent mx-auto mb-4 transition-colors" />
+                        <p className="text-3xl font-display text-text mb-1">{s.val}</p>
+                        <p className="text-[10px] font-bold text-muted uppercase tracking-widest">{s.label}</p>
                      </div>
-                     <div className="space-y-4 min-h-[400px]">
-                        {matches.filter(m => m.status === 'live').map(m => (
-                          <div key={m.id} className="card-glass p-8 relative overflow-hidden group shadow-lg">
-                             <div className="absolute top-0 right-0 p-5">
-                                <div className="flex items-center gap-2">
-                                   <div className="w-2 h-2 bg-danger rounded-full animate-pulse" />
-                                   <span className="badge badge-live">Live</span>
-                                </div>
-                             </div>
-                             <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] mb-6">
-                                {categories.find(c => c.id === m.category_id)?.name} • {m.venue || 'Main Field'}
-                             </p>
-                             <div className="flex justify-between items-center gap-4">
-                                <div className="text-center flex-1">
-                                   <p className="font-bold uppercase tracking-widest text-sm mb-2 text-text">{houses.find(h => h.id === m.team1_id)?.name}</p>
-                                   <p className="text-4xl font-display text-accent">{m.score1}</p>
-                                </div>
-                                <div className="px-6 text-subtle font-display text-xl">:</div>
-                                <div className="text-center flex-1">
-                                   <p className="font-bold uppercase tracking-widest text-sm mb-2 text-text">{houses.find(h => h.id === m.team2_id)?.name}</p>
-                                   <p className="text-4xl font-display text-accent">{m.score2}</p>
-                                </div>
-                             </div>
-                          </div>
-                        ))}
-                        {matches.filter(m => m.status === 'live').length === 0 && (
-                          <div className="card-glass border-dashed flex flex-col items-center justify-center h-full py-20 text-muted">
-                             <Activity size={48} className="mb-4 opacity-10" />
-                             <p className="italic uppercase text-[11px] tracking-[0.4em] font-bold">Waiting for next event</p>
-                          </div>
-                        )}
-                     </div>
-                  </div>
+                  ))}
                </div>
             </section>
           </div>
         );
+
+      case 'events':
+        return (
+          <div className="max-w-7xl mx-auto px-6 py-32 font-ui">
+             <div className="flex flex-col items-center text-center mb-24">
+                <div className="sec-label">The Mainstage</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Live Events</h2>
+                <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                {matches.filter(m => m.status === 'live').map(match => (
+                   <div key={match.id} className="card-glass p-12 border-l-4 border-l-danger relative overflow-hidden group">
+                      <div className="absolute top-0 right-0 p-8">
+                         <span className="badge badge-live animate-pulse">Live Now</span>
+                      </div>
+                      <p className="text-accent font-bold uppercase tracking-[0.2em] text-[11px] mb-4">Round {match.match_no || 'X'}</p>
+                      <h3 className="text-4xl font-display uppercase tracking-tight mb-8 text-text">{match.category_id?.replace(/-/g, ' ')}</h3>
+
+                      <div className="space-y-6">
+                         <div className="flex items-center justify-between">
+                            <span className="text-muted font-bold text-sm tracking-widest uppercase">{match.team1_id}</span>
+                            <span className="text-2xl font-display text-text">{match.score1 ?? '-'}</span>
+                         </div>
+                         <div className="h-px bg-white/5" />
+                         <div className="flex items-center justify-between">
+                            <span className="text-muted font-bold text-sm tracking-widest uppercase">{match.team2_id}</span>
+                            <span className="text-2xl font-display text-text">{match.score2 ?? '-'}</span>
+                         </div>
+                      </div>
+                      <div className="mt-10 flex items-center gap-3 text-subtle text-[11px] font-bold uppercase tracking-widest">
+                         <Info size={14} /> {match.venue}
+                      </div>
+                   </div>
+                ))}
+                {matches.filter(m => m.status === 'live').length === 0 && (
+                   <div className="col-span-full card-glass border-dashed flex flex-col items-center justify-center py-40 text-muted">
+                      <Rocket size={60} className="mb-6 opacity-10" />
+                      <p className="italic uppercase text-sm tracking-[0.4em] font-bold">No events currently live</p>
+                   </div>
+                )}
+             </div>
+          </div>
+        );
+
       case 'leaderboards':
         return (
           <div className="max-w-7xl mx-auto px-6 py-32 font-ui">
              <div className="flex flex-col items-center text-center mb-24">
-                <div className="sec-label">Official Standings</div>
-                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Championship</h2>
+                <div className="sec-label">House Standing</div>
+                <h2 className="text-6xl md:text-8xl font-display uppercase mb-6 tracking-tight text-text">Rankings</h2>
                 <div className="h-[2px] w-24 bg-accent/30 rounded-full" />
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                {houses.sort((a,b) => b.points - a.points).map((h, i) => (
-                   <div key={h.id} className="card-glass p-10 flex flex-col items-center text-center gap-10 group hover:border-accent/40 transition-all">
-                      <div className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center text-4xl font-display text-accent border border-accent/20 transition-transform group-hover:scale-110">
-                         #{i+1}
+                {houses.sort((a,b) => b.points - a.points).map((house, idx) => (
+                   <div key={house.id} className="card-glass p-12 flex flex-col items-center group relative">
+                      <div className="absolute top-0 left-0 p-8">
+                         <span className="text-4xl font-display text-white/5 group-hover:text-accent/20 transition-colors">#0{idx + 1}</span>
                       </div>
-                      <h3 className="text-3xl font-display uppercase leading-tight text-text">{h.name}</h3>
-                      <div className="w-full pt-10 border-t border-border">
-                         <span className="text-6xl font-display text-accent">{h.points}</span>
-                         <p className="text-[11px] font-bold text-muted uppercase tracking-[0.3em] mt-4">Total Points</p>
+                      <div
+                         className="w-24 h-24 rounded-[2rem] flex items-center justify-center mb-10 shadow-2xl relative"
+                         style={{ backgroundColor: `${house.color}20`, border: `2px solid ${house.color}40` }}
+                      >
+                         <Shield size={48} style={{ color: house.color }} />
+                         <div className="absolute -inset-4 bg-white/5 rounded-full blur-2xl group-hover:bg-white/10 transition-all" />
+                      </div>
+                      <h3 className="text-4xl font-display uppercase tracking-tight mb-2 text-text">{house.name}</h3>
+                      <p className="text-muted font-bold uppercase tracking-[0.3em] text-[10px] mb-8">{house.mascot_name || 'Defender'}</p>
+
+                      <div className="w-full space-y-4">
+                         <div className="flex justify-between items-end">
+                            <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Total Points</span>
+                            <span className="text-4xl font-display text-accent leading-none">{house.points}</span>
+                         </div>
+                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                            <motion.div
+                               initial={{ width: 0 }}
+                               animate={{ width: `${(house.points / 2000) * 100}%` }}
+                               className="h-full bg-accent"
+                            />
+                         </div>
+                         <div className="grid grid-cols-2 gap-4 pt-4">
+                            <div className="text-center">
+                               <p className="text-[9px] font-bold text-subtle uppercase tracking-widest mb-1">Sports</p>
+                               <p className="text-lg font-display text-text">{house.sports_points || 0}</p>
+                            </div>
+                            <div className="text-center border-l border-white/5">
+                               <p className="text-[9px] font-bold text-subtle uppercase tracking-widest mb-1">Cultural</p>
+                               <p className="text-lg font-display text-text">{house.cultural_points || 0}</p>
+                            </div>
+                         </div>
                       </div>
                    </div>
                 ))}
              </div>
           </div>
         );
+
       case 'notices':
         return (
           <div className="max-w-4xl mx-auto px-6 py-32 font-ui">
@@ -243,6 +250,7 @@ export default function App() {
              </div>
           </div>
         );
+
       case 'gallery':
         return (
           <div className="max-w-7xl mx-auto px-6 py-32 font-ui">
@@ -270,6 +278,7 @@ export default function App() {
              </div>
           </div>
         );
+
       case 'schedule':
         return (
           <div className="max-w-5xl mx-auto px-6 py-32 font-ui">
@@ -304,6 +313,7 @@ export default function App() {
              </div>
           </div>
         );
+
       case 'about':
         return (
           <div className="max-w-4xl mx-auto px-6 py-32 font-ui">
@@ -337,6 +347,7 @@ export default function App() {
              </div>
           </div>
         );
+
       case 'sponsors':
         return (
           <div className="max-w-5xl mx-auto px-6 py-32 font-ui">
@@ -358,25 +369,125 @@ export default function App() {
              <p className="text-center text-subtle uppercase text-[11px] tracking-[0.4em] mt-32 font-bold">Contact us for sponsorship opportunities.</p>
           </div>
         );
+
       default:
         return null;
     }
   };
 
   return (
-    <Layout 
-      activeTab={activeTab} 
-      setActiveTab={(t: any) => setActiveTab(t)}
-      title={festivalName}
-      subtitle={festivalSubtitle}
-      schoolLogoUrl={schoolLogoUrl}
-      announcement={announcement}
-    >
-      <AnimatePresence mode="wait">
-        <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          {renderContent()}
-        </motion.div>
+    <>
+      <Layout
+        activeTab={activeTab}
+        setActiveTab={(t: any) => setActiveTab(t)}
+        title={festivalName}
+        subtitle={festivalSubtitle}
+        schoolLogoUrl={schoolLogoUrl}
+        announcement={announcement}
+      >
+        <AnimatePresence mode="wait">
+          <motion.div key={activeTab} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            {renderContent()}
+          </motion.div>
+        </AnimatePresence>
+      </Layout>
+
+      {/* Winner Surprise Overlay */}
+      <AnimatePresence>
+        {showCelebration && winner && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[1000] flex items-center justify-center bg-bg/95 backdrop-blur-3xl overflow-hidden p-6"
+          >
+            {/* Confetti Elements */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+               {[...Array(60)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ y: -100, opacity: 1 }}
+                    animate={{
+                       y: 1200,
+                       rotate: 360,
+                       x: Math.random() * 100 - 50
+                    }}
+                    transition={{
+                       duration: Math.random() * 3 + 2,
+                       repeat: Infinity,
+                       delay: Math.random() * 5
+                    }}
+                    className="absolute w-2 h-4 rounded-sm"
+                    style={{
+                       backgroundColor: i % 3 === 0 ? winner.color : i % 3 === 1 ? '#BC8A2C' : '#fff',
+                       left: `${Math.random() * 100}%`,
+                       top: `-20px`
+                    }}
+                  />
+               ))}
+            </div>
+
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 40 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              className="max-w-4xl w-full text-center relative z-10"
+            >
+               <button
+                  onClick={() => setShowCelebration(false)}
+                  className="absolute -top-20 right-0 p-4 text-muted hover:text-white transition-colors"
+               >
+                  <X size={40} />
+               </button>
+
+               <div className="mb-12 flex justify-center">
+                  <div className="relative">
+                     <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="absolute inset-0 w-80 h-80 rounded-full border-2 border-dashed border-accent/30"
+                     />
+                     <div
+                        className="w-72 h-72 rounded-[3rem] bg-surface border border-border p-12 flex items-center justify-center shadow-[0_0_80px_rgba(188,138,44,0.3)]"
+                        style={{ borderColor: winner.color }}
+                     >
+                        {winner.logo_url ? (
+                           <img src={winner.logo_url} alt={winner.name} className="w-48 h-48 object-contain" />
+                        ) : (
+                           <Shield size={160} style={{ color: winner.color }} />
+                        )}
+                     </div>
+                  </div>
+               </div>
+
+               <h2 className="text-[12px] font-bold text-accent uppercase tracking-[0.6em] mb-6">UCSF 2026 Champion</h2>
+               <h1 className="text-7xl md:text-9xl font-display text-text uppercase mb-8 tracking-tight">
+                  HOUSE {winner.name}
+               </h1>
+
+               <p className="font-ui text-2xl md:text-3xl text-muted uppercase tracking-[0.3em] font-semibold mb-16">
+                  {winner.mascot_name || 'The Invincibles'}
+               </p>
+
+               <div className="grid grid-cols-3 gap-8 max-w-2xl mx-auto">
+                  <div className="card-glass p-8">
+                     <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Total Points</p>
+                     <p className="text-4xl font-display text-accent">{winner.points}</p>
+                  </div>
+                  <div className="card-glass p-8">
+                     <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Sports</p>
+                     <p className="text-4xl font-display text-text">{winner.sports_points}</p>
+                  </div>
+                  <div className="card-glass p-8">
+                     <p className="text-[10px] font-bold text-muted uppercase tracking-widest mb-2">Culture</p>
+                     <p className="text-4xl font-display text-text">{winner.cultural_points}</p>
+                  </div>
+               </div>
+            </motion.div>
+          </motion.div>
+        )}
       </AnimatePresence>
-    </Layout>
+    </>
   );
 }
+
+export default App;
